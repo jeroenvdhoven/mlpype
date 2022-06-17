@@ -72,3 +72,14 @@ class DataSet(Generic[Data]):
         """
         for key, d in zip(keys, data):
             self[key] = d
+
+    def __contains__(self, item: str) -> bool:
+        """Checks if the given item exists in the DataSet.
+
+        Args:
+            item (str): The item to check for presence.
+
+        Returns:
+            bool: True if item is in this DataSet, false otherwise.
+        """
+        return item in self.data

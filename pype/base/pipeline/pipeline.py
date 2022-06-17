@@ -16,7 +16,7 @@ class Pipeline:
         self.pipes = pipes
         self._assert_all_names_different()
 
-    def _assert_all_names_different(self, names: set = None) -> None:
+    def _assert_all_names_different(self, names: set | None = None) -> None:
         if names is None:
             names = set()
 
