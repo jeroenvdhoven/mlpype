@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Generic, List, Tuple
 
 from pype.base.data import DataSet
@@ -30,21 +31,21 @@ class Model(ABC, Generic[Data]):
         raise NotImplementedError
 
     @abstractmethod
-    def save(self, file: str) -> None:
+    def save(self, file: str | Path) -> None:
         """Stores this model to the given file.
 
         Args:
-            file (str): The file to store the Model in.
+            file (str | Path): The file to store the Model in.
         """
         raise NotImplementedError
 
     @abstractmethod
     @classmethod
-    def load(cls, file: str) -> "Model":
+    def load(cls, file: str | Path) -> "Model":
         """Loads a model from file into this Model.
 
         Args:
-            file (str): The file to load the model from.
+            file (str | Path): The file to load the model from.
         """
         raise NotImplementedError
 

@@ -3,7 +3,8 @@ import typing
 import warnings
 from argparse import ArgumentParser
 from logging import Logger
-from typing import Any, Callable, Dict, Iterable, List, Type
+from pathlib import Path
+from typing import Any, Callable, Iterable, List, Type
 
 from pype.base.data.dataset_source import DataSetSource
 from pype.base.evaluate import Evaluator
@@ -14,19 +15,21 @@ from pype.base.utils.parsing import get_args_for_prefix
 
 
 class Experiment:
-    MODEL_FILE = "model"
-    MODEL_CLASS_FILE = "model_class"
-    PIPELINE_FILE = "pipeline"
+    MODEL_FILE: str = "model"
+    MODEL_CLASS_FILE: str = "model_class"
+    PIPELINE_FILE: str = "pipeline"
 
     def __init__(
         self,
-        data_sources: Dict[str, DataSetSource],
+        data_sources: dict[str, DataSetSource],
         model: Model,
         pipeline: Pipeline,
         evaluator: Evaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
-        parameters: Dict[str, Any] | None = None,
+        output_folder: Path | str,
+        additional_files_to_store: list[str] | None = None,
+        parameters: dict[str, Any] | None = None,
     ):
         """The core of the pype library: run a standardised ML experiment with the given parameters.
 
@@ -36,7 +39,7 @@ class Experiment:
                 - `pipeline__<pipe_name>__<arg> for pipeline parameters.
 
         Args:
-            data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
+            data_sources (dict[str, DataSetSource]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model (Model): The Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
@@ -44,10 +47,15 @@ class Experiment:
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            parameters (Dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
+            output_folder: (Path | str): The output folder to log artifacts to.
+            additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
+                Defaults to no extra files (None).
+            parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
                 Defaults to None.
         """
         assert "train" in data_sources, "Must provide a 'train' entry in the data_sources dictionary."
+        if additional_files_to_store is None:
+            additional_files_to_store = []
         if parameters is None:
             parameters = {}
             warnings.warn(
@@ -57,6 +65,8 @@ class Experiment:
                 `from_dictionary` initialisation methods
                 """
             )
+        if isinstance(output_folder, str):
+            output_folder = Path(output_folder)
 
         self.data_sources = data_sources
         self.model = model
@@ -67,12 +77,14 @@ class Experiment:
         self.experiment_logger = logger
         self.parameters = parameters
         self.serialiser = serialiser
+        self.output_folder = output_folder
+        self.additional_files_to_store = additional_files_to_store
 
-    def run(self) -> Dict[str, Dict[str, str | float | int | bool]]:
+    def run(self) -> dict[str, dict[str, str | float | int | bool]]:
         """Execute the experiment.
 
         Returns:
-            Dict[str, Dict[str, str | float | int | bool]]: The performance metrics of this run.
+            dict[str, dict[str, str | float | int | bool]]: The performance metrics of this run.
         """
         with self.experiment_logger:
             self.logger.info("Load data")
@@ -93,9 +105,16 @@ class Experiment:
             self.logger.info("Log results: metrics, parameters, pipeline, model")
             for dataset_name, metric_set in metrics.items():
                 self.experiment_logger.log_metrics(dataset_name, metric_set)
-            self.experiment_logger.log_model(self.model, self.MODEL_FILE, self.MODEL_CLASS_FILE, self.serialiser)
-            self.experiment_logger.log_artifact(self.PIPELINE_FILE, self.serialiser, object=self.pipeline)
+
+            of = self.output_folder
+            self.experiment_logger.log_model(
+                self.model, of / self.MODEL_FILE, of / self.MODEL_CLASS_FILE, self.serialiser
+            )
+            self.experiment_logger.log_artifact(of / self.PIPELINE_FILE, self.serialiser, object=self.pipeline)
             self.experiment_logger.log_parameters(self.parameters)
+
+            for extra_file in self.additional_files_to_store:
+                self.experiment_logger.log_file(extra_file)
 
             self.logger.info("Done")
         return metrics
@@ -103,18 +122,20 @@ class Experiment:
     @classmethod
     def from_dictionary(
         cls,
-        data_sources: Dict[str, DataSetSource],
+        data_sources: dict[str, DataSetSource],
         model_class: Type[Model],
         pipeline: Pipeline,
         evaluator: Evaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
-        parameters: Dict[str, Any],
+        output_folder: Path | str,
+        parameters: dict[str, Any],
+        additional_files_to_store: list[str] | None = None,
     ) -> "Experiment":
         """Creates an Experiment from a dictionary with parameters.
 
         Args:
-            data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
+            data_sources (dict[str, DataSetSource]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
@@ -122,8 +143,11 @@ class Experiment:
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            parameters (Dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
+            output_folder: (Path | str): The output folder to log artifacts to.
+            parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
                 Defaults to None.
+            additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
+                Defaults to no extra files (None).
 
         Returns:
             Experiment: An Experiment created with the given parameters.
@@ -134,22 +158,36 @@ class Experiment:
         pipeline_args = get_args_for_prefix("pipeline__", parameters)
         pipeline.reinitialise(pipeline_args)
 
-        return Experiment(data_sources, model, pipeline, evaluator, logger, serialiser, parameters)
+        return Experiment(
+            data_sources,
+            model,
+            pipeline,
+            evaluator,
+            logger,
+            serialiser,
+            output_folder,
+            additional_files_to_store,
+            parameters,
+        )
 
     @classmethod
     def from_command_line(
         cls,
-        data_sources: Dict[str, DataSetSource],
+        data_sources: dict[str, DataSetSource],
         model_class: Type[Model],
         pipeline: Pipeline,
         evaluator: Evaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
+        output_folder: Path | str,
+        additional_files_to_store: list[str] | None = None,
     ) -> "Experiment":
         """Automatically initialises an Experiment from command line arguments.
 
+        # TODO: how to best store these extra files to the output folder as well?
+
         Args:
-            data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
+            data_sources (dict[str, DataSetSource]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
@@ -157,6 +195,9 @@ class Experiment:
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
+            output_folder: (Path | str): The output folder to log artifacts to.
+            additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
+                Defaults to no extra files (None).
 
         Returns:
             Experiment: An Experiment created with the given parameters from the command line.
@@ -165,7 +206,15 @@ class Experiment:
         parsed_args = arg_parser.parse_args()
 
         return cls.from_dictionary(
-            data_sources, model_class, pipeline, evaluator, logger, serialiser, parsed_args.__dict__
+            data_sources,
+            model_class,
+            pipeline,
+            evaluator,
+            logger,
+            serialiser,
+            output_folder,
+            parsed_args.__dict__,
+            additional_files_to_store,
         )
 
     @classmethod

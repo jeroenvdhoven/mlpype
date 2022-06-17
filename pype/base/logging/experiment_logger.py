@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from types import TracebackType
 from typing import Any, Dict, Union
 
@@ -55,15 +56,17 @@ class ExperimentLogger(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def log_model(self, model: Model, model_file: str, model_class_file: str, serialiser: Serialiser) -> None:
+    def log_model(
+        self, model: Model, model_file: str | Path, model_class_file: str | Path, serialiser: Serialiser
+    ) -> None:
         """Logs a Model for a given experiment.
 
         This function will write the model to the given location as well.
 
         Args:
             model (Model): The Model to be logged.
-            model_file (str): The file to log the Model to.
-            model_class_file (str): The file to log the Model's class to. Used to load a model later.
+            model_file (str | Path): The file to log the Model to.
+            model_class_file (str | Path): The file to log the Model's class to. Used to load a model later.
             serialiser (Serialiser): Serialiser used to serialise the Model's class.
         """
         model.save(model_file)
@@ -72,11 +75,11 @@ class ExperimentLogger(ABC):
         serialiser.serialise(model.__class__, model_class_file)
         self.log_file(model_class_file)
 
-    def log_artifact(self, file: str, serialiser: Serialiser, object: Any) -> None:
+    def log_artifact(self, file: str | Path, serialiser: Serialiser, object: Any) -> None:
         """Logs an artifact/file as part of an experiment.
 
         Args:
-            file (str): The file to serialise to and subsequently log.
+            file (str | Path): The file to serialise to and subsequently log.
             serialiser (Serialiser): Serialiser used to serialise the given object, if any.
             object (Any): The object to log. This object will be serialised to the given file
                 using the serialiser and logged using `log_file`
@@ -86,10 +89,10 @@ class ExperimentLogger(ABC):
         self.log_file(file)
 
     @abstractmethod
-    def log_file(self, file: str) -> None:
+    def log_file(self, file: str | Path) -> None:
         """Logs a given file as part of an experiment.
 
         Args:
-            file (str): The file to log.
+            file (str | Path): The file to log.
         """
         raise NotImplementedError
