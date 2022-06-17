@@ -4,7 +4,7 @@ dev_deps = ["pre-commit"]
 
 test_deps = ["pytest"]
 
-deps: list[str] = []
+deps = ["python>=3.10"]
 
 setup(
     name="pype",
