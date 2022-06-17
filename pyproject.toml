@@ -1,0 +1,32 @@
+[tool.kedro]
+package_name = "data_cube_pipeline"
+project_name = "Data Cube Pipeline"
+project_version = "0.17.0"
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+known_third_party = "kedro"
+
+[tool.pytest.ini_options]
+markers = [
+    "end_to_end: End to end test, tends to be slow.",
+    "spark: uses Spark, will take extra time to set up."
+]
+
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.pyc
+  | build
+  | dist
+  | \.toml
+)/
+'''
