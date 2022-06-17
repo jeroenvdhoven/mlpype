@@ -1,0 +1,65 @@
+# fail_fast: true
+default_stages:
+  - "commit"
+  
+repos:
+- repo: https://github.com/humitos/mirrors-autoflake
+  # autoflake removes unused import statements, config in args below
+  rev: v1.3
+  hooks:
+    - id: autoflake
+      args: ['--in-place', '--remove-all-unused-imports', '--ignore-init-module-imports']
+
+- repo: https://github.com/pre-commit/mirrors-isort
+  # isort sorts the import statements, config file pyproject.toml
+  rev: v5.10.1
+  hooks:
+    - id: isort
+      args: ["--profile", "black", "--filter-files"]
+
+- repo: https://github.com/ambv/black
+  # black formats the code, config file pyproject.toml
+  rev: 22.3.0
+  hooks:
+    - id: black
+      language_version: python3
+
+- repo: https://github.com/pre-commit/mirrors-mypy
+  # To enforce type hinting
+  rev: v0.940
+  hooks:
+  -   id: mypy
+      # This setting is not that strict: see https://mypy.readthedocs.io/en/stable/config_file.html for more config options.
+      args: [--no-strict-optional, --ignore-missing-imports, "--disallow-untyped-defs"]
+      exclude: ^(tests)|(docs)/
+      additional_dependencies:
+        - "types-PyYAML"
+
+- repo: https://gitlab.com/pycqa/flake8
+  # Check documentation
+  rev: '4.0.1'
+  hooks:
+    - id: flake8
+      additional_dependencies:
+        - flake8-docstrings
+
+# - repo: https://github.com/milin/giticket
+#   # Add JIRA ticket from branch name to commit
+#   rev: 'v1.3'
+#   hooks:
+#     - id: giticket
+#       args: ['--regex=.*/?(DAA-[0-9]+)', '--format={ticket}: {commit_msg}', '--mode=regex_match']
+
+
+- repo: local
+  hooks:
+  - id: unittest
+  # todo: reuse test environment!
+    name: unittest
+    entry: 'make test'
+    language: conda
+    types: [python]
+    verbose: true
+    pass_filenames: false
+    stages:
+      - "push"
