@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Generic, List, Tuple
+from typing import Generic, Iterable, List
 
 from pype.base.data import DataSet
 from pype.base.data.data import Data
@@ -39,8 +39,8 @@ class Model(ABC, Generic[Data]):
         """
         raise NotImplementedError
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     def load(cls, file: str | Path) -> "Model":
         """Loads a model from file into this Model.
 
@@ -49,7 +49,7 @@ class Model(ABC, Generic[Data]):
         """
         raise NotImplementedError
 
-    def fit(self, data: DataSet) -> None:
+    def fit(self, data: DataSet) -> "Model":
         """Fits the Model to the given DataSet.
 
         The DataSet should contain all inputs and outputs.
@@ -58,6 +58,7 @@ class Model(ABC, Generic[Data]):
             data (DataSet): The DataSet to fit this Model on.
         """
         self._fit(*data.get_all(self.inputs), *data.get_all(self.outputs))
+        return self
 
     @abstractmethod
     def _fit(self, *data: Data) -> None:
@@ -75,8 +76,12 @@ class Model(ABC, Generic[Data]):
             DataSet: The outputs as a Dataset.
         """
         result = self._transform(*data.get_all(self.inputs))
-        return DataSet({name: data for name, data in zip(self.outputs, result)})
+        if len(self.outputs) == 1:
+            result = [result]  # type: ignore
+
+        # type check handled by above check.
+        return DataSet({name: data for name, data in zip(self.outputs, result)})  # type: ignore
 
     @abstractmethod
-    def _transform(self, *data: Data) -> Tuple[Data, ...]:
+    def _transform(self, *data: Data) -> Iterable[Data] | Data:
         raise NotImplementedError
