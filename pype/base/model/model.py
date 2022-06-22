@@ -80,7 +80,7 @@ class Model(ABC, Generic[Data]):
             result = [result]  # type: ignore
 
         # type check handled by above check.
-        return DataSet({name: data for name, data in zip(self.outputs, result)})  # type: ignore
+        return DataSet.from_dict({name: data for name, data in zip(self.outputs, result)})  # type: ignore
 
     @abstractmethod
     def _transform(self, *data: Data) -> Iterable[Data] | Data:

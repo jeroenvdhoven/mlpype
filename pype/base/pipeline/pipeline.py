@@ -24,7 +24,7 @@ class Pipeline:
             if isinstance(pipe, Pipeline):
                 pipe._assert_all_names_different(names)
             else:
-                assert pipe.name not in names
+                assert pipe.name not in names, f"{pipe.name} is used multiple times."
                 names.add(pipe.name)
 
     def fit(self, data: DataSet) -> "Pipeline":
@@ -86,7 +86,7 @@ class Pipeline:
             if isinstance(pipe, Pipeline):
                 pipe.reinitialise(args)
             else:
-                pipe_args = get_args_for_prefix(pipe.name, args)
+                pipe_args = get_args_for_prefix(f"{pipe.name}__", args)
                 if len(pipe_args) > 0:
                     pipe.reinitialise(pipe_args)
 
@@ -99,7 +99,7 @@ class Pipeline:
         self.__iter_n = 0
         return self
 
-    def __next__(self) -> "Pipeline" | "Pipe":
+    def __next__(self) -> "Pipeline | Pipe":
         """Gets the next item in this Pipeline.
 
         Raises:
@@ -115,7 +115,7 @@ class Pipeline:
             self.__iter_n += 1
             return self[pos]
 
-    def __getitem__(self, pos: int | str) -> "Pipeline" | Pipe:
+    def __getitem__(self, pos: int | str) -> "Pipeline | Pipe":
         """Gets the Pipe/Pipeline at the given position.
 
         Raises:
@@ -133,14 +133,51 @@ class Pipeline:
             raise KeyError(f"{pos} is not found in this pipeline")
         return value
 
-    def _get(self, pos: int | str) -> "Pipeline" | Pipe | None:
+    def _get(self, pos: int | str) -> "Pipeline | Pipe | None":
         if isinstance(pos, int):
             return self.pipes[pos]
         for pipe in self.pipes:
             if isinstance(pipe, Pipeline):
-                result = pipe[pos]
+                result = pipe._get(pos)
                 if result is not None:
                     return result
             elif pipe.name == pos:
                 return pipe
         return None
+
+    def __add__(self, obj: "Pipeline | Pipe") -> "Pipeline":
+        """Append a Pipe or Pipeline object and return a new Pipeline.
+
+        Args:
+            obj (Pipeline | Pipe): The object to be appended. Can be a Pipeline or Pipe.
+
+        Raises:
+            TypeError: If `obj` is not a Pipe or Pipeline.
+
+        Returns:
+            Pipeline: A Pipeline with the two sets of steps combined. The steps from this
+                object will always be used first.
+        """
+        if isinstance(obj, Pipeline):
+            return Pipeline(self.pipes + obj.pipes)
+        elif isinstance(obj, Pipe):
+            return Pipeline(self.pipes + [obj])
+        else:
+            raise TypeError("Pipeline can only use + with a Pipe or Pipeline")
+
+    def __len__(self) -> int:
+        """Return the length of this Pipeline.
+
+        If it contains any sub-pipelines, those will be counted in full as well
+        (and thus not as a single step, unless they only contain 1 step).
+
+        Returns:
+            int: The lenght of this Pipeline.
+        """
+        result = 0
+        for p in self.pipes:
+            if isinstance(p, Pipeline):
+                result += len(p)
+            else:
+                result += 1
+        return result

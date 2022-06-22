@@ -23,6 +23,18 @@ class DataSet(dict[str, Data]):
         """
         return [self[key] for key in keys]
 
+    @classmethod
+    def from_dict(cls, dct: dict[str, Data]) -> "DataSet[Data]":
+        """Creates a DataSet from a dictionary.
+
+        Args:
+            dct (dict[str, Data]): The dictionary containing data.
+
+        Returns:
+            DataSet[Data]: A DataSet based on the given dict.
+        """
+        return cls(**dct)
+
     def set_all(self, keys: List[str], data: Iterable[Data]) -> None:
         """Set all data to the given keys, in order.
 
@@ -43,4 +55,5 @@ class DataSet(dict[str, Data]):
         Returns:
             DataSet[Data]: A shallow copy of this DataSet.
         """
-        return super().copy()  # type: ignore
+        result = super().copy()
+        return DataSet[Data](**result)

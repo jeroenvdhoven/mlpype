@@ -14,4 +14,4 @@ class DataSetSource(dict[str, DataSource[Data]]):
         Returns:
             DataSet[Data]: The DataSet constructed from the DataSources.
         """
-        return DataSet({name: data.read() for name, data in self.items()})
+        return DataSet.from_dict({name: data.read() for name, data in self.items()})

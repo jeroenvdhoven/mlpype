@@ -11,7 +11,7 @@ class Pipe:
         operator: Type[Operator],
         inputs: list[str],
         outputs: list[str],
-        kw_args: dict[str, Any],
+        kw_args: dict[str, Any] | None = None,
         fit_inputs: list[str] | None = None,
     ) -> None:
         """A single step in a Pipeline.
@@ -23,12 +23,14 @@ class Pipe:
             operator (Type[Operator]): The Operator class that this Pipe should use.
             inputs (list[str]): A list of input dataset names used by this Pipe.
             outputs (list[str]): A list of output dataset names used by this Pipe.
-            kw_args (dict[str, Any]): keyword arguments to initialise the Operator.
+            kw_args (dict[str, Any] | None): keyword arguments to initialise the Operator.
             fit_inputs: (list[str] | None): optional additional arguments to fit().
                 Will not be used in transform().
         """
         if fit_inputs is None:
             fit_inputs = []
+        if kw_args is None:
+            kw_args = {}
 
         self.name = name
         self.operator_class = operator
@@ -72,7 +74,7 @@ class Pipe:
         Note that this is automatically done in reverse: the inverse steps
         will be applied from back to front.
 
-        We do not inverse transform if not all inputs are present.
+        We do not inverse transform if not all outputs (the inputs for the reverse) are present.
         It is up to the user to make sure the inverse transformations
         work if used on a partial dataset (e.g. only the output data).
         In these cases, we return the `data` arg.
@@ -83,14 +85,14 @@ class Pipe:
         Returns:
             DataSet: The inverse transformed DataSet
         """
-        # We do not inverse transform if not all inputs are present.
+        # We do not inverse transform if not all outputs (the inputs for the inverse) are present.
         # It is up to the user to make sure the inverse transformations
         # work if used on a partial dataset (e.g. only the output data).
-        if not all([i in data for i in self.inputs]):
+        if not all([i in data for i in self.outputs]):
             return data
-        inverse = self.operator.inverse_transform(*data.get_all(self.inputs))
+        inverse = self.operator.inverse_transform(*data.get_all(self.outputs))
         result = data.copy()
-        result.set_all(self.outputs, inverse)
+        result.set_all(self.inputs, inverse)
         return result
 
     def reinitialise(self, args: Dict[str, Any]) -> None:
