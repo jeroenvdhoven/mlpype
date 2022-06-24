@@ -41,7 +41,7 @@ class Evaluator(Generic[Data]):
         if pipeline is not None:
             data = pipeline.transform(data)
 
-        predictions = model.transform(data)
+        predictions = model.transform(data).get_all(model.outputs)
         output_data = data.get_all(model.outputs)
 
         return {name: func(*output_data, *predictions) for name, func in self.functions.items()}
