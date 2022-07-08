@@ -22,11 +22,11 @@ class DummyModel(Model[int]):
     def set_seed(self) -> None:
         pass
 
-    def save(self, file: str | Path) -> None:
+    def _save(self, file: str | Path) -> None:
         pass
 
     @classmethod
-    def load(cls):
+    def _load(cls):
         pass
 
 

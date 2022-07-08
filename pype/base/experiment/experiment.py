@@ -1,24 +1,21 @@
-import inspect
-import typing
 import warnings
 from argparse import ArgumentParser
-from logging import Logger
+from logging import getLogger
 from pathlib import Path
-from typing import Any, Callable, Iterable, List, Type
+from typing import Any, Type
 
+from pype.base.constants import Constants
 from pype.base.data.dataset_source import DataSetSource
 from pype.base.evaluate import Evaluator
-from pype.base.logging import ExperimentLogger, Serialiser
+from pype.base.experiment.parsing import add_args_to_parser_for_pipeline
+from pype.base.logger import ExperimentLogger
 from pype.base.model import Model
-from pype.base.pipeline import Pipe, Pipeline
+from pype.base.pipeline import Pipeline
+from pype.base.serialiser.serialiser import Serialiser
 from pype.base.utils.parsing import get_args_for_prefix
 
 
 class Experiment:
-    MODEL_FILE: str = "model"
-    MODEL_CLASS_FILE: str = "model_class"
-    PIPELINE_FILE: str = "pipeline"
-
     def __init__(
         self,
         data_sources: dict[str, DataSetSource],
@@ -73,7 +70,7 @@ class Experiment:
         self.pipeline = pipeline
         self.evaluator = evaluator
 
-        self.logger = Logger(__name__)
+        self.logger = getLogger(__name__)
         self.experiment_logger = logger
         self.parameters = parameters
         self.serialiser = serialiser
@@ -106,11 +103,11 @@ class Experiment:
             for dataset_name, metric_set in metrics.items():
                 self.experiment_logger.log_metrics(dataset_name, metric_set)
 
+            self._create_output_folders()
+
             of = self.output_folder
-            self.experiment_logger.log_model(
-                self.model, of / self.MODEL_FILE, of / self.MODEL_CLASS_FILE, self.serialiser
-            )
-            self.experiment_logger.log_artifact(of / self.PIPELINE_FILE, self.serialiser, object=self.pipeline)
+            self.experiment_logger.log_model(self.model, of / Constants.MODEL_FOLDER)
+            self.experiment_logger.log_artifact(of / Constants.PIPELINE_FILE, self.serialiser, object=self.pipeline)
             self.experiment_logger.log_parameters(self.parameters)
 
             for extra_file in self.additional_files_to_store:
@@ -118,6 +115,11 @@ class Experiment:
 
             self.logger.info("Done")
         return metrics
+
+    def _create_output_folders(self) -> None:
+        of = self.output_folder
+        of.mkdir(exist_ok=True, parents=True)
+        (of / Constants.MODEL_FOLDER).mkdir(exist_ok=True)
 
     @classmethod
     def from_dictionary(
@@ -129,7 +131,10 @@ class Experiment:
         logger: ExperimentLogger,
         serialiser: Serialiser,
         output_folder: Path | str,
+        model_inputs: list[str],
+        model_outputs: list[str],
         parameters: dict[str, Any],
+        seed: int = 1,
         additional_files_to_store: list[str] | None = None,
     ) -> "Experiment":
         """Creates an Experiment from a dictionary with parameters.
@@ -144,6 +149,9 @@ class Experiment:
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Path | str): The output folder to log artifacts to.
+            model_inputs: (list[str]): Input dataset names to the model.
+            model_outputs: (list[str]): Output dataset names to the model.
+            seed (int): The RNG seed to ensure reproducability.
             parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
                 Defaults to None.
             additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
@@ -153,7 +161,7 @@ class Experiment:
             Experiment: An Experiment created with the given parameters.
         """
         model_args = get_args_for_prefix("model__", parameters)
-        model = model_class(**model_args)
+        model = model_class.from_parameters(seed=seed, inputs=model_inputs, outputs=model_outputs, **model_args)
 
         pipeline_args = get_args_for_prefix("pipeline__", parameters)
         pipeline.reinitialise(pipeline_args)
@@ -180,6 +188,9 @@ class Experiment:
         logger: ExperimentLogger,
         serialiser: Serialiser,
         output_folder: Path | str,
+        model_inputs: list[str],
+        model_outputs: list[str],
+        seed: int = 1,
         additional_files_to_store: list[str] | None = None,
     ) -> "Experiment":
         """Automatically initialises an Experiment from command line arguments.
@@ -196,6 +207,9 @@ class Experiment:
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Path | str): The output folder to log artifacts to.
+            model_inputs: (list[str]): Input dataset names to the model.
+            model_outputs: (list[str]): Output dataset names to the model.
+            seed (int): The RNG seed to ensure reproducability.
             additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
 
@@ -212,56 +226,18 @@ class Experiment:
             evaluator,
             logger,
             serialiser,
-            output_folder,
-            parsed_args.__dict__,
-            additional_files_to_store,
+            output_folder=output_folder,
+            additional_files_to_store=additional_files_to_store,
+            parameters=parsed_args.__dict__,
+            seed=seed,
+            model_inputs=model_inputs,
+            model_outputs=model_outputs,
         )
 
     @classmethod
     def _get_cmd_args(cls, model_class: Type[Model], pipeline: Pipeline) -> ArgumentParser:
         parser = ArgumentParser()
 
-        cls._add_args_to_parser_for_class(parser, model_class, "model", [Model])
-        cls._add_args_to_parser_for_pipeline(parser, pipeline)
+        model_class.get_parameters(parser)
+        add_args_to_parser_for_pipeline(parser, pipeline)
         return parser
-
-    @classmethod
-    def _add_args_to_parser_for_pipeline(cls, parser: ArgumentParser, pipeline: Pipeline) -> None:
-        for pipe in pipeline:
-            if isinstance(pipe, Pipe):
-                cls._add_args_to_parser_for_class(parser, pipe.operator_class, f"pipeline__{pipe.name}", [])
-            else:
-                cls._add_args_to_parser_for_pipeline(parser, pipe)
-
-    @classmethod
-    def _add_args_to_parser_for_class(
-        cls, parser: ArgumentParser, class_: Type, prefix: str, excluded_superclasses: List[Type]
-    ) -> None:
-        init_func = class_.__init__
-        cls._add_args_to_parser_for_function(parser, init_func, prefix)
-
-        signature = inspect.signature(init_func)
-        for _, param in signature.parameters.items():
-            if param.kind == param.VAR_KEYWORD:
-                for superclass in class_.__bases__:
-                    if superclass not in excluded_superclasses:
-                        cls._add_args_to_parser_for_class(parser, superclass, prefix, excluded_superclasses)
-
-    @classmethod
-    def _add_args_to_parser_for_function(cls, parser: ArgumentParser, function: Callable, prefix: str) -> None:
-        args = inspect.signature(function)
-        for name, parameter in args.parameters.items():
-            class_ = parameter.annotation
-            arg_name = f"--{prefix}__{name}"
-            required = parameter.default == inspect._empty
-            if name in ["self", "cls"]:
-                continue
-            if class_ in [str, float, int, bool]:
-                parser.add_argument(arg_name, type=class_, required=required)
-            elif typing.get_origin(class_) in [list, tuple, Iterable]:
-                subtype = typing.get_args(class_)[0]
-                parser.add_argument(arg_name, type=subtype, nargs="+", required=required)
-            else:
-                warnings.warn(
-                    f"Currently the class {str(class_)} is not supported for automatic command line importing."
-                )

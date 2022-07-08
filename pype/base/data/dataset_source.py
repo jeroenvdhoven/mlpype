@@ -1,6 +1,9 @@
-from pype.base.data.data import Data
+from typing import TypeVar
+
 from pype.base.data.data_source import DataSource
 from pype.base.data.dataset import DataSet
+
+Data = TypeVar("Data")
 
 
 class DataSetSource(dict[str, DataSource[Data]]):

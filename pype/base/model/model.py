@@ -1,23 +1,28 @@
+import json
 from abc import ABC, abstractmethod
+from argparse import ArgumentParser
 from pathlib import Path
-from typing import Generic, Iterable, List
+from typing import Generic, Iterable, TypeVar
 
+from pype.base.constants import Constants
 from pype.base.data import DataSet
-from pype.base.data.data import Data
+from pype.base.serialiser import JoblibSerialiser
+
+Data = TypeVar("Data")
 
 
 class Model(ABC, Generic[Data]):
-    def __init__(self, seed: int, inputs: List[str], outputs: List[str]) -> None:
+    def __init__(self, inputs: list[str], outputs: list[str], seed: int = 1) -> None:
         """An abstraction of a ML model.
 
         This should provide the basic interface for fitting, inference, and serialisation.
 
         Args:
-            seed (int): The RNG seed to ensure reproducability.
             inputs (List[str]): A list of names of input Data. This determines which Data is
                 used to fit the model.
             outputs (List[str]): A list of names of output Data. This determines the names of
                 output variables.
+            seed (int, optional): The RNG seed to ensure reproducability.. Defaults to 1.
         """
         super().__init__()
         self.seed = seed
@@ -25,27 +30,80 @@ class Model(ABC, Generic[Data]):
         self.outputs = outputs
         self.set_seed()
 
+    @classmethod
+    def get_parameters(cls, parser: ArgumentParser) -> None:
+        """Get and add parameters to initialise this class.
+
+        Args:
+            parser (ArgumentParser): The ArgumentParser to add arguments to.
+        """
+
     @abstractmethod
     def set_seed(self) -> None:
         """Sets the RNG seed."""
         raise NotImplementedError
 
-    @abstractmethod
-    def save(self, file: str | Path) -> None:
-        """Stores this model to the given file.
+    def save(self, folder: str | Path) -> None:
+        """Stores this model to the given folder.
+
+        This function stores the common inputs and outputs list to the given folder,
+        and makes sure it's created. It also stores the model class in the given folder.
+        It will call _save to allow further models to specify how they are stored.
 
         Args:
-            file (str | Path): The file to store the Model in.
+            folder (str | Path): The folder to store the Model in.
+        """
+        joblib_serialiser = JoblibSerialiser()
+
+        if isinstance(folder, str):
+            folder = Path(folder)
+
+        folder.mkdir(exist_ok=True, parents=True)
+        lists_to_save = {
+            "inputs": self.inputs,
+            "outputs": self.outputs,
+        }
+        with open(folder / Constants.MODEL_PARAM_FILE, "w") as f:
+            json.dump(lists_to_save, f)
+
+        joblib_serialiser.serialise(self.__class__, folder / Constants.MODEL_CLASS_FILE)
+        self._save(folder)
+
+    @abstractmethod
+    def _save(self, folder: Path) -> None:
+        """Stores this model to the given folder.
+
+        Specifically intended to store
+
+        Args:
+            folder (Path): The folder to store the Model in.
         """
         raise NotImplementedError
 
     @classmethod
-    @abstractmethod
-    def load(cls, file: str | Path) -> "Model":
+    def load(cls, folder: str | Path) -> "Model":
         """Loads a model from file into this Model.
 
         Args:
-            file (str | Path): The file to load the model from.
+            folder (str | Path): The folder to load the model from.
+        """
+        if isinstance(folder, str):
+            folder = Path(folder)
+
+        with open(folder / Constants.MODEL_PARAM_FILE) as f:
+            lists = json.load(f)
+
+        joblib_serialiser = JoblibSerialiser()
+        model_class = joblib_serialiser.deserialise(folder / Constants.MODEL_CLASS_FILE)
+        return model_class._load(folder, lists["inputs"], lists["outputs"])
+
+    @classmethod
+    @abstractmethod
+    def _load(cls, folder: Path, inputs: list[str], outputs: list[str]) -> "Model":
+        """Loads a model from file into this Model.
+
+        Args:
+            folder (str | Path): The folder to load the model from.
         """
         raise NotImplementedError
 

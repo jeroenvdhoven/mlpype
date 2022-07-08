@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Generic
+from typing import Generic, TypeVar
 
-from pype.base.data.data import Data
+Data = TypeVar("Data")
 
 
 class DataSource(ABC, Generic[Data]):

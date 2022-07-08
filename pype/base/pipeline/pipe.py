@@ -64,6 +64,8 @@ class Pipe:
             DataSet: The transformed Data.
         """
         transformed = self.operator.transform(*data.get_all(self.inputs))
+        if len(self.outputs) < 2:
+            transformed = [transformed]
         result = data.copy()
         result.set_all(self.outputs, transformed)
         return result
@@ -91,6 +93,8 @@ class Pipe:
         if not all([i in data for i in self.outputs]):
             return data
         inverse = self.operator.inverse_transform(*data.get_all(self.outputs))
+        if len(self.inputs) < 2:
+            inverse = [inverse]
         result = data.copy()
         result.set_all(self.inputs, inverse)
         return result

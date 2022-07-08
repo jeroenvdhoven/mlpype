@@ -1,15 +1,16 @@
-from typing import Callable, Dict, Generic, Tuple
+from typing import Callable, Dict, Generic, TypeVar
 
 from pype.base.data import DataSet
-from pype.base.data.data import Data
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline
+
+Data = TypeVar("Data")
 
 
 class Evaluator(Generic[Data]):
     def __init__(
         self,
-        functions: Dict[str, Callable[[Tuple[Data, ...]], float | int | str | bool]],
+        functions: Dict[str, Callable[[Data, Data], float | int | str | bool]],
     ) -> None:
         """Evaluates a Model on the given Functions.
 

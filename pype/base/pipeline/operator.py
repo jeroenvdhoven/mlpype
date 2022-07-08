@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Iterable
+from typing import Generic, Iterable, TypeVar
 
-from pype.base.data.data import Data
+Data = TypeVar("Data")
 
 
 class Operator(ABC, Generic[Data]):

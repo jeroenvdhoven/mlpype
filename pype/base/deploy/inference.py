@@ -1,6 +1,11 @@
+from pathlib import Path
+from typing import Type
+
+from pype.base.constants import Constants
 from pype.base.data import DataSet, DataSetSource
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline
+from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 
 
 class Inferencer:
@@ -31,3 +36,11 @@ class Inferencer:
         transformed = self.pipeline.transform(data)
         predicted = self.model.transform(transformed)
         return predicted
+
+    @classmethod
+    def from_folder(cls: Type["Inferencer"], folder: Path) -> "Inferencer":
+        serialiser = JoblibSerialiser()
+        model = Model.load(folder / Constants.MODEL_FOLDER)
+        pipeline = serialiser.deserialise(folder / Constants.PIPELINE_FILE)
+
+        return cls(model=model, pipeline=pipeline)

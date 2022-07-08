@@ -3,11 +3,13 @@ from pathlib import Path
 from types import TracebackType
 from typing import Any, Dict, Union
 
-from pype.base.logging.serialiser import Serialiser
 from pype.base.model.model import Model
+from pype.base.serialiser import Serialiser
 
 
 class ExperimentLogger(ABC):
+    # TODO: make a LocalLogger.
+
     def __enter__(self) -> None:
         """Start the experiment."""
         return
@@ -34,46 +36,38 @@ class ExperimentLogger(ABC):
         self._log_metrics(metrics)
 
     @abstractmethod
-    def _log_metrics(self, metrics: Dict[str, Union[float, int, str | bool]]) -> None:
+    def _log_metrics(self, metrics: dict[str, float | int | str | bool]) -> None:
         """Perform the actual logging of metrics.
 
         Args:
-            metrics (Dict[str, Union[float, int, str  |  bool]]): A dictionary of metric names and values.
+            metrics (dict[str, float | int | str | bool]): A dictionary of metric names and values.
         """
         raise NotImplementedError
 
     @abstractmethod
-    def log_parameters(self, parameters: Dict[str, Any]) -> None:
+    def log_parameters(self, parameters: dict[str, Any]) -> None:
         """Logs the parameters for a given run.
 
         These will by default be passed on with prefixes such as `model__`.
 
         Args:
-            parameters (Dict[str, Any]): The parameters of a given run. Ideally these
+            parameters (dict[str, Any]): The parameters of a given run. Ideally these
                 parameters should be no more complicated than string, float, int, bool, or a
                 list of these.
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def log_model(
-        self, model: Model, model_file: str | Path, model_class_file: str | Path, serialiser: Serialiser
-    ) -> None:
+    def log_model(self, model: Model, folder: str | Path) -> None:
         """Logs a Model for a given experiment.
 
         This function will write the model to the given location as well.
 
         Args:
             model (Model): The Model to be logged.
-            model_file (str | Path): The file to log the Model to.
-            model_class_file (str | Path): The file to log the Model's class to. Used to load a model later.
-            serialiser (Serialiser): Serialiser used to serialise the Model's class.
+            MODEL_FOLDER (str | Path): The file to log the Model to.
         """
-        model.save(model_file)
-        self.log_file(model_file)
-
-        serialiser.serialise(model.__class__, model_class_file)
-        self.log_file(model_class_file)
+        model.save(folder)
+        self.log_file(folder)
 
     def log_artifact(self, file: str | Path, serialiser: Serialiser, object: Any) -> None:
         """Logs an artifact/file as part of an experiment.

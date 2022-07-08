@@ -1,6 +1,6 @@
-from typing import Iterable, List
+from typing import Iterable, List, TypeVar
 
-from pype.base.data.data import Data
+Data = TypeVar("Data")
 
 
 class DataSet(dict[str, Data]):
