@@ -2,7 +2,7 @@ import inspect
 import typing
 import warnings
 from argparse import ArgumentParser
-from typing import Callable, Iterable, Type
+from typing import Any, Callable, Iterable, Type
 
 from pype.base.pipeline.pipe import Pipe
 from pype.base.pipeline.pipeline import Pipeline
@@ -43,7 +43,8 @@ def add_args_to_parser_for_class(
             the ArgumentParser.
         excluded_superclasses (list[Type]): Superclasses of the class_ that should be ignored in case
             there are kw-args style arguments to the constructor.
-        excluded_args (list[str] | None, optional): argument names to never include. By default 'self' and 'cls' are ignored.
+        excluded_args (list[str] | None, optional): argument names to never include.
+            By default 'self' and 'cls' are ignored.
     """
     init_func = class_.__init__
     add_args_to_parser_for_function(parser, init_func, prefix, excluded_args)
@@ -74,11 +75,17 @@ def add_args_to_parser_for_function(
     for name, parameter in args.parameters.items():
         class_ = parameter.annotation
         required = parameter.default == inspect._empty
-        add_argument(parser, name, prefix, class_, required, excluded)
+        add_argument(parser, name, prefix, class_, required, parameter.default, excluded)
 
 
 def add_argument(
-    parser: ArgumentParser, name: str, prefix: str, class_: type, is_required: bool, excluded: list[str] | None = None
+    parser: ArgumentParser,
+    name: str,
+    prefix: str,
+    class_: type,
+    is_required: bool,
+    default: Any,
+    excluded: list[str] | None = None,
 ) -> None:
     """Add an argument to the given parser.
 
@@ -91,19 +98,37 @@ def add_argument(
             - str, float, int, bool
             - lists / tuples / iterables of the above 4 arguments.
         is_required (bool): Whether the argument is required or optional.
+        default (Any): the default value if is_required is False.
         excluded (list[str] | None, optional): argument names to never include. By default 'self' and 'cls' are ignored.
     """
     if excluded is None:
         excluded = []
     excluded = excluded + ["self", "cls"]
 
+    if not is_required:
+        assert default != inspect._empty
+    else:
+        default = None
+
     arg_name = f"--{prefix}__{name}"
     if name in excluded:
         return
     if class_ in [str, float, int, bool]:
-        parser.add_argument(arg_name, type=class_, required=is_required)
+        parser.add_argument(arg_name, type=_get_conversion_function(class_), required=is_required, default=default)
     elif typing.get_origin(class_) in [list, tuple, Iterable]:
         subtype = typing.get_args(class_)[0]
-        parser.add_argument(arg_name, type=subtype, nargs="+", required=is_required)
+        parser.add_argument(
+            arg_name, type=_get_conversion_function(subtype), nargs="+", required=is_required, default=default
+        )
     else:
         warnings.warn(f"Currently the class {str(class_)} is not supported for automatic command line importing.")
+
+
+def _get_conversion_function(class_: type) -> Callable:
+    if class_ == bool:
+        return _convert_bool
+    return class_
+
+
+def _convert_bool(s: str) -> bool:
+    return s.lower() in ["true", "1"]

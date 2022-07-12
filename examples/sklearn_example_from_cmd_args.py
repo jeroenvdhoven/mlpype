@@ -1,8 +1,10 @@
-# %%
+"""Call this using some form of command line.
+
+e.g. python -m examples.sklearn_example_from_cmd_args --model__fit_intercept=False
+"""
 
 from pathlib import Path
 from typing import Iterable
-from unittest.mock import MagicMock
 
 import numpy as np
 from sklearn.datasets import load_iris
@@ -19,23 +21,10 @@ from pype.base.pipeline.pipe import Pipe
 from pype.base.pipeline.pipeline import Pipeline
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from pype.sklearn.data.data_frame_source import DataFrameSource
-from pype.sklearn.model.linear_regression_model import LinearRegressionModel
 from pype.sklearn.model.logistic_regression_model import LogisticRegressionModel
 
-# %%
 
-parser = MagicMock()
-# parser = ArgumentParser()
-model = LinearRegressionModel.get_parameters(parser)
-
-print(parser.add_argument.call_args_list)
-
-# %% [markdown]
-# Try a run with sklearn
-
-# %%
-
-
+#  Try a run with sklearn and argument reading
 def _make_data() -> Iterable[np.ndarray]:
     iris = load_iris()
     x = iris["data"]
@@ -48,13 +37,7 @@ def _make_data() -> Iterable[np.ndarray]:
     return train_test_split(x, y, test_size=0.2)
 
 
-# %%
 train_x, test_x, train_y, test_y = _make_data()
-
-model = LogisticRegressionModel.from_parameters(
-    inputs=["x"],
-    outputs=["y"],
-)
 
 ds = {
     "train": DataSetSource(
@@ -74,10 +57,11 @@ evaluator = Evaluator(
 )
 
 pipeline = Pipeline([Pipe("scale", StandardScaler, inputs=["x"], outputs=["x"])])
-
-experiment = Experiment(
+experiment = Experiment.from_command_line(
     data_sources=ds,
-    model=model,
+    model_class=LogisticRegressionModel,
+    model_inputs=["x"],
+    model_outputs=["y"],
     pipeline=pipeline,
     evaluator=evaluator,
     logger=LocalLogger(),
@@ -86,16 +70,10 @@ experiment = Experiment(
 )
 
 metrics = experiment.run()
-
-print(metrics)
-
-# %% [markdown]
+print("Metrics:", metrics)
 
 # Try loading results again
-
-# %%
 folder = Path("outputs")
-
 inferencer = Inferencer.from_folder(folder)
 
 train_x, test_x, train_y, test_y = _make_data()
@@ -105,4 +83,3 @@ test_data = DataSetSource(
 )
 result = inferencer.predict(test_data)
 print(result)
-# %%

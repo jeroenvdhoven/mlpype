@@ -1,6 +1,9 @@
 __pycache__/
 *.egg-info/
 
+# notebooks
+.ipynb_checkpoints/
+
 # developer stuff
 .vscode/
 

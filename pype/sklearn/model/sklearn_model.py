@@ -1,12 +1,11 @@
-from abc import ABC, abstractclassmethod
+from abc import ABC
 from argparse import ArgumentParser
-from functools import wraps
 from pathlib import Path
 from typing import Iterable, Type
 
 import numpy as np
 
-from pype.base.experiment.parsing import add_args_to_parser_for_function
+from pype.base.experiment.parsing import add_args_to_parser_for_class
 from pype.base.model import Model
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from pype.sklearn.data.sklearn_data import SklearnData
@@ -23,10 +22,21 @@ class SklearnModel(Model[SklearnData], ABC):
         model: SklearnModelBaseType,
         seed: int = 1,
     ) -> None:
+        """A generic class for sklearn-like Models.
+
+        Args:
+            inputs (List[str]): A list of names of input Data. This determines which Data is
+                used to fit the model.
+            outputs (List[str]): A list of names of output Data. This determines the names of
+                output variables.
+            model (SklearnModelBaseType): An object that has fit() and predict() methods.
+            seed (int, optional): The RNG seed to ensure reproducability.. Defaults to 1.
+        """
         super().__init__(inputs, outputs, seed)
         self.model = model
 
     def set_seed(self) -> None:
+        """Sets the RNG seed."""
         np.random.seed(self.seed)
 
     def _fit(self, *data: SklearnData) -> None:
@@ -45,11 +55,18 @@ class SklearnModel(Model[SklearnData], ABC):
         model = serialiser.deserialise(folder / cls.SKLEARN_MODEL_FILE)
         return cls(inputs=inputs, outputs=outputs, model=model, seed=1)
 
-    @abstractclassmethod
-    def from_parameters(**kwargs) -> "SklearnModel":
-        raise NotImplementedError
-
     @classmethod
     def get_parameters(cls: Type["SklearnModel"], parser: ArgumentParser) -> None:
+        """Get and add parameters to initialise this class.
+
+        SklearnModel's will work by requiring 2 ways to instantiate a Model:
+            - through `model`, which is a sklearn model.
+            - through parameters, which will instantiate the model internally.
+
+        Args:
+            parser (ArgumentParser): The ArgumentParser to add arguments to.
+        """
         super().get_parameters(parser)
-        add_args_to_parser_for_function(parser, cls.from_parameters, "model", excluded=["seed", "inputs", "outputs"])
+        add_args_to_parser_for_class(
+            parser, cls, "model", [SklearnModel], excluded_args=["seed", "inputs", "outputs", "model"]
+        )

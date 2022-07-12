@@ -6,7 +6,7 @@ from typing import Generic, Iterable, TypeVar
 
 from pype.base.constants import Constants
 from pype.base.data import DataSet
-from pype.base.serialiser import JoblibSerialiser
+from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 
 Data = TypeVar("Data")
 

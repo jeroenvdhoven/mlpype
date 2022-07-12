@@ -5,9 +5,10 @@ from .experiment_logger import ExperimentLogger
 
 
 class LocalLogger(ExperimentLogger):
-    def __init__(self) -> None:
+    def __init__(self, min_whitespace: int = 30) -> None:
         """A basic logger which only saves local copies of the data and prints results."""
         super().__init__()
+        self.min_whitespace = min_whitespace
 
     def _log_metrics(self, metrics: dict[str, float | int | str | bool]) -> None:
         """Prints the metrics to the console.
@@ -16,7 +17,7 @@ class LocalLogger(ExperimentLogger):
             metrics (dict[str, float | int | str | bool]): A dictionary of metric names and values.
         """
         for name, value in metrics.items():
-            print(f"{name.ljust(20)}: {value}")
+            print(f"{name.ljust(self.min_whitespace)}: {value}")
 
     def log_parameters(self, parameters: dict[str, Any]) -> None:
         """Prints the parameters to the console.
@@ -27,7 +28,7 @@ class LocalLogger(ExperimentLogger):
                 list of these.
         """
         for name, value in parameters.items():
-            print(f"{name.ljust(20)}: {value}")
+            print(f"{name.ljust(self.min_whitespace)}: {value}")
 
     def log_file(self, file: str | Path) -> None:
         """This method does no additional logging.

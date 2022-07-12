@@ -161,7 +161,7 @@ class Experiment:
             Experiment: An Experiment created with the given parameters.
         """
         model_args = get_args_for_prefix("model__", parameters)
-        model = model_class.from_parameters(seed=seed, inputs=model_inputs, outputs=model_outputs, **model_args)
+        model = model_class(seed=seed, inputs=model_inputs, outputs=model_outputs, **model_args)
 
         pipeline_args = get_args_for_prefix("pipeline__", parameters)
         pipeline.reinitialise(pipeline_args)
@@ -217,7 +217,9 @@ class Experiment:
             Experiment: An Experiment created with the given parameters from the command line.
         """
         arg_parser = cls._get_cmd_args(model_class, pipeline)
-        parsed_args = arg_parser.parse_args()
+        parsed_args, all_args = arg_parser.parse_known_args()
+        print("ARGS:", parsed_args)
+        print("Raw args:", all_args)
 
         return cls.from_dictionary(
             data_sources,

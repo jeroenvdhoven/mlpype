@@ -4,7 +4,7 @@ dev_deps = ["pre-commit"]
 
 test_deps = ["pytest"]
 
-deps: list[str] = []
+deps: list[str] = ["docstring_parser==0.14.1"]
 
 setup(
     name="pype",
