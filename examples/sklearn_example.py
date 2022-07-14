@@ -5,6 +5,7 @@ from typing import Iterable
 from unittest.mock import MagicMock
 
 import numpy as np
+import pandas as pd
 from sklearn.datasets import load_iris
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
@@ -17,10 +18,13 @@ from pype.base.experiment.experiment import Experiment
 from pype.base.logger.local_logger import LocalLogger
 from pype.base.pipeline.pipe import Pipe
 from pype.base.pipeline.pipeline import Pipeline
+from pype.base.pipeline.type_checker import TypeCheckerPipe
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from pype.sklearn.data.data_frame_source import DataFrameSource
 from pype.sklearn.model.linear_regression_model import LinearRegressionModel
 from pype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from pype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
+from pype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
 # %%
 
@@ -51,7 +55,8 @@ def _make_data() -> Iterable[np.ndarray]:
 # %%
 train_x, test_x, train_y, test_y = _make_data()
 
-model = LogisticRegressionModel.from_parameters(
+model = LogisticRegressionModel(
+    model=None,
     inputs=["x"],
     outputs=["y"],
 )
@@ -73,6 +78,15 @@ evaluator = Evaluator(
     }
 )
 
+ds_type_checker = TypeCheckerPipe(
+    "type_checker",
+    ["x"],
+    [
+        (np.ndarray, NumpyTypeChecker),
+        (pd.DataFrame, PandasTypeChecker),
+    ],
+)
+
 pipeline = Pipeline([Pipe("scale", StandardScaler, inputs=["x"], outputs=["x"])])
 
 experiment = Experiment(
@@ -81,6 +95,7 @@ experiment = Experiment(
     pipeline=pipeline,
     evaluator=evaluator,
     logger=LocalLogger(),
+    type_checker=ds_type_checker,
     serialiser=JoblibSerialiser(),
     output_folder="outputs",
 )

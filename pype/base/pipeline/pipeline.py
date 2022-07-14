@@ -165,6 +165,18 @@ class Pipeline:
         else:
             raise TypeError("Pipeline can only use + with a Pipe or Pipeline")
 
+    def insert(self, pos: int, pipe: Pipe) -> None:
+        """Insert a pipe in the given integer position.
+
+        We check if the pipe name doesn't exist yet.
+
+        Args:
+            pos (int): The position to put the new pipe
+            pipe (Pipe): The pipe to insert
+        """
+        self._assert_all_names_different(set(pipe.name))
+        self.pipes.insert(pos, pipe)
+
     def __len__(self) -> int:
         """Return the length of this Pipeline.
 

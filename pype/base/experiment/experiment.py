@@ -11,6 +11,7 @@ from pype.base.experiment.parsing import add_args_to_parser_for_pipeline
 from pype.base.logger import ExperimentLogger
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline
+from pype.base.pipeline.type_checker import TypeCheckerPipe
 from pype.base.serialiser.serialiser import Serialiser
 from pype.base.utils.parsing import get_args_for_prefix
 
@@ -25,6 +26,7 @@ class Experiment:
         logger: ExperimentLogger,
         serialiser: Serialiser,
         output_folder: Path | str,
+        type_checker: TypeCheckerPipe,
         additional_files_to_store: list[str] | None = None,
         parameters: dict[str, Any] | None = None,
     ):
@@ -45,6 +47,8 @@ class Experiment:
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Path | str): The output folder to log artifacts to.
+            type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
+                data and standardise the order of data. Will be used later to help serialise/deserialise data.
             additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
             parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
@@ -57,9 +61,9 @@ class Experiment:
             parameters = {}
             warnings.warn(
                 """
-                It is highly recommended to provide the parameters used to initialise your
-                run here for logging purposes. Consider using the `from_command_line` or
-                `from_dictionary` initialisation methods
+It is highly recommended to provide the parameters used to initialise your
+run here for logging purposes. Consider using the `from_command_line` or
+`from_dictionary` initialisation methods
                 """
             )
         if isinstance(output_folder, str):
@@ -69,6 +73,7 @@ class Experiment:
         self.model = model
         self.pipeline = pipeline
         self.evaluator = evaluator
+        self.type_checker = type_checker
 
         self.logger = getLogger(__name__)
         self.experiment_logger = logger
@@ -86,6 +91,11 @@ class Experiment:
         with self.experiment_logger:
             self.logger.info("Load data")
             datasets = {name: data_source_set.read() for name, data_source_set in self.data_sources.items()}
+
+            self.logger.info("Create type checker")
+            self.type_checker.fit(datasets["train"])
+            for ds in datasets.values():
+                self.type_checker.transform(ds)
 
             self.logger.info("Fit pipeline")
             self.pipeline.fit(datasets["train"])
@@ -108,6 +118,9 @@ class Experiment:
             of = self.output_folder
             self.experiment_logger.log_model(self.model, of / Constants.MODEL_FOLDER)
             self.experiment_logger.log_artifact(of / Constants.PIPELINE_FILE, self.serialiser, object=self.pipeline)
+            self.experiment_logger.log_artifact(
+                of / Constants.TYPE_CHECKER_FILE, self.serialiser, object=self.type_checker
+            )
             self.experiment_logger.log_parameters(self.parameters)
 
             for extra_file in self.additional_files_to_store:
@@ -131,6 +144,7 @@ class Experiment:
         logger: ExperimentLogger,
         serialiser: Serialiser,
         output_folder: Path | str,
+        type_checker: TypeCheckerPipe,
         model_inputs: list[str],
         model_outputs: list[str],
         parameters: dict[str, Any],
@@ -149,6 +163,8 @@ class Experiment:
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Path | str): The output folder to log artifacts to.
+            type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
+                data and standardise the order of data. Will be used later to help serialise/deserialise data.
             model_inputs: (list[str]): Input dataset names to the model.
             model_outputs: (list[str]): Output dataset names to the model.
             seed (int): The RNG seed to ensure reproducability.
@@ -174,6 +190,7 @@ class Experiment:
             logger,
             serialiser,
             output_folder,
+            type_checker,
             additional_files_to_store,
             parameters,
         )
@@ -188,6 +205,7 @@ class Experiment:
         logger: ExperimentLogger,
         serialiser: Serialiser,
         output_folder: Path | str,
+        type_checker: TypeCheckerPipe,
         model_inputs: list[str],
         model_outputs: list[str],
         seed: int = 1,
@@ -207,6 +225,8 @@ class Experiment:
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Path | str): The output folder to log artifacts to.
+            type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
+                data and standardise the order of data. Will be used later to help serialise/deserialise data.
             model_inputs: (list[str]): Input dataset names to the model.
             model_outputs: (list[str]): Output dataset names to the model.
             seed (int): The RNG seed to ensure reproducability.
@@ -217,9 +237,7 @@ class Experiment:
             Experiment: An Experiment created with the given parameters from the command line.
         """
         arg_parser = cls._get_cmd_args(model_class, pipeline)
-        parsed_args, all_args = arg_parser.parse_known_args()
-        print("ARGS:", parsed_args)
-        print("Raw args:", all_args)
+        parsed_args, _ = arg_parser.parse_known_args()
 
         return cls.from_dictionary(
             data_sources,
@@ -229,6 +247,7 @@ class Experiment:
             logger,
             serialiser,
             output_folder=output_folder,
+            type_checker=type_checker,
             additional_files_to_store=additional_files_to_store,
             parameters=parsed_args.__dict__,
             seed=seed,

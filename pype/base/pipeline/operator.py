@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Generic, Iterable, TypeVar
+from typing import Generic, Tuple, TypeVar
 
 Data = TypeVar("Data")
 
@@ -23,23 +23,23 @@ class Operator(ABC, Generic[Data]):
         raise NotImplementedError
 
     @abstractmethod
-    def transform(self, *data: Data) -> Iterable[Data]:
+    def transform(self, *data: Data) -> Tuple[Data, ...]:
         """Transforms the data using this Operator.
 
         You do not need to return the same amount of Data as you
         used for input.
 
         Returns:
-            Iterable[Data]: An Iterable of Data elements, the transformed
+            Tuple[Data]: A Tuple of Data elements, the transformed
                 Data.
         """
         raise NotImplementedError
 
-    def inverse_transform(self, *data: Data) -> Iterable[Data]:
+    def inverse_transform(self, *data: Data) -> Tuple[Data, ...]:
         """Optionally, you can include an option to inverse transform the data.
 
         Returns:
-            Iterable[Data]: An Iterable of Data elements, the inverse transformed
+            Tuple[Data]: An Tuple of Data elements, the inverse transformed
                 Data.
         """
         return data

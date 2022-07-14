@@ -2,7 +2,7 @@ import json
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Generic, Iterable, TypeVar
+from typing import Generic, Tuple, TypeVar
 
 from pype.base.constants import Constants
 from pype.base.data import DataSet
@@ -141,5 +141,5 @@ class Model(ABC, Generic[Data]):
         return DataSet.from_dict({name: data for name, data in zip(self.outputs, result)})  # type: ignore
 
     @abstractmethod
-    def _transform(self, *data: Data) -> Iterable[Data] | Data:
+    def _transform(self, *data: Data) -> Tuple[Data] | Data:
         raise NotImplementedError
