@@ -17,6 +17,18 @@ class NumpyData(DataModel):
         """
         return np.array(self.data)
 
+    @classmethod
+    def to_model(cls, data: np.ndarray) -> "NumpyData":
+        """Converts a numpy array to a NumpyData model, which can be serialised.
+
+        Args:
+            data (np.ndarray): A numpy array to serialise.
+
+        Returns:
+            NumpyData: A serialisable version of the array.
+        """
+        return NumpyData(data=data.tolist())
+
 
 class NumpyTypeChecker(TypeChecker[np.ndarray]):
     def __init__(self) -> None:
@@ -38,7 +50,7 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
             NumpyTypeChecker: self.
         """
         self.dims = data.shape[1:]
-        self.dtype = data.dtype
+        self.dtype = self._convert_dtype(data.dtype)
         return self
 
     def transform(self, data: np.ndarray) -> np.ndarray:
@@ -52,8 +64,21 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
         """
         assert isinstance(data, np.ndarray), "Please provide a numpy array!"
         assert data.shape[1:] == self.dims, f"Dimensions of numpy arrays do not add up: {data.shape[1:]} vs {self.dims}"
-        assert data.dtype == self.dtype, f"Dtype of data does not add up: {data.dtype} vs {self.dtype}"
+        assert (
+            self._convert_dtype(data.dtype) == self.dtype
+        ), f"Dtype of data does not add up: {data.dtype} vs {self.dtype}"
         return data
+
+    def _convert_dtype(self, dtype: np.dtype) -> type:
+        dtype_name = dtype.name
+        if "int" in dtype_name:
+            return int
+        elif "float" in dtype_name:
+            return float
+        elif "bool" in dtype_name:
+            return bool
+        else:
+            return str
 
     def get_pydantic_type(self) -> type[NumpyData]:
         """Creates a Pydantic model for this data to handle serialisation/deserialisation.
@@ -61,7 +86,7 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
         Returns:
             type[NumpyData]: A NumpyData model that fits the data this wat fitted on.
         """
-        base_iter: type = list[self.dtype.type]  # type: ignore
+        base_iter: type = list[self.dtype]  # type: ignore
 
         for _ in range(len(self.dims)):
             base_iter = list[base_iter]  # type: ignore

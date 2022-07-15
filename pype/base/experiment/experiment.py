@@ -26,7 +26,8 @@ class Experiment:
         logger: ExperimentLogger,
         serialiser: Serialiser,
         output_folder: Path | str,
-        type_checker: TypeCheckerPipe,
+        input_type_checker: TypeCheckerPipe,
+        output_type_checker: TypeCheckerPipe,
         additional_files_to_store: list[str] | None = None,
         parameters: dict[str, Any] | None = None,
     ):
@@ -47,7 +48,9 @@ class Experiment:
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Path | str): The output folder to log artifacts to.
-            type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
+            input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
+                data and standardise the order of data. Will be used later to help serialise/deserialise data.
+            output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
@@ -73,7 +76,8 @@ run here for logging purposes. Consider using the `from_command_line` or
         self.model = model
         self.pipeline = pipeline
         self.evaluator = evaluator
-        self.type_checker = type_checker
+        self.input_type_checker = input_type_checker
+        self.output_type_checker = output_type_checker
 
         self.logger = getLogger(__name__)
         self.experiment_logger = logger
@@ -92,10 +96,10 @@ run here for logging purposes. Consider using the `from_command_line` or
             self.logger.info("Load data")
             datasets = {name: data_source_set.read() for name, data_source_set in self.data_sources.items()}
 
-            self.logger.info("Create type checker")
-            self.type_checker.fit(datasets["train"])
+            self.logger.info("Create input type checker")
+            self.input_type_checker.fit(datasets["train"])
             for ds in datasets.values():
-                self.type_checker.transform(ds)
+                self.input_type_checker.transform(ds)
 
             self.logger.info("Fit pipeline")
             self.pipeline.fit(datasets["train"])
@@ -109,6 +113,10 @@ run here for logging purposes. Consider using the `from_command_line` or
             self.logger.info("Evaluate model")
             metrics = {name: self.evaluator.evaluate(self.model, data) for name, data in datasets.items()}
 
+            self.logger.info("Create output type checker")
+            predicted_train = self.model.transform(transformed["train"])
+            self.output_type_checker.fit(predicted_train)
+
             self.logger.info("Log results: metrics, parameters, pipeline, model")
             for dataset_name, metric_set in metrics.items():
                 self.experiment_logger.log_metrics(dataset_name, metric_set)
@@ -119,7 +127,10 @@ run here for logging purposes. Consider using the `from_command_line` or
             self.experiment_logger.log_model(self.model, of / Constants.MODEL_FOLDER)
             self.experiment_logger.log_artifact(of / Constants.PIPELINE_FILE, self.serialiser, object=self.pipeline)
             self.experiment_logger.log_artifact(
-                of / Constants.TYPE_CHECKER_FILE, self.serialiser, object=self.type_checker
+                of / Constants.INPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.input_type_checker
+            )
+            self.experiment_logger.log_artifact(
+                of / Constants.OUTPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.output_type_checker
             )
             self.experiment_logger.log_parameters(self.parameters)
 
@@ -144,7 +155,8 @@ run here for logging purposes. Consider using the `from_command_line` or
         logger: ExperimentLogger,
         serialiser: Serialiser,
         output_folder: Path | str,
-        type_checker: TypeCheckerPipe,
+        input_type_checker: TypeCheckerPipe,
+        output_type_checker: TypeCheckerPipe,
         model_inputs: list[str],
         model_outputs: list[str],
         parameters: dict[str, Any],
@@ -163,7 +175,9 @@ run here for logging purposes. Consider using the `from_command_line` or
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Path | str): The output folder to log artifacts to.
-            type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
+            input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
+                data and standardise the order of data. Will be used later to help serialise/deserialise data.
+            output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             model_inputs: (list[str]): Input dataset names to the model.
             model_outputs: (list[str]): Output dataset names to the model.
@@ -190,9 +204,10 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger,
             serialiser,
             output_folder,
-            type_checker,
-            additional_files_to_store,
-            parameters,
+            input_type_checker=input_type_checker,
+            output_type_checker=output_type_checker,
+            additional_files_to_store=additional_files_to_store,
+            parameters=parameters,
         )
 
     @classmethod
@@ -205,7 +220,8 @@ run here for logging purposes. Consider using the `from_command_line` or
         logger: ExperimentLogger,
         serialiser: Serialiser,
         output_folder: Path | str,
-        type_checker: TypeCheckerPipe,
+        input_type_checker: TypeCheckerPipe,
+        output_type_checker: TypeCheckerPipe,
         model_inputs: list[str],
         model_outputs: list[str],
         seed: int = 1,
@@ -225,7 +241,9 @@ run here for logging purposes. Consider using the `from_command_line` or
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Path | str): The output folder to log artifacts to.
-            type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
+            input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
+                data and standardise the order of data. Will be used later to help serialise/deserialise data.
+            output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             model_inputs: (list[str]): Input dataset names to the model.
             model_outputs: (list[str]): Output dataset names to the model.
@@ -247,7 +265,8 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger,
             serialiser,
             output_folder=output_folder,
-            type_checker=type_checker,
+            input_type_checker=input_type_checker,
+            output_type_checker=output_type_checker,
             additional_files_to_store=additional_files_to_store,
             parameters=parsed_args.__dict__,
             seed=seed,

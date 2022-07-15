@@ -25,6 +25,18 @@ class PandasData(DataModel):
         """
         return pd.DataFrame(data=self.__dict__)
 
+    @classmethod
+    def to_model(cls, data: pd.DataFrame) -> "PandasData":
+        """Converts a pandas DataFrame to a PandasData model, which can be serialised.
+
+        Args:
+            data (pd.DataFrame): A pandas DataFrame to serialise.
+
+        Returns:
+            PandasData: A serialisable version of the DataFrame.
+        """
+        return cls(**{name: [str(i) for i in data[name].to_list()] for name in data.columns})
+
 
 class PandasTypeChecker(TypeChecker[pd.DataFrame]):
     def fit(self, data: pd.DataFrame) -> "PandasTypeChecker":

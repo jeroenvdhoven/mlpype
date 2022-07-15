@@ -41,13 +41,13 @@ print(parser.add_argument.call_args_list)
 
 
 def _make_data() -> Iterable[np.ndarray]:
-    iris = load_iris()
-    x = iris["data"]
-    y = iris["target"]
+    iris = load_iris(as_frame=True)
+    x = pd.DataFrame(iris["data"])
+    y = pd.DataFrame(iris["target"])
 
-    kept_rows = y < 2
-    x = x[kept_rows, :]
-    y = y[kept_rows]
+    kept_rows = y["target"] < 2
+    x = x.loc[kept_rows, :]
+    y = y.loc[kept_rows, :]
 
     return train_test_split(x, y, test_size=0.2)
 
@@ -78,13 +78,21 @@ evaluator = Evaluator(
     }
 )
 
-ds_type_checker = TypeCheckerPipe(
-    "type_checker",
-    ["x"],
-    [
-        (np.ndarray, NumpyTypeChecker),
-        (pd.DataFrame, PandasTypeChecker),
-    ],
+tcc = [
+    (np.ndarray, NumpyTypeChecker),
+    (pd.DataFrame, PandasTypeChecker),
+]
+
+input_ds_type_checker = TypeCheckerPipe(
+    "type_checker-in",
+    input_names=["x"],
+    type_checker_classes=tcc,
+)
+
+output_ds_type_checker = TypeCheckerPipe(
+    "type_checker-out",
+    input_names=["y"],
+    type_checker_classes=tcc,
 )
 
 pipeline = Pipeline([Pipe("scale", StandardScaler, inputs=["x"], outputs=["x"])])
@@ -95,7 +103,8 @@ experiment = Experiment(
     pipeline=pipeline,
     evaluator=evaluator,
     logger=LocalLogger(),
-    type_checker=ds_type_checker,
+    input_type_checker=input_ds_type_checker,
+    output_type_checker=output_ds_type_checker,
     serialiser=JoblibSerialiser(),
     output_folder="outputs",
 )
