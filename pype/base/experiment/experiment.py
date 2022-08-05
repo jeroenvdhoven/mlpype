@@ -7,7 +7,7 @@ from typing import Any, Type
 from pype.base.constants import Constants
 from pype.base.data.dataset_source import DataSetSource
 from pype.base.evaluate import Evaluator
-from pype.base.experiment.parsing import add_args_to_parser_for_pipeline
+from pype.base.experiment.argument_parsing import add_args_to_parser_for_pipeline
 from pype.base.logger import ExperimentLogger
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline

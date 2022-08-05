@@ -5,7 +5,7 @@ from typing import Iterable, Type
 
 import numpy as np
 
-from pype.base.experiment.parsing import add_args_to_parser_for_class
+from pype.base.experiment.argument_parsing import add_args_to_parser_for_class
 from pype.base.model import Model
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from pype.sklearn.data.sklearn_data import SklearnData

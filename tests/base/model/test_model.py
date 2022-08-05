@@ -10,7 +10,7 @@ from pype.base.model.model import Model
 
 class DummyModel(Model[int]):
     def __init__(self, seed: int, inputs: List[str], outputs: List[str]) -> None:
-        super().__init__(seed, inputs, outputs)
+        super().__init__(inputs=inputs, outputs=outputs, seed=seed)
         self._fitted = False
 
     def _transform(self, *data: int) -> Iterable[int]:
