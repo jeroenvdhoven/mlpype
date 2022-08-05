@@ -7,7 +7,7 @@ test:
 	python -m pytest
 
 coverage:
-	python -m pytest --cov-report term-missing --cov src/data_cube_pipeline -ra
+	python -m pytest --cov-report term-missing --cov pype -ra
 
 # Pre-commit defaults
 pre-commit-install:
