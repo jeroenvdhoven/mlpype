@@ -1,7 +1,8 @@
 
 
-install:
+dev-install:
 	pip install -e .
+	pype dev-install --editable
 
 test:
 	python -m pytest
@@ -16,3 +17,6 @@ pre-commit-install:
 
 pre-commit-run:
 	pre-commit run --all-files
+
+# Development setup
+dev-setup: dev-install pre-commit-install
