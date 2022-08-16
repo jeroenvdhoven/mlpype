@@ -1,4 +1,3 @@
-import warnings
 from argparse import ArgumentParser
 from logging import getLogger
 from pathlib import Path
@@ -25,9 +24,9 @@ class Experiment:
         evaluator: Evaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
-        output_folder: Path | str,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
+        output_folder: Path | str = "outputs",
         additional_files_to_store: list[str] | None = None,
         parameters: dict[str, Any] | None = None,
     ):
@@ -47,7 +46,7 @@ class Experiment:
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            output_folder: (Path | str): The output folder to log artifacts to.
+            output_folder: (Path | str): The output folder to log artifacts to. Defaults to "outputs".
             input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
@@ -58,11 +57,13 @@ class Experiment:
                 Defaults to None.
         """
         assert "train" in data_sources, "Must provide a 'train' entry in the data_sources dictionary."
+        self.logger = getLogger(__name__)
+
         if additional_files_to_store is None:
             additional_files_to_store = []
         if parameters is None:
             parameters = {}
-            warnings.warn(
+            self.logger.warning(
                 """
 It is highly recommended to provide the parameters used to initialise your
 run here for logging purposes. Consider using the `from_command_line` or
@@ -79,7 +80,6 @@ run here for logging purposes. Consider using the `from_command_line` or
         self.input_type_checker = input_type_checker
         self.output_type_checker = output_type_checker
 
-        self.logger = getLogger(__name__)
         self.experiment_logger = logger
         self.parameters = parameters
         self.serialiser = serialiser
@@ -111,7 +111,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             self.model.fit(transformed["train"])
 
             self.logger.info("Evaluate model")
-            metrics = {name: self.evaluator.evaluate(self.model, data) for name, data in datasets.items()}
+            metrics = {name: self.evaluator.evaluate(self.model, data) for name, data in transformed.items()}
 
             self.logger.info("Create output type checker")
             predicted_train = self.model.transform(transformed["train"])
@@ -154,12 +154,12 @@ run here for logging purposes. Consider using the `from_command_line` or
         evaluator: Evaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
-        output_folder: Path | str,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
         model_inputs: list[str],
         model_outputs: list[str],
         parameters: dict[str, Any],
+        output_folder: Path | str = "outputs",
         seed: int = 1,
         additional_files_to_store: list[str] | None = None,
     ) -> "Experiment":
@@ -197,13 +197,13 @@ run here for logging purposes. Consider using the `from_command_line` or
         pipeline.reinitialise(pipeline_args)
 
         return Experiment(
-            data_sources,
-            model,
-            pipeline,
-            evaluator,
-            logger,
-            serialiser,
-            output_folder,
+            data_sources=data_sources,
+            model=model,
+            pipeline=pipeline,
+            evaluator=evaluator,
+            logger=logger,
+            serialiser=serialiser,
+            output_folder=output_folder,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
             additional_files_to_store=additional_files_to_store,
@@ -219,11 +219,11 @@ run here for logging purposes. Consider using the `from_command_line` or
         evaluator: Evaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
-        output_folder: Path | str,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
         model_inputs: list[str],
         model_outputs: list[str],
+        output_folder: Path | str = "outputs",
         seed: int = 1,
         additional_files_to_store: list[str] | None = None,
     ) -> "Experiment":
@@ -258,12 +258,12 @@ run here for logging purposes. Consider using the `from_command_line` or
         parsed_args, _ = arg_parser.parse_known_args()
 
         return cls.from_dictionary(
-            data_sources,
-            model_class,
-            pipeline,
-            evaluator,
-            logger,
-            serialiser,
+            data_sources=data_sources,
+            model_class=model_class,
+            pipeline=pipeline,
+            evaluator=evaluator,
+            logger=logger,
+            serialiser=serialiser,
             output_folder=output_folder,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
