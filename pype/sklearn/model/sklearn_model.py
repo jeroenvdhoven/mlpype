@@ -50,7 +50,7 @@ class SklearnModel(Model[SklearnData], ABC):
         serialiser.serialise(self.model, folder / self.SKLEARN_MODEL_FILE)
 
     @classmethod
-    def _load(cls: Type["SklearnModel"], folder: Path, inputs: list[str], outputs: list[str]) -> "Model":
+    def _load(cls: Type["SklearnModel"], folder: Path, inputs: list[str], outputs: list[str]) -> "SklearnModel":
         serialiser = JoblibSerialiser()
         model = serialiser.deserialise(folder / cls.SKLEARN_MODEL_FILE)
         return cls(inputs=inputs, outputs=outputs, model=model, seed=1)

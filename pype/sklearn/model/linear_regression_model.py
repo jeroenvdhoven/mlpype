@@ -8,7 +8,7 @@ class LinearRegressionModel(SklearnModel):
         self,
         inputs: list[str],
         outputs: list[str],
-        model: LinearRegression = None,
+        model: LinearRegression | None = None,
         fit_intercept: bool = True,
         normalize: str = "deprecated",
         copy_X: bool = True,

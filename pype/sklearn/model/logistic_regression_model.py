@@ -8,7 +8,7 @@ class LogisticRegressionModel(SklearnModel):
         self,
         inputs: list[str],
         outputs: list[str],
-        model: LogisticRegression = None,
+        model: LogisticRegression | None = None,
         penalty: str = "l2",
         dual: bool = False,
         tol: float = 1e-4,
