@@ -8,7 +8,7 @@ class DataFrameSource(DataSource[pd.DataFrame]):
         """A DataSource based around a created DataFrame.
 
         Good for testing purposes, but please use other sources for actual
-        ML runs.
+        ML runs to prevent any data having to be hard-coded into the script.
 
         Args:
             df (pd.DataFrame): The DataFrame to use as a source.
