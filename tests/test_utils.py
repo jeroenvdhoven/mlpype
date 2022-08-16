@@ -15,12 +15,17 @@ from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 
 
 @contextmanager
-def pytest_assert(error, message: str):
+def pytest_assert(error_class, message: str | None = None, exact: bool = True):
     try:
         yield
         raise ValueError("No error was raised!")
-    except error as e:
-        assert e.args[0] == message
+    except error_class as e:
+        if message is not None:
+            error_message: str = e.args[0]
+            if exact:
+                assert error_message == message
+            else:
+                assert message in error_message
 
 
 class DummyModel(Model[list[int | float]]):
@@ -95,8 +100,8 @@ class DummyTypeChecker(TypeChecker):
         return super().fit(data)
 
     def transform(self, data: list[float]) -> list[float]:
-        assert isinstance(data, list)
-        assert isinstance(data[0], float) or isinstance(data[0], int)
+        assert isinstance(data, list), "Provide a list!"
+        assert isinstance(data[0], float) or isinstance(data[0], int), "Provide a list with ints/floats!"
         return data
 
     def get_pydantic_type(self) -> type[DataModel]:

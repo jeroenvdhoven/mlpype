@@ -1,4 +1,4 @@
-import warnings
+import logging
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -153,9 +153,7 @@ class DataSetTypeChecker(Operator[Data]):
         """
         super().__init__()
         self.input_names = input_names
-
         self.type_checker_classes = type_checker_classes
-
         self.type_checkers: dict[str, TypeChecker] = {}
 
     def fit(self, *data: Data) -> "Operator":
@@ -169,7 +167,8 @@ class DataSetTypeChecker(Operator[Data]):
             type_checker_class = self._get_type_checker(dataset)
 
             if type_checker_class is None:
-                warnings.warn(f"{ds_name} has no supported type checker!")
+                logger = logging.getLogger(__name__)
+                logger.warning(f"{ds_name} has no supported type checker!")
             else:
                 checker = type_checker_class()
                 checker.fit(dataset)
