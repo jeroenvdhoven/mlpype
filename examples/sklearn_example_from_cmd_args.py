@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Iterable
 
 import numpy as np
+import pandas as pd
 from sklearn.datasets import load_iris
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
@@ -19,9 +20,12 @@ from pype.base.experiment.experiment import Experiment
 from pype.base.logger.local_logger import LocalLogger
 from pype.base.pipeline.pipe import Pipe
 from pype.base.pipeline.pipeline import Pipeline
+from pype.base.pipeline.type_checker import TypeCheckerPipe
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from pype.sklearn.data.data_frame_source import DataFrameSource
 from pype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from pype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
+from pype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
 
 #  Try a run with sklearn and argument reading
@@ -56,7 +60,26 @@ evaluator = Evaluator(
     }
 )
 
+tcc = [
+    (np.ndarray, NumpyTypeChecker),
+    (pd.DataFrame, PandasTypeChecker),
+]
+
+input_ds_type_checker = TypeCheckerPipe(
+    "type_checker-in",
+    input_names=["x"],
+    type_checker_classes=tcc,
+)
+
+output_ds_type_checker = TypeCheckerPipe(
+    "type_checker-out",
+    input_names=["y"],
+    type_checker_classes=tcc,
+)
+
 pipeline = Pipeline([Pipe("scale", StandardScaler, inputs=["x"], outputs=["x"])])
+of = Path("outputs")
+
 experiment = Experiment.from_command_line(
     data_sources=ds,
     model_class=LogisticRegressionModel,
@@ -65,8 +88,10 @@ experiment = Experiment.from_command_line(
     pipeline=pipeline,
     evaluator=evaluator,
     logger=LocalLogger(),
+    input_type_checker=input_ds_type_checker,
+    output_type_checker=output_ds_type_checker,
     serialiser=JoblibSerialiser(),
-    output_folder="outputs",
+    output_folder=of,
 )
 
 metrics = experiment.run()

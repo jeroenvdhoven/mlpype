@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Type
 
@@ -7,6 +8,7 @@ from pype.base.model import Model
 from pype.base.pipeline import Pipeline
 from pype.base.pipeline.type_checker import TypeCheckerPipe
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
+from pype.base.utils.switch_workspace import switch_workspace
 
 
 class Inferencer:
@@ -60,11 +62,15 @@ class Inferencer:
         Returns:
             Inferencer: The inference pipeline that can predict for new data.
         """
-        serialiser = JoblibSerialiser()
-        model = Model.load(folder / Constants.MODEL_FOLDER)
-        pipeline = serialiser.deserialise(folder / Constants.PIPELINE_FILE)
-        input_type_checker = serialiser.deserialise(folder / Constants.INPUT_TYPE_CHECKER_FILE)
-        output_type_checker = serialiser.deserialise(folder / Constants.OUTPUT_TYPE_CHECKER_FILE)
+        with open(folder / Constants.EXTRA_FILES, "r") as f:
+            extra_files = json.load(f)["paths"]
+
+        with switch_workspace(folder, extra_files):
+            serialiser = JoblibSerialiser()
+            model = Model.load(Constants.MODEL_FOLDER)
+            pipeline = serialiser.deserialise(Constants.PIPELINE_FILE)
+            input_type_checker = serialiser.deserialise(Constants.INPUT_TYPE_CHECKER_FILE)
+            output_type_checker = serialiser.deserialise(Constants.OUTPUT_TYPE_CHECKER_FILE)
 
         return cls(
             model=model,

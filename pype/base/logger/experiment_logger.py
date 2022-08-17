@@ -1,3 +1,4 @@
+import shutil
 from abc import ABC, abstractmethod
 from pathlib import Path
 from types import TracebackType
@@ -80,6 +81,21 @@ class ExperimentLogger(ABC):
         """
         serialiser.serialise(object, file)
         self.log_file(file)
+
+    def log_local_file(self, file: str | Path, output_target: str | Path) -> None:
+        """Logs a given local file as part of an experiment.
+
+        First the file is copied to the output directory, then
+        log_file is called to make it part of the experiment.
+
+        Args:
+            file (str | Path): The file to log.
+            output_target (str | Path): The target location of the file.
+        """
+        output_target = Path(output_target)
+        output_target.parent.mkdir(exist_ok=True)
+        shutil.copy(file, output_target)
+        self.log_file(output_target)
 
     @abstractmethod
     def log_file(self, file: str | Path) -> None:

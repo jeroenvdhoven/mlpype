@@ -34,5 +34,5 @@ class LocalLogger(ExperimentLogger):
         """This method does no additional logging.
 
         Args:
-            file (str | Path): The file to log. No actual logging is done.
+            file (str | Path): The file to log.
         """

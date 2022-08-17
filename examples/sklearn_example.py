@@ -1,3 +1,7 @@
+"""Please run this file using `python -m examples.sklearn_example`.
+
+We do not guarantee results if you use `python examples/sklearn_example.py`
+"""
 # %%
 
 from pathlib import Path
@@ -96,6 +100,7 @@ output_ds_type_checker = TypeCheckerPipe(
 )
 
 pipeline = Pipeline([Pipe("scale", StandardScaler, inputs=["x"], outputs=["x"])])
+of = Path("outputs")
 
 experiment = Experiment(
     data_sources=ds,
@@ -106,7 +111,7 @@ experiment = Experiment(
     input_type_checker=input_ds_type_checker,
     output_type_checker=output_ds_type_checker,
     serialiser=JoblibSerialiser(),
-    output_folder="outputs",
+    output_folder=of,
 )
 
 metrics = experiment.run()

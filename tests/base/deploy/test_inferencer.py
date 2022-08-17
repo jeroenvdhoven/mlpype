@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, call, mock_open, patch
 
 from pytest import fixture
 
@@ -32,18 +32,25 @@ class Test_Inferencer:
         outputs = MagicMock()
         deserialised_values = [pipeline, inputs, outputs]
 
+        read_data = '{"paths": ["1", "2"]}'
+        m_open = mock_open(read_data=read_data)
         with patch("pype.base.deploy.inference.Model.load") as mock_model_load, patch(
             "pype.base.deploy.inference.JoblibSerialiser.deserialise", side_effect=deserialised_values
-        ) as mock_deserialise:
+        ) as mock_deserialise, patch("pype.base.deploy.inference.switch_workspace") as mock_switch, patch(
+            "pype.base.deploy.inference.open", m_open
+        ):
             result = Inferencer.from_folder(path)
 
-            mock_model_load.assert_called_once_with(path / Constants.MODEL_FOLDER)
+            m_open.assert_called_once_with(path / Constants.EXTRA_FILES, "r")
+
+            mock_switch.assert_called_once_with(path, ["1", "2"])
+            mock_model_load.assert_called_once_with(Constants.MODEL_FOLDER)
 
             mock_deserialise.assert_has_calls(
                 [
-                    call(path / Constants.PIPELINE_FILE),
-                    call(path / Constants.INPUT_TYPE_CHECKER_FILE),
-                    call(path / Constants.OUTPUT_TYPE_CHECKER_FILE),
+                    call(Constants.PIPELINE_FILE),
+                    call(Constants.INPUT_TYPE_CHECKER_FILE),
+                    call(Constants.OUTPUT_TYPE_CHECKER_FILE),
                 ]
             )
 

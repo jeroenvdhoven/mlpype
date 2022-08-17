@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, call, mock_open, patch
 
 from pytest import fixture
 
@@ -9,7 +9,7 @@ from pype.base.experiment.experiment import Experiment
 from tests.test_utils import get_dummy_data, get_dummy_experiment, pytest_assert
 
 
-class Test_get_cmd_args:
+class Test_run:
     @fixture(scope="class")
     def run_experiment(self) -> tuple[Experiment, dict]:
         experiment = get_dummy_experiment()
@@ -52,7 +52,9 @@ class Test_get_cmd_args:
         test_performance = MagicMock()
         evaluator.evaluate.side_effect = [train_performance, test_performance]
 
-        with patch.object(experiment, "_create_output_folders") as mock_create_folders:
+        with patch.object(experiment, "_create_output_folders") as mock_create_folders, patch.object(
+            experiment, "_log_extra_files"
+        ) as mock_log_extra_files:
             result = experiment.run()
 
         logger.__enter__.assert_called_once()
@@ -102,22 +104,9 @@ class Test_get_cmd_args:
             ]
         )
         logger.log_parameters.assert_called_once_with({})
-        logger.log_file.assert_has_calls([call("a"), call("b")])
-        # of = self.output_folder
-        # self.experiment_logger.log_model(self.model, of / Constants.MODEL_FOLDER)
-        # self.experiment_logger.log_artifact(of / Constants.PIPELINE_FILE, self.serialiser, object=self.pipeline)
-        # self.experiment_logger.log_artifact(
-        #     of / Constants.INPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.input_type_checker
-        # )
-        # self.experiment_logger.log_artifact(
-        #     of / Constants.OUTPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.output_type_checker
-        # )
-        # self.experiment_logger.log_parameters(self.parameters)
 
-        # for extra_file in self.additional_files_to_store:
-        #     self.experiment_logger.log_file(extra_file)
-
-        # self.logger.info("Done")
+        # extra files
+        mock_log_extra_files.assert_called_once_with()
 
     def test_integration(self, run_experiment: tuple[Experiment, dict]):
         experiment, metrics = run_experiment
@@ -130,6 +119,49 @@ class Test_get_cmd_args:
         predictions = experiment.model.transform(experiment.pipeline.transform(test_data))["y"]
 
         assert len(y) == len(predictions)
+
+
+def test_log_extra_files():
+    cwd = Path(__file__).parent
+
+    data_sources = {"train": MagicMock(), "test": MagicMock()}
+    model = MagicMock()
+    pipeline = MagicMock()
+    evaluator = MagicMock()
+    logger = MagicMock()
+    serialiser = MagicMock()
+    input_type_checker = MagicMock()
+    output_type_checker = MagicMock()
+    output_folder = Path("tmp")
+    additional_files_to_store = [cwd / "a.py"]
+
+    experiment = Experiment(
+        data_sources=data_sources,
+        model=model,
+        pipeline=pipeline,
+        evaluator=evaluator,
+        logger=logger,
+        serialiser=serialiser,
+        input_type_checker=input_type_checker,
+        output_type_checker=output_type_checker,
+        output_folder=output_folder,
+        additional_files_to_store=additional_files_to_store,
+    )
+
+    m_open = mock_open()
+    with patch("pype.base.experiment.experiment.os.getcwd", return_value=cwd) as mock_getcwd, patch(
+        "pype.base.experiment.experiment.open", m_open
+    ), patch("pype.base.experiment.experiment.json.dump") as mock_dump:
+        experiment._log_extra_files()
+
+        mock_getcwd.assert_called_once_with()
+        logger.log_local_file.assert_called_once_with(Path("a.py"), output_folder / "a.py")
+        logger.log_file.assert_called_once_with(output_folder / Constants.EXTRA_FILES)
+
+        m_open.assert_called_once_with(output_folder / Constants.EXTRA_FILES, "w")
+        opened_obj = m_open.return_value
+
+        mock_dump.assert_called_once_with({"paths": ["a.py"]}, opened_obj)
 
 
 class Test_init:

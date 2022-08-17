@@ -1,3 +1,5 @@
+import json
+import os
 from argparse import ArgumentParser
 from logging import getLogger
 from pathlib import Path
@@ -27,7 +29,7 @@ class Experiment:
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
         output_folder: Path | str = "outputs",
-        additional_files_to_store: list[str] | None = None,
+        additional_files_to_store: list[str | Path] | None = None,
         parameters: dict[str, Any] | None = None,
     ):
         """The core of the pype library: run a standardised ML experiment with the given parameters.
@@ -51,7 +53,7 @@ class Experiment:
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
-            additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
+            additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
             parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
                 Defaults to None.
@@ -134,11 +136,26 @@ run here for logging purposes. Consider using the `from_command_line` or
             )
             self.experiment_logger.log_parameters(self.parameters)
 
-            for extra_file in self.additional_files_to_store:
-                self.experiment_logger.log_file(extra_file)
-
+            # extra py files
+            self._log_extra_files()
             self.logger.info("Done")
         return metrics
+
+    def _log_extra_files(self) -> None:
+        """Logs the extra files for an experiment, as specified in the constructor."""
+        paths_to_log = []
+        self.logger.info("Log extra files")
+        for extra_file in self.additional_files_to_store:
+            relative_path = Path(extra_file).relative_to(os.getcwd())
+            self.experiment_logger.log_local_file(relative_path, self.output_folder / relative_path)
+            paths_to_log.append(str(relative_path))
+
+        self.logger.info("Log `extra files`-file")
+        extra_files_file = self.output_folder / Constants.EXTRA_FILES
+        with open(extra_files_file, "w") as f:
+            data = {"paths": paths_to_log}
+            json.dump(data, f)
+            self.experiment_logger.log_file(extra_files_file)
 
     def _create_output_folders(self) -> None:
         of = self.output_folder
@@ -161,7 +178,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         parameters: dict[str, Any],
         output_folder: Path | str = "outputs",
         seed: int = 1,
-        additional_files_to_store: list[str] | None = None,
+        additional_files_to_store: list[str | Path] | None = None,
     ) -> "Experiment":
         """Creates an Experiment from a dictionary with parameters.
 
@@ -184,7 +201,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             seed (int): The RNG seed to ensure reproducability.
             parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
                 Defaults to None.
-            additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
+            additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
 
         Returns:
@@ -225,7 +242,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         model_outputs: list[str],
         output_folder: Path | str = "outputs",
         seed: int = 1,
-        additional_files_to_store: list[str] | None = None,
+        additional_files_to_store: list[str | Path] | None = None,
     ) -> "Experiment":
         """Automatically initialises an Experiment from command line arguments.
 
@@ -248,7 +265,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             model_inputs: (list[str]): Input dataset names to the model.
             model_outputs: (list[str]): Output dataset names to the model.
             seed (int): The RNG seed to ensure reproducability.
-            additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
+            additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
 
         Returns:

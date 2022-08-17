@@ -12,6 +12,7 @@ from pype.base.pipeline.pipe import Pipe
 from pype.base.pipeline.pipeline import Pipeline
 from pype.base.pipeline.type_checker import DataModel, TypeChecker, TypeCheckerPipe
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
+from tests.test_utils_training_support import reverse
 
 
 @contextmanager
@@ -73,7 +74,7 @@ class DummyOperator(Operator[list[float]]):
         return self
 
     def transform(self, x: list[float]) -> list[float]:
-        return [i - 1 for i in x]
+        return reverse([i - 1 for i in x])
 
 
 def get_dummy_pipeline() -> Pipeline:

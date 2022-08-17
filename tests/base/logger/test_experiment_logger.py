@@ -44,3 +44,20 @@ class Test_experiment_logger:
 
         serialiser.serialise.assert_called_once_with(obj, file)
         mock_log_file.assert_called_once_with(file)
+
+    def test_log_local_file(self):
+        logger = LocalLogger()
+        file = "a.py"
+        output = "target"
+
+        with patch("pype.base.logger.experiment_logger.shutil") as mock_shutil, patch.object(
+            logger, "log_file"
+        ) as mock_log_file, patch("pype.base.logger.experiment_logger.Path") as mock_path:
+            logger.log_local_file(file, output)
+
+            mock_path.assert_called_once_with(output)
+            real_out_target = mock_path.return_value
+
+            real_out_target.parent.mkdir.assert_called_once_with(exist_ok=True)
+            mock_shutil.copy.assert_called_once_with(file, real_out_target)
+            mock_log_file.assert_called_once_with(real_out_target)
