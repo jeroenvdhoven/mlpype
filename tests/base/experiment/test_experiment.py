@@ -1,4 +1,6 @@
 import shutil
+import sys
+from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import MagicMock, call, mock_open, patch
 
@@ -54,7 +56,7 @@ class Test_run:
 
         with patch.object(experiment, "_create_output_folders") as mock_create_folders, patch.object(
             experiment, "_log_extra_files"
-        ) as mock_log_extra_files:
+        ) as mock_log_extra_files, patch.object(experiment, "_log_requirements") as mock_log_requirements:
             result = experiment.run()
 
         logger.__enter__.assert_called_once()
@@ -107,6 +109,7 @@ class Test_run:
 
         # extra files
         mock_log_extra_files.assert_called_once_with()
+        mock_log_requirements.assert_called_once_with()
 
     def test_integration(self, run_experiment: tuple[Experiment, dict]):
         experiment, metrics = run_experiment
@@ -162,6 +165,92 @@ def test_log_extra_files():
         opened_obj = m_open.return_value
 
         mock_dump.assert_called_once_with({"paths": ["a.py"]}, opened_obj)
+
+
+@dataclass
+class VersionInfo:
+    major: int
+    minor: int
+    micro: int
+
+
+@fixture
+def version_info():
+    old_version = sys.version_info
+
+    sys.version_info = VersionInfo(major=4, minor=10, micro=129)
+
+    yield sys.version_info
+    sys.version_info = old_version
+
+
+def test_log_requirements(version_info: VersionInfo):
+    cwd = Path(__file__).parent
+
+    data_sources = {"train": MagicMock(), "test": MagicMock()}
+    model = MagicMock()
+    pipeline = MagicMock()
+    evaluator = MagicMock()
+    logger = MagicMock()
+    serialiser = MagicMock()
+    input_type_checker = MagicMock()
+    output_type_checker = MagicMock()
+    output_folder = Path("tmp")
+    additional_files_to_store = [cwd / "a.py"]
+
+    experiment = Experiment(
+        data_sources=data_sources,
+        model=model,
+        pipeline=pipeline,
+        evaluator=evaluator,
+        logger=logger,
+        serialiser=serialiser,
+        input_type_checker=input_type_checker,
+        output_type_checker=output_type_checker,
+        output_folder=output_folder,
+        additional_files_to_store=additional_files_to_store,
+    )
+
+    f1 = MagicMock()
+    f2 = MagicMock()
+    req_text = b"pandas==0.1.0\nnumpy=1.0.1"
+    with patch("pype.base.experiment.experiment.open", side_effect=[f1, f2]) as mock_open, patch(
+        "pype.base.experiment.experiment.subprocess.check_output", return_value=req_text
+    ) as mock_check_output, patch("pype.base.experiment.experiment.json.dump") as mock_dump:
+        experiment._log_requirements()
+
+        mock_open.assert_has_calls(
+            [
+                call(output_folder / Constants.PYTHON_VERSION_FILE, "w"),
+                call(output_folder / Constants.REQUIREMENTS_FILE, "w"),
+            ]
+        )
+
+        # logger.log_local_file.assert_called_once_with(Path("a.py"), output_folder / "a.py")
+        # logger.log_file.assert_called_once_with(output_folder / Constants.EXTRA_FILES)
+        # python version
+        mock_dump.assert_called_once_with(
+            {
+                "python_version": "4.10.129",
+                "major": version_info.major,
+                "minor": version_info.minor,
+                "micro": version_info.micro,
+            },
+            f1.__enter__.return_value,
+        )
+
+        # requirements
+        mock_check_output.assert_called_once_with([sys.executable, "-m", "pip", "freeze"])
+        f2.__enter__.return_value.write.assert_called_once_with(req_text.decode())
+
+        # logging
+        logger.log_file.assert_has_calls(
+            [
+                call(output_folder / Constants.PYTHON_VERSION_FILE),
+                call(output_folder / Constants.REQUIREMENTS_FILE),
+            ],
+            any_order=True,
+        )
 
 
 class Test_init:

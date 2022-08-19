@@ -1,5 +1,7 @@
 import json
 import os
+import subprocess
+import sys
 from argparse import ArgumentParser
 from logging import getLogger
 from pathlib import Path
@@ -136,10 +138,32 @@ run here for logging purposes. Consider using the `from_command_line` or
             )
             self.experiment_logger.log_parameters(self.parameters)
 
+            # log requirements.txt
+            self._log_requirements()
+
             # extra py files
             self._log_extra_files()
             self.logger.info("Done")
         return metrics
+
+    def _log_requirements(self) -> None:
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        version_info = {
+            "python_version": python_version,
+            "major": sys.version_info.major,
+            "minor": sys.version_info.minor,
+            "micro": sys.version_info.micro,
+        }
+        version_file = self.output_folder / Constants.PYTHON_VERSION_FILE
+        with open(version_file, "w") as f:
+            json.dump(version_info, f)
+        self.experiment_logger.log_file(version_file)
+
+        reqs = subprocess.check_output([sys.executable, "-m", "pip", "freeze"]).decode()
+        requirements_file = self.output_folder / Constants.REQUIREMENTS_FILE
+        with open(requirements_file, "w") as f:
+            f.write(reqs)
+        self.experiment_logger.log_file(requirements_file)
 
     def _log_extra_files(self) -> None:
         """Logs the extra files for an experiment, as specified in the constructor."""
