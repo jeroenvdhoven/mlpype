@@ -1,10 +1,19 @@
 from pathlib import Path
+from types import TracebackType
 from typing import Any
 
 from .experiment_logger import ExperimentLogger
 
 
 class LocalLogger(ExperimentLogger):
+    def __enter__(self) -> None:
+        """Start the experiment."""
+
+    def __exit__(
+        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
+    ) -> None:
+        """Stop the experiment."""
+
     def __init__(self, min_whitespace: int = 30) -> None:
         """A basic logger which only saves local copies of the data and prints results."""
         super().__init__()

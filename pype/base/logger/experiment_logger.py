@@ -9,12 +9,12 @@ from pype.base.serialiser import Serialiser
 
 
 class ExperimentLogger(ABC):
-    # TODO: make a LocalLogger.
-
+    @abstractmethod
     def __enter__(self) -> None:
         """Start the experiment."""
         return
 
+    @abstractmethod
     def __exit__(
         self,
         exc_type: type[BaseException] | None,

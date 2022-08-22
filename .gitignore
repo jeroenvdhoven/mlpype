@@ -21,3 +21,6 @@ outputs/
 
 # notebooks
 *.ipynb
+
+# mlflow
+mlruns*/
