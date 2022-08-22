@@ -1,6 +1,6 @@
-"""Please run this file using `python -m examples.sklearn_example`.
+"""Please run this file using `python -m examples.sklearn.sklearn_example`.
 
-We do not guarantee results if you use `python examples/sklearn_example.py`
+We do not guarantee results if you use `python examples/sklearn/sklearn_example.py`
 """
 # %%
 

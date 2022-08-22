@@ -1,6 +1,6 @@
 """Call this using some form of command line.
 
-e.g. python -m examples.sklearn_example_from_cmd_args --model__fit_intercept=False
+e.g. python -m examples.sklearn.sklearn_example_from_cmd_args --model__fit_intercept=False
 """
 
 from pathlib import Path
