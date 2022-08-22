@@ -64,9 +64,9 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
         """
         assert isinstance(data, np.ndarray), "Please provide a numpy array!"
         assert data.shape[1:] == self.dims, f"Dimensions of numpy arrays do not add up: {data.shape[1:]} vs {self.dims}"
-        assert (
-            self._convert_dtype(data.dtype) == self.dtype
-        ), f"Dtype of data does not add up: {data.dtype} vs {self.dtype}"
+
+        converted_type = self._convert_dtype(data.dtype)
+        assert converted_type == self.dtype, f"Dtype of data does not add up: {converted_type} vs {self.dtype}"
         return data
 
     def _convert_dtype(self, dtype: np.dtype) -> type:
