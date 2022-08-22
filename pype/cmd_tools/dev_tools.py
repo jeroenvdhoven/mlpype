@@ -31,7 +31,8 @@ def run_dev_install(parser: ArgumentParser) -> None:
     base_path = Path(__file__).parent.parent.parent.absolute()
     packages = find_namespace_packages(str(base_path), include=["pype.*"], exclude=["pype.cmd_tools", "pype.*.*"])
 
-    print("PREPARING TO INSTALL PYPE IN DEV MODE\nInstalling the following packages:\n\t", packages)
+    editable_message = " IN DEV MODE" if use_editable else ""
+    print(f"PREPARING TO INSTALL PYPE{editable_message}\nInstalling the following packages:\n\t", packages)
 
     # Installing prioritised packages first.
     for package in prioritised_packages:
@@ -39,7 +40,7 @@ def run_dev_install(parser: ArgumentParser) -> None:
         _install_package(package, use_editable, base_path)
 
     for package in packages:
-        if package != "pype.base":
+        if package not in prioritised_packages:
             _install_package(package, use_editable, base_path)
 
 
