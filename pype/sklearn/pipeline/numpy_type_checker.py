@@ -38,7 +38,7 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
         """
         super().__init__()
         self.dims: tuple = tuple()
-        self.dtype: type = None
+        self.dtype: type | None = None
 
     def fit(self, data: np.ndarray) -> "NumpyTypeChecker":
         """Fit this Numpy TypeChecker to the given data.
@@ -62,6 +62,7 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
         Returns:
             np.ndarray: data, if the data fits the specifications. Otherwise, an assertion error is thrown.
         """
+        assert self.dtype is not None, "Please fit pipeline first"
         assert isinstance(data, np.ndarray), "Please provide a numpy array!"
         assert data.shape[1:] == self.dims, f"Dimensions of numpy arrays do not add up: {data.shape[1:]} vs {self.dims}"
 
