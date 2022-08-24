@@ -1,6 +1,6 @@
 import tensorflow as tf
 from pydantic import create_model
-from tensorflow import Dtype, Tensor  # type: ignore
+from tensorflow import DType, Tensor  # type: ignore
 
 from pype.base.pipeline.type_checker import DataModel, TypeChecker
 
@@ -73,7 +73,7 @@ class TensorflowTypeChecker(TypeChecker[Tensor]):
         assert converted_type == self.dtype, f"Dtype of data does not add up: {converted_type} vs {self.dtype}"
         return data
 
-    def _convert_dtype(self, dtype: Dtype) -> type:
+    def _convert_dtype(self, dtype: DType) -> type:
         dtype_name = str(dtype)
         if "int" in dtype_name:
             return int

@@ -1,9 +1,11 @@
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
 from pytest import fixture
+from sklearn.linear_model import LinearRegression
 
 from pype.base.data.dataset import DataSet
 from pype.sklearn.model.linear_regression_model import LinearRegressionModel
@@ -59,13 +61,31 @@ class Test_SklearnModel:
             assert result.inputs == inputs
             assert result.outputs == outputs
 
-    def test_get_parameters(self, model: SklearnModel, sklearn_model: MagicMock):
+    def test_get_parameters_from_object(self):
+        class DummyModel(SklearnModel[LinearRegression]):
+            def _init_model(self, args: dict[str, Any]) -> LinearRegression:
+                return LinearRegression(**args)
+
         parser = MagicMock()
+        model = DummyModel(inputs=["x"], outputs=["y"])
 
         with patch("pype.sklearn.model.sklearn_model.add_args_to_parser_for_class") as mock_add_args:
             model.get_parameters(parser)
             mock_add_args.assert_called_once_with(
-                parser, type(model), "model", [SklearnModel], excluded_args=["seed", "inputs", "outputs", "model"]
+                parser, LinearRegression, "model", [], excluded_args=["seed", "inputs", "outputs", "model"]
+            )
+
+    def test_get_parameters_from_class(self):
+        class DummyModel(SklearnModel[LinearRegression]):
+            def _init_model(self, args: dict[str, Any]) -> LinearRegression:
+                return LinearRegression(**args)
+
+        parser = MagicMock()
+
+        with patch("pype.sklearn.model.sklearn_model.add_args_to_parser_for_class") as mock_add_args:
+            DummyModel.get_parameters(parser)
+            mock_add_args.assert_called_once_with(
+                parser, LinearRegression, "model", [], excluded_args=["seed", "inputs", "outputs", "model"]
             )
 
     def test_integration(self):
