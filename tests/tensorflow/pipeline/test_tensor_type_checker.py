@@ -3,12 +3,6 @@ import tensorflow as tf
 from pydantic import ValidationError
 from pytest import mark
 
-from pype.base.pipeline.type_checker import (
-    DataModel,
-    DataSetModel,
-    DataSetTypeChecker,
-    TypeCheckerPipe,
-)
 from pype.tensorflow.pipeline.tensor_checker import (
     TensorflowData,
     TensorflowTypeChecker,
