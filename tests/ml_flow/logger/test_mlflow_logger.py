@@ -1,5 +1,7 @@
-from unittest.mock import MagicMock, patch
+from pathlib import Path
+from unittest.mock import MagicMock, call, patch
 
+from git import InvalidGitRepositoryError
 from pytest import fixture
 
 from pype.ml_flow.logger.mlflow_logger import MlflowLogger
@@ -13,7 +15,9 @@ class Test_mlflow_logger:
 
     def test_enter(self, logger: MlflowLogger):
         assert logger.run is None
-        with patch("pype.ml_flow.logger.mlflow_logger.mlflow") as mock_mlflow:
+        with patch("pype.ml_flow.logger.mlflow_logger.mlflow") as mock_mlflow, patch.object(
+            logger, "log_branch"
+        ) as mock_log_branch:
             mock_mlflow.get_experiment_by_name.return_value = []  # just not None
             logger.__enter__()
 
@@ -23,6 +27,7 @@ class Test_mlflow_logger:
             mock_mlflow.set_experiment.assert_called_once_with(experiment_name=logger.name)
 
             mock_mlflow.start_run.assert_called_once_with()
+            mock_log_branch.assert_called_once_with()
             run = mock_mlflow.start_run.return_value
             run.__enter__.assert_called_once_with()
             active_run = run.__enter__.return_value
@@ -31,7 +36,9 @@ class Test_mlflow_logger:
 
     def test_enter_new_experiment(self, logger: MlflowLogger):
         assert logger.run is None
-        with patch("pype.ml_flow.logger.mlflow_logger.mlflow") as mock_mlflow:
+        with patch("pype.ml_flow.logger.mlflow_logger.mlflow") as mock_mlflow, patch.object(
+            logger, "log_branch"
+        ) as mock_log_branch:
             mock_mlflow.get_experiment_by_name.return_value = None
             logger.__enter__()
 
@@ -41,11 +48,77 @@ class Test_mlflow_logger:
             mock_mlflow.set_experiment.assert_called_once_with(experiment_name=logger.name)
 
             mock_mlflow.start_run.assert_called_once_with()
+            mock_log_branch.assert_called_once_with()
             run = mock_mlflow.start_run.return_value
             run.__enter__.assert_called_once_with()
             active_run = run.__enter__.return_value
 
             assert logger.run == active_run
+
+    def test_log_branch(self, logger: MlflowLogger):
+        branch_name = "branch/name"
+        repo = MagicMock()
+        repo.active_branch.name = branch_name
+        with patch.object(logger, "_find_encapsulating_repo", return_value=repo) as mock_find, patch(
+            "pype.ml_flow.logger.mlflow_logger.mlflow"
+        ) as mock_mlflow:
+            logger.run = MagicMock()
+            logger.log_branch()
+
+            mock_find.assert_called_once_with(Path("."))
+            mock_mlflow.set_tag.assert_called_once_with("git_branch", branch_name)
+
+    def test_log_branch_check_run(self, logger: MlflowLogger):
+        with patch.object(logger, "_find_encapsulating_repo"), patch(
+            "pype.ml_flow.logger.mlflow_logger.mlflow"
+        ), pytest_assert(AssertionError, "Please start the experiment first"):
+            logger.log_branch()
+
+    def test_log_branch_no_repo_found(self, logger: MlflowLogger):
+        repo = None
+        with patch.object(logger, "_find_encapsulating_repo", return_value=repo) as mock_find, patch(
+            "pype.ml_flow.logger.mlflow_logger.mlflow"
+        ) as mock_mlflow:
+            logger.run = MagicMock()
+            logger.log_branch()
+
+            mock_find.assert_called_once_with(Path("."))
+            mock_mlflow.set_tag.assert_called_once_with("git_branch", "unknown_branch")
+
+    def test_find_encapsulating_repo(self, logger: MlflowLogger):
+        repo = MagicMock()
+        directory = Path("a_path") / "sub_dir"
+        with patch("pype.ml_flow.logger.mlflow_logger.Repo", return_value=repo) as mock_repo_class:
+            result = logger._find_encapsulating_repo(directory)
+            mock_repo_class.assert_called_once_with(directory.absolute())
+
+            assert result == repo
+
+    def test_find_encapsulating_repo_find_repo_up(self, logger: MlflowLogger):
+        repo = MagicMock()
+        directory = Path("a_path") / "sub_dir"
+        with patch(
+            "pype.ml_flow.logger.mlflow_logger.Repo", side_effect=[InvalidGitRepositoryError, repo]
+        ) as mock_repo_class:
+            result = logger._find_encapsulating_repo(directory)
+            mock_repo_class.assert_has_calls([call(directory.absolute()), call(directory.absolute().parent)])
+
+            assert result == repo
+
+    def test_find_encapsulating_repo_find_no_repo(self, logger: MlflowLogger):
+        directory = Path("/") / "1_dir" / "2_dir"
+        with patch(
+            "pype.ml_flow.logger.mlflow_logger.Repo", side_effect=[InvalidGitRepositoryError] * 2
+        ) as mock_repo_class:
+            result = logger._find_encapsulating_repo(directory)
+            mock_repo_class.assert_has_calls(
+                [
+                    call(Path("/") / "1_dir" / "2_dir"),
+                    call(Path("/") / "1_dir"),
+                ]
+            )
+
+            assert result == None
 
     def test_exit(self, logger: MlflowLogger):
         mock_run = MagicMock()

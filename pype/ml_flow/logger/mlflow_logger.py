@@ -4,6 +4,8 @@ from types import TracebackType
 from typing import Any
 
 import mlflow
+from git import InvalidGitRepositoryError
+from git.repo import Repo
 
 from pype.base.logger import ExperimentLogger
 
@@ -45,6 +47,43 @@ class MlflowLogger(ExperimentLogger):
         mlflow.set_experiment(experiment_name=self.name)
 
         self.run = mlflow.start_run().__enter__()
+        self.log_branch()
+
+    def log_branch(self) -> None:
+        """Set the current branch as a tag on the experiment."""
+        assert self.run is not None, "Please start the experiment first"
+        repo = self._find_encapsulating_repo(Path("."))
+
+        if repo is None:
+            branch_name = "unknown_branch"
+        else:
+            branch_name = repo.active_branch.name
+
+        mlflow.set_tag("git_branch", branch_name)
+
+    def _find_encapsulating_repo(self, directory: Path) -> Repo | None:
+        """Finds the current repo we're in, if any.
+
+        We'll recursively move up from `directory` until we find a valid
+        git repo.
+
+        Args:
+            directory (Path): The directory to start looking for. Usually set
+                to the current directory.
+
+        Returns:
+            Repo | None: None if no repo is found, otherwise a GitPython Repo.
+        """
+        repo = None
+        directory = directory.absolute()
+        while str(directory) != "/":
+            print(directory)
+            try:
+                repo = Repo(directory)
+                break
+            except InvalidGitRepositoryError:
+                directory = directory.parent
+        return repo
 
     def __exit__(
         self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None

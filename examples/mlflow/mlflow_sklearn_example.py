@@ -52,11 +52,12 @@ print(parser.add_argument.call_args_list)
 
 # %%
 # Make a logger using Mlflow. Ensure it starts with 'http://', or you will get connection issues.
+# Make sure you start mlflow before running this!
 experiment_name = "jeroen-example-experiment"
 logger = MlflowLogger(experiment_name, "http://localhost:5000")
 
 # for on-databricks logging. This will also log artifacts.
-# experiment_name = "/Users/<user name>/jeroen-example-experiment"
+# experiment_name = "/Users/<user name>/<experiment name>"
 # logger = MlflowLogger(experiment_name, "databricks")
 
 # %%
