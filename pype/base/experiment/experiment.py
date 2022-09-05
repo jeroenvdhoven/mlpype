@@ -267,6 +267,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         output_folder: Path | str = "outputs",
         seed: int = 1,
         additional_files_to_store: list[str | Path] | None = None,
+        fixed_arguments: dict[str, Any] | None = None,
     ) -> "Experiment":
         """Automatically initialises an Experiment from command line arguments.
 
@@ -291,12 +292,21 @@ run here for logging purposes. Consider using the `from_command_line` or
             seed (int): The RNG seed to ensure reproducability.
             additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
+            fixed_arguments (dict[str, Any] | None, optional): Arguments that won't be read from command line.
+                Useful to pass complex objects that you don't want to optimize. Think of classes, loss functions,
+                metrics, etc. Any value in this dict will overwrite values from the command line. These need to be
+                presented in the same `model__<arg>` or `pipeline__<step>__<arg>` format as the command line arguments.
+
 
         Returns:
             Experiment: An Experiment created with the given parameters from the command line.
         """
         arg_parser = cls._get_cmd_args(model_class, pipeline)
         parsed_args, _ = arg_parser.parse_known_args()
+
+        arguments = parsed_args.__dict__
+        if fixed_arguments is not None:
+            arguments.update(fixed_arguments)
 
         return cls.from_dictionary(
             data_sources=data_sources,

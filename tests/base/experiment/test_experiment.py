@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import MagicMock, call, mock_open, patch
 
-from pytest import fixture
+from pytest import fixture, mark
 
 from pype.base.constants import Constants
 from pype.base.experiment.experiment import Experiment
@@ -375,7 +375,15 @@ def test_from_dictionary():
         )
 
 
-def test_from_command_line():
+@mark.parametrize(
+    ["name", "fixed_args", "expected_dict_extras"],
+    [
+        ["no extras", None, {}],
+        ["extras", {"model__8": 9}, {"model__8": 9}],
+        ["overwrite", {"a": 120}, {"a": 120}],
+    ],
+)
+def test_from_command_line(name, fixed_args, expected_dict_extras):
     class ParserOutput:
         def __init__(self, a, b) -> None:
             self.a = a
@@ -403,6 +411,9 @@ def test_from_command_line():
         mock_parser = mock_get_cmd.return_value
         mock_parser.parse_known_args.return_value = (args, None)
 
+        expected_args = args.__dict__.copy()
+        expected_args.update(expected_dict_extras)
+
         result = Experiment.from_command_line(
             data_sources=data_sources,
             model_class=model_class,
@@ -417,6 +428,7 @@ def test_from_command_line():
             output_folder=output_folder,
             additional_files_to_store=additional_files_to_store,
             seed=seed,
+            fixed_arguments=fixed_args,
         )
 
         assert result == mock_from_dictionary.return_value
@@ -436,7 +448,7 @@ def test_from_command_line():
             model_outputs=model_outputs,
             output_folder=output_folder,
             additional_files_to_store=additional_files_to_store,
-            parameters=args.__dict__,
+            parameters=expected_args,
             seed=seed,
         )
 
