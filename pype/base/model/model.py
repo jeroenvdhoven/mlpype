@@ -1,5 +1,5 @@
 import json
-from abc import ABC, abstractmethod
+from abc import ABC, abstractclassmethod, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Generic, Tuple, TypeVar
@@ -97,8 +97,7 @@ class Model(ABC, Generic[Data]):
         model_class = joblib_serialiser.deserialise(folder / Constants.MODEL_CLASS_FILE)
         return model_class._load(folder, lists["inputs"], lists["outputs"])
 
-    @classmethod
-    @abstractmethod
+    @abstractclassmethod
     def _load(cls, folder: Path, inputs: list[str], outputs: list[str]) -> "Model":
         """Loads a model from file into this Model.
 

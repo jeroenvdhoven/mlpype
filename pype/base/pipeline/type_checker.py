@@ -1,5 +1,5 @@
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC, abstractclassmethod, abstractmethod
 from typing import Any
 
 from pydantic import BaseModel, create_model
@@ -19,8 +19,7 @@ class DataModel(BaseModel, ABC):
             Any: The converted data.
         """
 
-    @classmethod
-    @abstractmethod
+    @abstractclassmethod
     def to_model(cls, data: Any) -> "DataModel":
         """Convert the Model to actual data (e.g. numpy or pandas).
 
