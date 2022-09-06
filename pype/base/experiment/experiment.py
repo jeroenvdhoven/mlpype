@@ -15,7 +15,7 @@ from pype.base.logger import ExperimentLogger
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline
 from pype.base.pipeline.type_checker import TypeCheckerPipe
-from pype.base.serialiser.serialiser import Serialiser
+from pype.base.serialiser import JoblibSerialiser, Serialiser
 from pype.base.utils.parsing import get_args_for_prefix
 
 
@@ -27,9 +27,9 @@ class Experiment:
         pipeline: Pipeline,
         evaluator: Evaluator,
         logger: ExperimentLogger,
-        serialiser: Serialiser,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
+        serialiser: Serialiser | None = None,
         output_folder: Path | str = "outputs",
         additional_files_to_store: list[str | Path] | None = None,
         parameters: dict[str, Any] | None = None,
@@ -49,7 +49,8 @@ class Experiment:
             evaluator (Evaluator): The evaluator to test how good your Model performs.
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
-            serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
+            serialiser (Serialiser | None, optional): The serialiser to serialise any Python objects (expect the Model).
+                Defaults to a joblib serialiser.
             output_folder: (Path | str): The output folder to log artifacts to. Defaults to "outputs".
             input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
@@ -62,6 +63,8 @@ class Experiment:
         """
         assert "train" in data_sources, "Must provide a 'train' entry in the data_sources dictionary."
         self.logger = getLogger(__name__)
+        if serialiser is None:
+            serialiser = JoblibSerialiser()
 
         if additional_files_to_store is None:
             additional_files_to_store = []
