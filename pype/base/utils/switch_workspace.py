@@ -9,6 +9,28 @@ from typing import Generator, Set
 
 
 @contextmanager
+def switch_directory(directory: str | Path) -> Generator:
+    """Allows you to temporarily switch Python over to a different directory.
+
+    This changes the following:
+        - The current working directory will change to `target_workspace`
+
+    These changes will be undone once the context manager ends.
+
+    Args:
+        target_workspace (str | Path): The directory to switch to.
+    """
+    # create backups of the workspace and path.
+    target_directory = Path(directory)
+    old_workspace = os.getcwd()
+    os.chdir(target_directory)
+    # Yield so the normal code in the managed context can run.
+    yield
+
+    os.chdir(old_workspace)
+
+
+@contextmanager
 def switch_workspace(target_workspace: str | Path, extra_files: list[str | Path] | None = None) -> Generator:
     """Allows you to temporarily switch Python over to using a different working directory.
 
