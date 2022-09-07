@@ -1,23 +1,14 @@
 from pathlib import Path
 
-from pype.base.data import DataSet, DataSetSource
 from pype.base.deploy import Inferencer
 
 
-class Predictor:
-    def __init__(self) -> None:
-        """A basic interface to the fixed Inferencer in this package."""
-        folder = Path(__file__).parent / "outputs"
-        print(f"Loading inferencer from {str(folder)}")
-        self.inferencer = Inferencer.from_folder(folder)
+def load_model() -> Inferencer:
+    """Wrapper function to load an Inferencer from a fixed location in a package.
 
-    def predict(self, data: DataSet | DataSetSource) -> DataSet:
-        """Uses the initialised Inferencer to make a prediction.
-
-        Args:
-            data (DataSet | DataSetSource): Input data, see `Inferencer`
-
-        Returns:
-            DataSet: Output data, see `Inferencer`
-        """
-        return self.inferencer.predict(data)
+    Returns:
+        Inferencer: The Inferencer contained in this package.
+    """
+    folder = Path(__file__).parent / "outputs"
+    print(f"Loading inferencer from {str(folder)}")
+    return Inferencer.from_folder(folder)

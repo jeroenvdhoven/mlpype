@@ -70,7 +70,7 @@ def make_wheel(
         with open(tmp_directory_path / "__init__.py", "w") as f:
             f.write("")
         with open(tmp_directory_path / model_name / "__init__.py", "w") as f:
-            f.write("from .main import Predictor")
+            f.write("from .main import load_model")
 
         output_wheel_file = str(output_wheel_file)
         with switch_directory(tmp_directory):
