@@ -1,6 +1,6 @@
 from setuptools import find_namespace_packages, setup
 
-dev_deps = ["pre-commit"]
+dev_deps = ["pre-commit", "pytest-cov"]
 test_deps = ["pytest"]
 deps: list[str] = ["docstring_parser==0.14.1", "pydantic==1.9.1", "joblib==1.1.0", "uvicorn==0.18.2", "fastapi==0.79.0"]
 
