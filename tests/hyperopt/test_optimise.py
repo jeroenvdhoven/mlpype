@@ -1,11 +1,14 @@
 from unittest.mock import MagicMock, patch
 
-from experiment.experiment import Experiment
 from hyperopt import Trials, hp
 from pytest import mark
 
+from pype.base.experiment import Experiment
 from pype.hyperopt.optimise import create_optimisation_function, optimise_experiment
-from tests.test_utils import AnyArg, pytest_assert
+from tests.shared_fixtures import dummy_experiment
+from tests.utils import AnyArg, pytest_assert
+
+dummy_experiment
 
 
 class Test_create_optimisation_function:
@@ -193,7 +196,8 @@ class Test_optimise_experiment:
             "pype.hyperopt.optimise.space_eval"
         ), pytest_assert(
             ValueError,
-            "Spark trials have not been implemented yet with auto-setup, provide a SparkTrials object to the trials argument instead.",
+            "Spark trials have not been implemented yet with auto-setup."
+            + "Provide a SparkTrials object to the trials argument instead.",
         ):
             optimise_experiment(
                 experiment_template=exp,

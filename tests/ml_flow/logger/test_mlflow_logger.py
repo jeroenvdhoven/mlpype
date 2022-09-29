@@ -5,7 +5,7 @@ from git import InvalidGitRepositoryError
 from pytest import fixture
 
 from pype.ml_flow.logger.mlflow_logger import MlflowLogger
-from tests.test_utils import pytest_assert
+from tests.utils import pytest_assert
 
 
 class Test_mlflow_logger:

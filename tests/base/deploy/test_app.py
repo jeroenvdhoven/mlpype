@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from experiment.experiment import Experiment
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pytest import fixture
@@ -10,7 +9,9 @@ from pytest import fixture
 from pype.base.data.dataset import DataSet
 from pype.base.deploy.app import PypeApp
 from pype.base.deploy.inference import Inferencer
-from tests.test_utils import DummyDataModel, dummy_experiment
+from pype.base.experiment import Experiment
+from tests.shared_fixtures import dummy_experiment
+from tests.utils import DummyDataModel
 
 dummy_experiment
 

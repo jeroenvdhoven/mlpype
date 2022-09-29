@@ -9,12 +9,7 @@ from pype.base.pipeline.type_checker import (
     TypeCheckerPipe,
 )
 from pype.sklearn.pipeline.numpy_type_checker import NumpyData, NumpyTypeChecker
-from tests.test_utils import (
-    DummyDataModel,
-    DummyTypeChecker,
-    get_dummy_data,
-    pytest_assert,
-)
+from tests.utils import pytest_assert
 
 
 class Test_NumpyData:

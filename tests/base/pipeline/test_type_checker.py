@@ -11,12 +11,7 @@ from pype.base.pipeline.type_checker import (
     DataSetTypeChecker,
     TypeCheckerPipe,
 )
-from tests.test_utils import (
-    DummyDataModel,
-    DummyTypeChecker,
-    get_dummy_data,
-    pytest_assert,
-)
+from tests.utils import DummyDataModel, DummyTypeChecker, get_dummy_data, pytest_assert
 
 
 class DummyDataStr(DataModel):

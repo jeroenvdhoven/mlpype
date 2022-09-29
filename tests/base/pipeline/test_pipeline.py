@@ -5,7 +5,7 @@ from pytest import fixture
 from pype.base.data.dataset import DataSet
 from pype.base.pipeline.pipe import Pipe
 from pype.base.pipeline.pipeline import Pipeline
-from tests.test_utils import pytest_assert
+from tests.utils import pytest_assert
 
 
 class Test_Pipeline:

@@ -16,7 +16,7 @@ from pydantic import create_model
 from pytest import fixture
 
 from pype.sklearn.pipeline.pandas_type_checker import PandasData, PandasTypeChecker
-from tests.test_utils import pytest_assert
+from tests.utils import pytest_assert
 
 
 class Test_PandasData:

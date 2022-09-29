@@ -8,7 +8,10 @@ from pype.base.data.dataset import DataSet
 from pype.base.data.dataset_source import DataSetSource
 from pype.base.deploy.inference import Inferencer
 from pype.base.experiment import Experiment
-from tests.test_utils import get_dummy_data
+from tests.shared_fixtures import dummy_experiment
+from tests.utils import get_dummy_data
+
+dummy_experiment
 
 
 @fixture(scope="module")

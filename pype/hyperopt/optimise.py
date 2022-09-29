@@ -138,9 +138,8 @@ def optimise_experiment(
             )
         elif trial_type == "spark":
             raise ValueError(
-                """
-Spark trials have not been implemented yet with auto-setup.
-provide a SparkTrials object to the trials argument instead."""
+                "Spark trials have not been implemented yet with auto-setup."
+                + "Provide a SparkTrials object to the trials argument instead."
             )
         else:
             trials = Trials()

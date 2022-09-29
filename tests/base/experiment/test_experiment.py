@@ -8,7 +8,10 @@ from pytest import fixture, mark
 
 from pype.base.constants import Constants
 from pype.base.experiment.experiment import Experiment
-from tests.test_utils import get_dummy_data, pytest_assert
+from tests.shared_fixtures import dummy_experiment
+from tests.utils import get_dummy_data, pytest_assert
+
+dummy_experiment
 
 
 class Test_run:

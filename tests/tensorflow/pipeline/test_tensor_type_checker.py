@@ -7,12 +7,7 @@ from pype.tensorflow.pipeline.tensor_checker import (
     TensorflowData,
     TensorflowTypeChecker,
 )
-from tests.test_utils import (
-    DummyDataModel,
-    DummyTypeChecker,
-    get_dummy_data,
-    pytest_assert,
-)
+from tests.utils import pytest_assert
 
 
 class Test_TensorflowData:
