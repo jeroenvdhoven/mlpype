@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 from unittest.mock import MagicMock, call, mock_open, patch
 
@@ -8,19 +7,14 @@ from pype.base.constants import Constants
 from pype.base.data.dataset import DataSet
 from pype.base.data.dataset_source import DataSetSource
 from pype.base.deploy.inference import Inferencer
-from tests.test_utils import get_dummy_data, get_dummy_experiment
+from pype.base.experiment import Experiment
+from tests.test_utils import get_dummy_data
 
 
 @fixture(scope="module")
-def experiment_path():
-    experiment = get_dummy_experiment()
-    output_folder = experiment.output_folder
-
-    experiment.run()
-
-    yield output_folder
-
-    shutil.rmtree(output_folder)
+def experiment_path(dummy_experiment: Experiment):
+    dummy_experiment.run()
+    yield dummy_experiment.output_folder
 
 
 class Test_Inferencer:

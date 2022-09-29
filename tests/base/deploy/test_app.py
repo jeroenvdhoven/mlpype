@@ -1,8 +1,8 @@
 import json
-import shutil
 from pathlib import Path
 from unittest.mock import patch
 
+from experiment.experiment import Experiment
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pytest import fixture
@@ -10,19 +10,16 @@ from pytest import fixture
 from pype.base.data.dataset import DataSet
 from pype.base.deploy.app import PypeApp
 from pype.base.deploy.inference import Inferencer
-from tests.test_utils import DummyDataModel, get_dummy_experiment
+from tests.test_utils import DummyDataModel, dummy_experiment
+
+dummy_experiment
 
 
 @fixture(scope="module")
-def experiment_path():
-    experiment = get_dummy_experiment()
-    output_folder = experiment.output_folder
+def experiment_path(dummy_experiment: Experiment):
+    dummy_experiment.run()
 
-    experiment.run()
-
-    yield output_folder
-
-    shutil.rmtree(output_folder)
+    yield dummy_experiment.output_folder
 
 
 @fixture

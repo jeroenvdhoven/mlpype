@@ -1,5 +1,9 @@
+import shutil
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Iterable
+
+from pytest import fixture
 
 from pype.base.data.data_source import DataSource
 from pype.base.data.dataset_source import DataSetSource
@@ -13,6 +17,11 @@ from pype.base.pipeline.pipeline import Pipeline
 from pype.base.pipeline.type_checker import DataModel, TypeChecker, TypeCheckerPipe
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from tests.test_utils_training_support import reverse
+
+
+class AnyArg:
+    def __eq__(self, __o: object) -> bool:
+        return True
 
 
 @contextmanager
@@ -32,11 +41,15 @@ def pytest_assert(error_class, message: str | None = None, exact: bool = True):
 class DummyModel(Model[list[int | float]]):
     mean_file = "mean.txt"
 
+    def __init__(self, inputs: list[str], outputs: list[str], seed: int = 1, a: int = 3) -> None:
+        super().__init__(inputs, outputs, seed)
+        self.a = a
+
     def set_seed(self) -> None:
         pass
 
     def _fit(self, x: list[int | float], y: list[int | float]) -> None:
-        self.prediction = sum(y) / len(y)
+        self.prediction = sum(y) / len(y) + self.a
 
     def _transform(self, x: list[int | float]) -> list[int | float]:
         return [self.prediction for _ in x]
@@ -115,7 +128,8 @@ def get_dummy_type_checkers() -> tuple[TypeCheckerPipe, TypeCheckerPipe]:
     )
 
 
-def get_dummy_experiment() -> Experiment:
+@fixture(scope="module")
+def dummy_experiment() -> Iterable[Experiment]:
     train = get_dummy_data(20, 1, 0)
     test = get_dummy_data(5, 2, -1)
 
@@ -123,7 +137,7 @@ def get_dummy_experiment() -> Experiment:
 
     input_checker, output_checker = get_dummy_type_checkers()
 
-    return Experiment(
+    yield Experiment(
         data_sources={"train": train, "test": test},
         model=DummyModel(inputs=["x"], outputs=["y"]),
         pipeline=get_dummy_pipeline(),
@@ -135,3 +149,6 @@ def get_dummy_experiment() -> Experiment:
         output_type_checker=output_checker,
         parameters={"param_1": 2},
     )
+
+    # make sure we purge the output folder again after a test is done.
+    shutil.rmtree(output_folder)

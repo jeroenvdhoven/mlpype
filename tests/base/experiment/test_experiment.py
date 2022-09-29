@@ -1,25 +1,22 @@
-import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable
 from unittest.mock import MagicMock, call, mock_open, patch
 
 from pytest import fixture, mark
 
 from pype.base.constants import Constants
 from pype.base.experiment.experiment import Experiment
-from tests.test_utils import get_dummy_data, get_dummy_experiment, pytest_assert
+from tests.test_utils import get_dummy_data, pytest_assert
 
 
 class Test_run:
     @fixture(scope="class")
-    def run_experiment(self) -> tuple[Experiment, dict]:
-        experiment = get_dummy_experiment()
-        metrics = experiment.run()
+    def run_experiment(self, dummy_experiment: Experiment) -> Iterable[tuple[Experiment, dict]]:
+        metrics = dummy_experiment.run()
 
-        yield experiment, metrics
-
-        shutil.rmtree(experiment.output_folder)
+        yield dummy_experiment, metrics
 
     def test_unit(self):
         data_sources = {"train": MagicMock(), "test": MagicMock()}
@@ -373,6 +370,30 @@ def test_from_dictionary():
             additional_files_to_store=additional_files_to_store,
             parameters=args,
         )
+
+
+def test_copy(dummy_experiment: Experiment):
+    exp = dummy_experiment
+    params = {"model__a": 4}
+
+    result = exp.copy(params)
+
+    assert result.model.a == 4
+    assert result.model != exp.model
+    assert result.model.__class__ == exp.model.__class__
+
+    assert result.pipeline != exp.pipeline
+    assert len(result.pipeline) == len(exp.pipeline)
+    assert result.pipeline[0].name == exp.pipeline[0].name
+
+    assert result.data_sources == exp.data_sources
+    assert result.additional_files_to_store == exp.additional_files_to_store
+    assert result.evaluator == exp.evaluator
+    assert result.experiment_logger == exp.experiment_logger
+    assert result.input_type_checker == exp.input_type_checker
+    assert result.output_type_checker == exp.output_type_checker
+    assert result.output_folder == exp.output_folder
+    assert result.serialiser == exp.serialiser
 
 
 @mark.parametrize(

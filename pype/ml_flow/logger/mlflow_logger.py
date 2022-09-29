@@ -77,7 +77,6 @@ class MlflowLogger(ExperimentLogger):
         repo = None
         directory = directory.absolute()
         while str(directory) != "/":
-            print(directory)
             try:
                 repo = Repo(directory)
                 break

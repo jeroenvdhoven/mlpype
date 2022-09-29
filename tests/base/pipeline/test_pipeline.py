@@ -184,6 +184,41 @@ class Test_Pipeline:
             }
         )
 
+    def test_copy(self):
+        sub_pipe_1_op_class = MagicMock()
+        sub_pipe_1 = Pipe("step0", sub_pipe_1_op_class, [], [])
+
+        sub_pipe_2_op_class = MagicMock()
+        sub_pipe_2 = Pipe("step1", sub_pipe_2_op_class, [], [])
+
+        sub_pipe_pipeline_op_class = MagicMock()
+        sub_pipe_pipeline = Pipe("step2", sub_pipe_pipeline_op_class, [], [])
+
+        sub_pipeline = Pipeline([sub_pipe_pipeline])
+        pipeline = Pipeline([sub_pipe_1, sub_pipe_2, sub_pipeline])
+
+        args = {
+            "step0__a": 1,
+            "step0__b": 2,
+            "step1__c": 3,
+            "step2__d": 4,
+        }
+        result = pipeline.copy(args)
+
+        expected_args = [{"a": 1, "b": 2}, {"c": 3}, {"d": 4}]
+        expected_pipes = [sub_pipe_1, sub_pipe_2, sub_pipe_pipeline]
+        for expected, actual, args in zip(expected_pipes, result.pipes, expected_args):
+            assert isinstance(actual, Pipe)
+            assert expected != actual
+
+            assert actual.args == args
+            assert actual.operator_class == expected.operator_class
+            actual.operator_class.assert_called_with(**args)
+            assert actual.name == expected.name
+            assert actual.inputs == expected.inputs
+            assert actual.outputs == expected.outputs
+            assert actual.fit_inputs == expected.fit_inputs
+
     def test_get_item_int(self, pipeline: Pipeline, pipes: list[MagicMock]):
         assert pipeline[0] == pipes[0]
         assert pipeline[1] == pipes[1]

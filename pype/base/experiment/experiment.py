@@ -189,6 +189,43 @@ run here for logging purposes. Consider using the `from_command_line` or
         of.mkdir(exist_ok=True, parents=True)
         (of / Constants.MODEL_FOLDER).mkdir(exist_ok=True)
 
+    def copy(self, parameters: dict[str, Any], seed: int = 1) -> "Experiment":
+        """Create a fresh copy of this Experiment.
+
+        The Model & Pipeline will be recreated, so any trained versions will be
+        re-initialised.
+
+        Args:
+            parameters (dict[str, Any]): New parameters for the Model and Pipeline
+                to be re-initialised with.
+            seed (int, optional): Training seed. Defaults to 1.
+
+        Returns:
+            Experiment: _description_
+        """
+        model_class = self.model.__class__
+
+        model_args = get_args_for_prefix("model__", parameters)
+        model = model_class(seed=seed, inputs=self.model.inputs, outputs=self.model.outputs, **model_args)
+
+        pipeline_args = get_args_for_prefix("pipeline__", parameters)
+        new_pipeline = self.pipeline.copy(pipeline_args)
+
+        return Experiment(
+            # We might want to also deep copy data_sources, evaluator, type checkers, and experiment_logger.
+            data_sources=self.data_sources,
+            model=model,
+            pipeline=new_pipeline,
+            evaluator=self.evaluator,
+            logger=self.experiment_logger,
+            serialiser=self.serialiser,
+            output_folder=self.output_folder,
+            input_type_checker=self.input_type_checker,
+            output_type_checker=self.output_type_checker,
+            additional_files_to_store=self.additional_files_to_store,
+            parameters=parameters,
+        )
+
     @classmethod
     def from_dictionary(
         cls,
