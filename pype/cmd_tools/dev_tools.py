@@ -22,7 +22,7 @@ def run_dev_install(parser: ArgumentParser) -> None:
         parser (ArgumentParser): Argument parser from the top-level entrypoint.
     """
     # please ensure this is properly sorted!
-    prioritised_packages = ["pype.base"]
+    prioritised_packages = ["pype.base", "pype.sklearn"]
 
     parser.add_argument("--editable", default=True, action=BooleanOptionalAction)
     parsed = parser.parse_args()
