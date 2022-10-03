@@ -313,11 +313,9 @@ class Test_init:
             logger = mock_get_logger.return_value
 
             logger.warning.assert_called_once_with(
-                """
-It is highly recommended to provide the parameters used to initialise your
+                """It is highly recommended to provide the parameters used to initialise your
 run here for logging purposes. Consider using the `from_command_line` or
-`from_dictionary` initialisation methods
-                """
+`from_dictionary` initialisation methods"""
             )
 
 

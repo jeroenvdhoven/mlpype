@@ -71,11 +71,9 @@ class Experiment:
         if parameters is None:
             parameters = {}
             self.logger.warning(
-                """
-It is highly recommended to provide the parameters used to initialise your
+                """It is highly recommended to provide the parameters used to initialise your
 run here for logging purposes. Consider using the `from_command_line` or
-`from_dictionary` initialisation methods
-                """
+`from_dictionary` initialisation methods"""
             )
         if isinstance(output_folder, str):
             output_folder = Path(output_folder)
@@ -372,3 +370,24 @@ run here for logging purposes. Consider using the `from_command_line` or
         model_class.get_parameters(parser)
         add_args_to_parser_for_pipeline(parser, pipeline)
         return parser
+
+    def __str__(self) -> str:
+        """Create string representation of this Experiment.
+
+        Returns:
+            str: A string representation of this Experiment.
+        """
+        data_part = "datasets:\n" + "\n\t".join(
+            [
+                f"""\t{name}:
+{ds_source.__str__(indents=2)}"""
+                for name, ds_source in self.data_sources.items()
+            ]
+        )
+
+        pipeline_part = "pipeline:\n" + self.pipeline.__str__(indents=1)
+        model_part = f"model:\n\t{str(self.model)}"
+        logger_part = f"logger:\n\t{str(self.experiment_logger)}"
+        evaluator_part = f"evaluator:\n{self.evaluator.__str__(indents=1)}"
+
+        return "\n\n".join([data_part, pipeline_part, model_part, logger_part, evaluator_part])

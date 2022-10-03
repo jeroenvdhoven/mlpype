@@ -129,3 +129,14 @@ class Pipe:
             kw_args=args,
             fit_inputs=self.fit_inputs,
         )
+
+    def __str__(self) -> str:
+        """Create string representation of this Pipe.
+
+        Returns:
+            str: A string representation of this Pipe.
+        """
+        fit_section = f" (+ {self.fit_inputs})" if len(self.fit_inputs) > 0 else ""
+        input_output_section = f"{self.inputs}{fit_section} -> {self.outputs}"
+
+        return f"Pipe `{self.name}`, {input_output_section}: {self.operator}"

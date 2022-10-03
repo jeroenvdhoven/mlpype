@@ -217,3 +217,22 @@ class Pipeline:
             else:
                 result += 1
         return result
+
+    def __str__(self, indents: int = 0) -> str:
+        """Create string representation of this Pipeline.
+
+        Args:
+            indents (int, optional): The number of preceding tabs. Defaults to 0.
+
+        Returns:
+            str: A string representation of this Pipeline.
+        """
+        tabs = "\t" * indents
+        output = [tabs + "Pipeline:"]
+        indents += 1
+        for pipe in self.pipes:
+            if isinstance(pipe, Pipe):
+                output.append(tabs + str(pipe))
+            else:
+                output.append(pipe.__str__(indents))
+        return "\n".join(output)

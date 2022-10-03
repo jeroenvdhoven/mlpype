@@ -142,3 +142,11 @@ class Model(ABC, Generic[Data]):
     @abstractmethod
     def _transform(self, *data: Data) -> Tuple[Data] | Data:
         raise NotImplementedError
+
+    def __str__(self) -> str:
+        """Create string representation of this Model.
+
+        Returns:
+            str: A string representation of this Model.
+        """
+        return f"{type(self).__name__}: {self.inputs} -> {self.outputs}"
