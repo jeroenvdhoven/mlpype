@@ -21,15 +21,11 @@ def package_files(directory: Path | str) -> list[str]:
 
 
 extra_files = package_files(Path().parent.absolute())
-print("\nEXTRA FILES\n", extra_files)
-
 
 setup(
     name="{package_name}",
     install_requires=["{install_requires}"],
     version="{version}",
     include_package_data=True,
-    # TODO: improve this package_data argument for recursive folders.
-    # package_data={"": ["outputs/*", "outputs/model/*"]},
     package_data={"": extra_files},
 )
