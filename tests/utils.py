@@ -1,6 +1,8 @@
 from contextlib import contextmanager
 from pathlib import Path
 
+from data.data_sink import DataSink
+
 from pype.base.data.data_source import DataSource
 from pype.base.data.dataset_source import DataSetSource
 from pype.base.evaluate.evaluator import Evaluator
@@ -8,7 +10,12 @@ from pype.base.model import Model
 from pype.base.pipeline.operator import Operator
 from pype.base.pipeline.pipe import Pipe
 from pype.base.pipeline.pipeline import Pipeline
-from pype.base.pipeline.type_checker import DataModel, TypeChecker, TypeCheckerPipe
+from pype.base.pipeline.type_checker import (
+    DataModel,
+    DataSetModel,
+    TypeChecker,
+    TypeCheckerPipe,
+)
 from tests.utils_training_support import reverse
 
 
@@ -67,12 +74,23 @@ class DummyDataSource(DataSource[list[float]]):
     def read(self) -> list[float]:
         return self.l
 
+    def __eq__(self, __o: object) -> bool:
+        return self.l == __o.l
+
 
 def get_dummy_data(n: int, x_offset: int, y_offset: int) -> DataSetSource:
     return DataSetSource(
         x=DummyDataSource([i + x_offset for i in range(n)]),
         y=DummyDataSource([i + y_offset for i in range(n)]),
     )
+
+
+class DummyDataSink(DataSink[list[float]]):
+    def __init__(self) -> None:
+        self.data = None
+
+    def write(self, data: list[float]) -> None:
+        self.data = data
 
 
 class DummyOperator(Operator[list[float]]):
@@ -100,6 +118,11 @@ class DummyDataModel(DataModel):
     @classmethod
     def to_model(cls, data: list[float]) -> "DataModel":
         return cls(data=data)
+
+
+class DummyDataSet(DataSetModel):
+    x: DummyDataModel
+    y: DummyDataModel
 
 
 class DummyTypeChecker(TypeChecker):
