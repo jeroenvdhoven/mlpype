@@ -180,7 +180,8 @@ run here for logging purposes. Consider using the `from_command_line` or
         with open(extra_files_file, "w") as f:
             data = {"paths": paths_to_log}
             json.dump(data, f)
-            self.experiment_logger.log_file(extra_files_file)
+        # Make sure the file path is closed before logging anything, to make sure all writes have flushed.
+        self.experiment_logger.log_file(extra_files_file)
 
     def _create_output_folders(self) -> None:
         of = self.output_folder
