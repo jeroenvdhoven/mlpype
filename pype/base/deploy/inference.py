@@ -78,3 +78,17 @@ class Inferencer:
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
         )
+
+    def __str__(self) -> str:
+        """Create string representation of this Inferencer.
+
+        Returns:
+            str: A string representation of this Inferencer.
+        """
+        pipeline_part = "pipeline:\n" + self.pipeline.__str__(indents=1)
+        model_part = f"model:\n\t{str(self.model)}"
+
+        inputs = f"inputs:\n\t{str(self.input_type_checker)}"
+        outputs = f"outputs:\n\t{str(self.output_type_checker)}"
+
+        return "\n\n".join([inputs, outputs, pipeline_part, model_part])
