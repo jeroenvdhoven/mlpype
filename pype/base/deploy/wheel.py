@@ -5,7 +5,7 @@ from shutil import copyfile, copytree
 from tempfile import TemporaryDirectory
 
 from pype.base.constants import Constants
-from pype.base.utils.switch_workspace import switch_directory
+from pype.base.utils.workspace import switch_directory
 
 
 def make_wheel(

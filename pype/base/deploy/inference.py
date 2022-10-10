@@ -8,7 +8,7 @@ from pype.base.model import Model
 from pype.base.pipeline import Pipeline
 from pype.base.pipeline.type_checker import TypeCheckerPipe
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
-from pype.base.utils.switch_workspace import switch_workspace
+from pype.base.utils.workspace import switch_workspace
 
 
 class Inferencer:
