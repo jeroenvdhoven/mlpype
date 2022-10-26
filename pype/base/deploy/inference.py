@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from typing import Type
 
+from serialiser.serialiser import Serialiser
+
 from pype.base.constants import Constants
 from pype.base.data import DataSet, DataSetSource
 from pype.base.model import Model
@@ -52,21 +54,25 @@ class Inferencer:
         return predicted
 
     @classmethod
-    def from_folder(cls: Type["Inferencer"], folder: Path) -> "Inferencer":
+    def from_folder(cls: Type["Inferencer"], folder: Path, serialiser: Serialiser | None = None) -> "Inferencer":
         """Loads a Inferencer from the results of an Experiment.
 
         Args:
             folder (Path): The output folder from an Experiment, from which we load
                 all required elements to make a inference pipeline.
+            serialiser (Serialiser | None): The Serialiser used to deserialise the pipeline and input/output
+                type checkers. Defaults to a JoblibSerialiser.
 
         Returns:
             Inferencer: The inference pipeline that can predict for new data.
         """
+        if serialiser is None:
+            serialiser = JoblibSerialiser()
+
         with open(folder / Constants.EXTRA_FILES, "r") as f:
             extra_files = json.load(f)["paths"]
 
         with switch_workspace(folder, extra_files):
-            serialiser = JoblibSerialiser()
             model = Model.load(Constants.MODEL_FOLDER)
             pipeline = serialiser.deserialise(Constants.PIPELINE_FILE)
             input_type_checker = serialiser.deserialise(Constants.INPUT_TYPE_CHECKER_FILE)
