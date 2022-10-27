@@ -1,7 +1,8 @@
-"""Only intended for command line tools."""
+"""Only intended for command line tools for development."""
 from argparse import ArgumentParser
 
-from .dev_tools import run_dev_install
+from .dev_tools import run_dev_build, run_dev_install
+from .helpers import split_cmd_line
 
 
 def main() -> None:
@@ -9,18 +10,15 @@ def main() -> None:
 
     Raises:
         ValueError: If the subcommand is not allowed. Current values are:
-            - dev-install
+            - dev install
+            - dev build
     """
-    allowed_values = ["dev-install"]
+    allowed_values = {
+        "dev": {
+            "install": run_dev_install,
+            "build": run_dev_build,
+        }
+    }
 
     parser = ArgumentParser()
-    parser.add_argument("command", type=str, help=f"The command to run. Allowed values: {allowed_values}")
-
-    parsed, _ = parser.parse_known_args()
-    command = parsed.command
-
-    if command not in allowed_values:
-        raise ValueError(f"`{command}` is not a valid pype command")
-
-    if command == "dev-install":
-        run_dev_install(parser)
+    split_cmd_line(parser, allowed_values, level=0)  # type: ignore

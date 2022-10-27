@@ -25,3 +25,7 @@ outputs/
 
 # mlflow
 mlruns*/
+
+# build artifacts
+dist/
+packages/
