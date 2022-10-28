@@ -1,13 +1,13 @@
 
 build:
-	pype dev build
+	./scripts/build.sh
 
 clean:
 	rm -rf dist/ packages/
 
 dev-install:
 	pip install -e .
-	pype dev install --editable
+	./scripts/dev_install.sh
 
 host-pypi-local:
 	mkdir -p packages
