@@ -7,7 +7,7 @@ clean:
 
 dev-install:
 	pip install -e .
-	./scripts/dev_install.sh
+	./scripts/dev_install.sh -e 1
 
 host-pypi-local:
 	mkdir -p packages
