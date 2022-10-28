@@ -16,9 +16,9 @@ from pathlib import Path
 from typing import Iterable
 from unittest.mock import MagicMock
 
-import mlflow
 import numpy as np
 import pandas as pd
+from mlflow.tracking.fluent import get_experiment_by_name
 from sklearn.datasets import load_iris
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
@@ -32,7 +32,7 @@ from pype.base.pipeline.pipe import Pipe
 from pype.base.pipeline.pipeline import Pipeline
 from pype.base.pipeline.type_checker import TypeCheckerPipe
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
-from pype.ml_flow.logger.mlflow_logger import MlflowLogger
+from pype.mlflow.logger.mlflow_logger import MlflowLogger
 from pype.sklearn.data.data_frame_source import DataFrameSource
 from pype.sklearn.model.linear_regression_model import LinearRegressionModel
 from pype.sklearn.model.logistic_regression_model import LogisticRegressionModel
@@ -147,5 +147,5 @@ print(result)
 # %%
 # Get artifact path from mlflow
 
-exp = mlflow.get_experiment_by_name(experiment_name)
+exp = get_experiment_by_name(experiment_name)
 print("artifact_location:", exp.artifact_location)

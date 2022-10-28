@@ -3,9 +3,19 @@ from pathlib import Path
 from types import TracebackType
 from typing import Any
 
-import mlflow
 from git import InvalidGitRepositoryError
 from git.repo import Repo
+from mlflow.tracking import set_tracking_uri
+from mlflow.tracking.fluent import (
+    create_experiment,
+    get_experiment_by_name,
+    log_artifact,
+    log_metrics,
+    log_params,
+    set_experiment,
+    set_tag,
+    start_run,
+)
 
 from pype.base.logger import ExperimentLogger
 
@@ -21,7 +31,7 @@ class MlflowLogger(ExperimentLogger):
                 It can also equal `databricks`.
             artifact_location (str | None, optional): The artificat uri location. This is needed if you set up
                 your own artifact location, to make sure files are copied over to any remote tracking server.
-                This is not required when using hosted databricks. Defaults to None, like in mlflow.
+                This is not required when using hosted databricks. Defaults to None, like in
         """
         super().__init__()
         logger = logging.getLogger(__name__)
@@ -35,18 +45,18 @@ class MlflowLogger(ExperimentLogger):
 
     def __enter__(self) -> None:
         """Setup the mlflow experiment and call start_run."""
-        mlflow.set_tracking_uri(self.uri)
-        experiment = mlflow.get_experiment_by_name(self.name)
+        set_tracking_uri(self.uri)
+        experiment = get_experiment_by_name(self.name)
 
         if experiment is None:
             # this is a new experiment: create it explicitly with the artifact uri
             # TODO: make sure this works on S3 / databricks!
             # Note: this works on databricks.
-            mlflow.create_experiment(self.name, self.artifact_location)
+            create_experiment(self.name, self.artifact_location)
 
-        mlflow.set_experiment(experiment_name=self.name)
+        set_experiment(experiment_name=self.name)
 
-        self.run = mlflow.start_run().__enter__()
+        self.run = start_run().__enter__()
         self.log_branch()
 
     def log_branch(self) -> None:
@@ -59,7 +69,7 @@ class MlflowLogger(ExperimentLogger):
         else:
             branch_name = repo.active_branch.name
 
-        mlflow.set_tag("git_branch", branch_name)
+        set_tag("git_branch", branch_name)
 
     def _find_encapsulating_repo(self, directory: Path) -> Repo | None:
         """Finds the current repo we're in, if any.
@@ -103,7 +113,7 @@ class MlflowLogger(ExperimentLogger):
         Args:
             metrics (dict[str, float | int | str | bool]): A dictionary of metric names and values.
         """
-        mlflow.log_metrics(metrics)
+        log_metrics(metrics)
 
     def log_parameters(self, parameters: dict[str, Any]) -> None:
         """Logs the parameters for a given run.
@@ -115,7 +125,7 @@ class MlflowLogger(ExperimentLogger):
                 parameters should be no more complicated than string, float, int, bool, or a
                 list of these.
         """
-        mlflow.log_params(parameters)
+        log_params(parameters)
 
     def log_file(self, file: str | Path) -> None:
         """Logs a given file as part of an experiment.
@@ -128,4 +138,4 @@ class MlflowLogger(ExperimentLogger):
         Args:
             file (str | Path): The file to log.
         """
-        mlflow.log_artifact(str(file))
+        log_artifact(str(file))

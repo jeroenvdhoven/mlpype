@@ -1,7 +1,9 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import mlflow
+from mlflow.artifacts import download_artifacts
+from mlflow.tracking import set_tracking_uri
+from mlflow.tracking.fluent import get_experiment_by_name, list_run_infos
 
 from pype.base.deploy import Inferencer
 
@@ -25,13 +27,13 @@ def load_experiment_from_mlflow(
     Returns:
         Inferencer: _description_
     """
-    mlflow.set_tracking_uri(url)
+    set_tracking_uri(url)
 
     # verify the run ID provided is part of the given experiment.
-    exp_id = mlflow.get_experiment_by_name(experiment_name)
+    exp_id = get_experiment_by_name(experiment_name)
     assert exp_id is not None, f"Experiment {experiment_name} does not exist in {url}."
     assert run_id in [
-        run.run_id for run in mlflow.list_run_infos(exp_id.experiment_id)
+        run.run_id for run in list_run_infos(exp_id.experiment_id)
     ], f"Run ID {run_id} is not present in the given experiment."
 
     if directory is None:
@@ -47,5 +49,5 @@ def _download_and_load(
     run_id: str,
     directory: Path,
 ) -> Inferencer:
-    mlflow.artifacts.download_artifacts(f"runs:/{run_id}/", dst_path=str(directory))
+    download_artifacts(f"runs:/{run_id}/", dst_path=str(directory))
     return Inferencer.from_folder(directory)
