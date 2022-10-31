@@ -9,10 +9,10 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 
 from pype.base.data.dataset import DataSet
-from pype.base.deploy.app import PypeApp, write_in_background
 from pype.base.deploy.inference import Inferencer
 from pype.base.experiment import Experiment
 from pype.base.pipeline.type_checker import DataSetModel
+from pype.fastapi.deploy.app import PypeApp, write_in_background
 from tests.shared_fixtures import dummy_experiment
 from tests.utils import (
     AnyArg,
@@ -64,7 +64,7 @@ class Test_create_app:
     def test_loading(self, app: PypeApp):
         with patch.object(app, "_load_model") as mock_load, patch.object(
             app, "_verify_tracking_servers"
-        ) as mock_verify, patch("pype.base.deploy.app.getLogger") as mock_get_logger:
+        ) as mock_verify, patch("pype.fastapi.deploy.app.getLogger") as mock_get_logger:
             mock_inferencer = mock_load.return_value
             mock_inferencer.input_type_checker.get_pydantic_types.return_value = DummyDataSet
             mock_inferencer.output_type_checker.get_pydantic_types.return_value = DummyDataSet
@@ -191,7 +191,7 @@ class Test_app:
         x = [1.0, 2.0, 3.0, 4.0]
 
         with patch.object(app_with_tracking, "_handle_tracking") as mock_handle, patch(
-            "pype.base.deploy.app.getLogger"
+            "pype.fastapi.deploy.app.getLogger"
         ) as mock_get_logger:
             app = app_with_tracking.create_app()
             test_client = TestClient(app)

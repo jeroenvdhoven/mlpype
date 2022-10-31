@@ -3,7 +3,8 @@ from logging import Logger, getLogger
 from pathlib import Path
 from typing import Any
 
-from fastapi import BackgroundTasks, FastAPI
+from fastapi.applications import FastAPI
+from fastapi.background import BackgroundTasks
 
 from pype.base.data import DataSink
 from pype.base.data.dataset import DataSet

@@ -1,19 +1,8 @@
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi.applications import FastAPI
 
-from pype.base.deploy import Inferencer, PypeApp
-
-
-def load_model() -> Inferencer:
-    """Wrapper function to load an Inferencer from a fixed location in a package.
-
-    Returns:
-        Inferencer: The Inferencer contained in this package.
-    """
-    folder = Path(__file__).parent / "outputs"
-    print(f"Loading inferencer from {str(folder)}")
-    return Inferencer.from_folder(folder)
+from pype.fastapi.deploy import PypeApp
 
 
 def load_app() -> FastAPI:
@@ -33,5 +22,5 @@ def load_app() -> FastAPI:
     Returns:
         FastAPI: The FastAPI/PypeApp server used to host the model.
     """
-    folder = Path(__file__).parent / "outputs"
+    folder = Path(__file__).parent.parent / "outputs"
     return PypeApp("model", folder=folder).create_app()

@@ -2,14 +2,13 @@ import json
 from pathlib import Path
 from typing import Type
 
-from serialiser.serialiser import Serialiser
-
 from pype.base.constants import Constants
 from pype.base.data import DataSet, DataSetSource
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline
 from pype.base.pipeline.type_checker import TypeCheckerPipe
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
+from pype.base.serialiser.serialiser import Serialiser
 from pype.base.utils.workspace import switch_workspace
 
 

@@ -34,7 +34,7 @@ def make_wheel(
     if output_wheel_file is None:
         output_wheel_file = Path("").parent.absolute() / "wheel_output"
 
-    local_dir = Path(__file__).parent / "wheel_helpers"
+    local_dir = Path(__file__).parent / "helpers"
     template_file = local_dir / "setup_template.py"
     main_file = local_dir / "wheel_main.py"
 
