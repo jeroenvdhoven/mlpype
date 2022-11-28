@@ -1,3 +1,5 @@
+from typing import Type
+
 import pandas as pd
 from pydantic import create_model
 from pyspark.sql import DataFrame as SparkDataFrame
@@ -7,7 +9,8 @@ from pype.base.pipeline.type_checker import DataModel, TypeChecker
 
 
 class SparkData(DataModel):
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        """Sets a spark session by calling getOrCreate."""
         self.spark_session = SparkSession.builder.getOrCreate()
 
     def convert(self) -> SparkDataFrame:
@@ -52,11 +55,12 @@ class SparkTypeChecker(TypeChecker[SparkDataFrame]):
         return {name: self._convert_dtype(string_type) for name, string_type in dct.items()}
 
     def _convert_dtype(self, string_type: str) -> tuple[str, type]:
+        conv_type: Type | None = None
         if string_type == "str":
             conv_type = str
         elif string_type == "int":
             conv_type = int
-        elif string_type == "float":
+        elif string_type in ["float", "double"]:
             conv_type = float
         elif string_type == "bool":
             conv_type = bool
