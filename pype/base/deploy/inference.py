@@ -56,6 +56,8 @@ class Inferencer:
     def from_folder(cls: Type["Inferencer"], folder: Path, serialiser: Serialiser | None = None) -> "Inferencer":
         """Loads a Inferencer from the results of an Experiment.
 
+        We use the absolute version of the path to try and prevent loading issues.
+
         Args:
             folder (Path): The output folder from an Experiment, from which we load
                 all required elements to make a inference pipeline.
@@ -68,14 +70,15 @@ class Inferencer:
         if serialiser is None:
             serialiser = JoblibSerialiser()
 
+        folder = folder.absolute()
         with open(folder / Constants.EXTRA_FILES, "r") as f:
             extra_files = json.load(f)["paths"]
 
         with switch_workspace(folder, extra_files):
-            model = Model.load(Constants.MODEL_FOLDER)
-            pipeline = serialiser.deserialise(Constants.PIPELINE_FILE)
-            input_type_checker = serialiser.deserialise(Constants.INPUT_TYPE_CHECKER_FILE)
-            output_type_checker = serialiser.deserialise(Constants.OUTPUT_TYPE_CHECKER_FILE)
+            model = Model.load(folder / Constants.MODEL_FOLDER)
+            pipeline = serialiser.deserialise(folder / Constants.PIPELINE_FILE)
+            input_type_checker = serialiser.deserialise(folder / Constants.INPUT_TYPE_CHECKER_FILE)
+            output_type_checker = serialiser.deserialise(folder / Constants.OUTPUT_TYPE_CHECKER_FILE)
 
         return cls(
             model=model,
