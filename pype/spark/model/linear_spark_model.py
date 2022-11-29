@@ -2,7 +2,7 @@ from typing import Any
 
 from pyspark.ml.regression import LinearRegression
 
-from pype.spark.model import SparkModel
+from pype.spark.model.spark_model import SparkModel
 
 
 class LinearSparkModel(SparkModel[LinearRegression]):

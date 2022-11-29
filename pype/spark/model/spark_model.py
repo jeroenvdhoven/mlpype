@@ -27,7 +27,7 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         self,
         inputs: list[str],
         outputs: list[str],
-        output_col: str = "prediction",
+        output_col: str | None = None,
         model: BaseSparkModel | None = None,
         predictor: T | None = None,
         seed: int = 1,
@@ -38,16 +38,17 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         Args:
             inputs (list[str]): The name of the input DataFrame. Should be a list of 1 string.
             outputs (list[str]): The name of the output DataFrame. Should be a list of 1 string, the same as `inputs`
-            output_col (str, optional): The name of the column where the model will put the output.
-                Defaults to "prediction"
+            output_col (str | None, optional): The name of the column where the model will put the output.
+                Defaults to None, which means we won't select any columns and instead return the full output
+                of the model.
             predictor (Predictor, optional): The Spark Predictor. If not set, we try to instantiate it
                 using `model_args`
             model (BaseSparkModel, optional): The Spark Model. Defaults to None. If set to None,
                 this model can't be serialised or used for inference.
             seed (int, optional): Spark Seed. Currently ignored, unfortunately. Defaults to 1.
         """
-        assert len(inputs) == 1, "SparkML only requires a single DataFrame as input."
-        assert len(outputs) == 1, "SparkML only requires a single DataFrame as output."
+        assert len(inputs) == 1, "SparkML only requires a single DataFrame as input and output, the same one."
+        assert len(outputs) == 1, "SparkML only requires a single DataFrame as input and output, the same one."
         assert inputs == outputs, "SparkML only requires a single DataFrame as input and output, the same one."
         super().__init__(inputs, outputs, seed)
         if predictor is None:
@@ -89,7 +90,11 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
     def _transform(self, *data: SparkDataFrame) -> Iterable[SparkDataFrame] | SparkDataFrame:
         assert len(data) == 1, f"SparkML needs a single DataFrame as input, got {len(data)}"
         assert self.model is not None, "Please fit this model before transforming data."
-        return self.model.transform(data[0]).select(self.output_col)
+
+        result = self.model.transform(data[0])
+        if self.output_col is not None:
+            result = result.select(self.output_col)
+        return result
 
     def _save(self, folder: Path) -> None:
         assert self.model is not None, "Please fit this model before transforming data."
