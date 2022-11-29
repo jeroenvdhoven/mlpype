@@ -1,12 +1,26 @@
-from typing import Any
+from typing import Any, Type
 
-from data.dataset import DataSet
 from pyspark.ml import Estimator, Transformer
 
+from pype.base.data.dataset import DataSet
+from pype.base.pipeline.operator import Operator
 from pype.base.pipeline.pipe import Pipe
 
 
 class SparkPipe(Pipe):
+    def __init__(
+        self,
+        name: str,
+        operator: Type[Operator],
+        inputs: list[str],
+        outputs: list[str],
+        kw_args: dict[str, Any] | None = None,
+        fit_inputs: list[str] | None = None,
+    ) -> None:
+        """Same init as Pipe."""
+        super().__init__(name, operator, inputs, outputs, kw_args, fit_inputs)
+        self.fitted = None
+
     def fit(self, data: DataSet) -> "SparkPipe":
         """Fits the SparkPipe to the given DataSet.
 
@@ -39,6 +53,7 @@ class SparkPipe(Pipe):
         Returns:
             DataSet: The transformed Data.
         """
+        assert self.fitted is not None, "Make sure you fit the pipeline before transforming."
         transformed = self.fitted.transform(*data.get_all(self.inputs))
         if len(self.outputs) < 2:
             transformed = [transformed]
@@ -67,7 +82,8 @@ class SparkPipe(Pipe):
             dict[str, Any]: A dict representation of this object.
         """
         dct = self.__dict__.copy()
-        del dct["fitted"]
+        if "fitted" in dct:
+            del dct["fitted"]
         del dct["operator"]
         return dct
 
@@ -80,4 +96,6 @@ class SparkPipe(Pipe):
         fit_section = f" (+ {self.fit_inputs})" if len(self.fit_inputs) > 0 else ""
         input_output_section = f"{self.inputs}{fit_section} -> {self.outputs}"
 
-        return f"Pipe `{self.name}`, {input_output_section}: {self.fitted}"
+        postfix = "unfitted" if self.fitted is None else str(self.fitted)
+
+        return f"Pipe `{self.name}`, {input_output_section}: {postfix}"

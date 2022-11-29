@@ -27,6 +27,9 @@ class SparkData(DataModel):
     def to_model(cls, data: SparkDataFrame) -> "SparkData":
         """Converts a spark DataFrame to a SparkData model, which can be serialised.
 
+        This uses .toPandas() to convert the DataFrame and should not be used on
+        very large datasets!
+
         Args:
             data (SparkDataFrame): A spark DataFrame to serialise.
 
