@@ -1,6 +1,5 @@
-from typing import Type
+from typing import Any, Dict, List, Type
 
-import pandas as pd
 from pydantic import create_model
 from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql import SparkSession
@@ -9,26 +8,30 @@ from pype.base.pipeline.type_checker import DataModel, TypeChecker
 
 
 class SparkData(DataModel):
-    def __post_init__(self) -> None:
-        """Sets a spark session by calling getOrCreate."""
-        self.spark_session = SparkSession.builder.getOrCreate()
-
     def convert(self) -> SparkDataFrame:
         """Converts this object to a spark DataFrame.
 
         Returns:
             SparkDataFrame: The spark DataFrame contained by this object.
         """
-        converted_data = pd.DataFrame(self.__dict__)
+        list_format: List[Dict[str, Any]] = []
+        length = None
+        for name, value in self.__dict__.items():
+            if length is None:
+                length = len(value)
+                list_format = [{} for _ in range(length)]
+            else:
+                assert length == len(value), f"Warning: {name} did not have the same length as others"
+            for i, v in enumerate(value):
+                list_format[i][name] = v
 
-        return self.spark_session.createDataFrame(converted_data)
+        spark_session = SparkSession.builder.getOrCreate()
+
+        return spark_session.createDataFrame(list_format)
 
     @classmethod
     def to_model(cls, data: SparkDataFrame) -> "SparkData":
         """Converts a spark DataFrame to a SparkData model, which can be serialised.
-
-        This uses .toPandas() to convert the DataFrame and should not be used on
-        very large datasets!
 
         Args:
             data (SparkDataFrame): A spark DataFrame to serialise.
@@ -36,9 +39,16 @@ class SparkData(DataModel):
         Returns:
             SparkData: A serialisable version of the DataFrame.
         """
-        pandas_data = data.toPandas()
+        rows = data.collect()
+        columns: Dict[str, List[Any]] = {}
+        for row in rows:
+            for name, value in row.asDict().items():
+                if name in columns:
+                    columns[name].append(value)
+                else:
+                    columns[name] = [value]
 
-        return cls(**pandas_data.to_dict(orient="list"))
+        return cls(**columns)
 
 
 class SparkTypeChecker(TypeChecker[SparkDataFrame]):
@@ -59,9 +69,9 @@ class SparkTypeChecker(TypeChecker[SparkDataFrame]):
 
     def _convert_dtype(self, string_type: str) -> tuple[str, type]:
         conv_type: Type | None = None
-        if string_type == "str":
+        if string_type in ["str", "string"]:
             conv_type = str
-        elif string_type == "int":
+        elif string_type in ["int", "bigint"]:
             conv_type = int
         elif string_type in ["float", "double"]:
             conv_type = float
