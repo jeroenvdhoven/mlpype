@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import joblib
-from pyspark.ml import Estimator, Transformer
+from pyspark.ml import Transformer
 
 from pype.base.pipeline import Pipe, Pipeline
 from pype.base.serialiser import Serialiser
@@ -22,7 +22,6 @@ class SparkSerialiser(Serialiser):
 
         If the object is:
             - A Pype Pipeline: we serialise each step separately.
-            - A PySpark Estimator: we use the Estimator's save function.
             - Otherwise, we use joblib.
 
         Args:
@@ -31,8 +30,6 @@ class SparkSerialiser(Serialiser):
         """
         if isinstance(object, Pipeline):
             self._serialise_pipeline(object, file)
-        elif isinstance(object, Estimator):
-            object.save(file)
         else:
             return self._serialise_joblib(object, file)
 
