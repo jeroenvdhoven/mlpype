@@ -3,8 +3,8 @@ from setuptools import find_namespace_packages, setup
 deps = [
     "pype-base",
     # We will provide absolute no guarantees that our integration will work with
-    # EVERY version of pyspark. This has been developed under pyspark==3.3.0.
-    "pyspark",
+    # EVERY version of pyspark. This has been developed under pyspark==3.2.1.
+    "pyspark>=3.2.1",
 ]
 test_deps = ["pandas"]
 

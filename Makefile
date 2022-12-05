@@ -22,7 +22,10 @@ test-without-spark:
 test-all:
 	python -m pytest
 
-coverage:
+coverage-without-spark:
+	python -m pytest --cov-report term-missing --cov pype -ra
+
+coverage-all:
 	python -m pytest --cov-report term-missing --cov pype -ra
 
 # Pre-commit defaults
