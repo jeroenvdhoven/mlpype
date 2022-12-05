@@ -30,3 +30,6 @@ mlruns*/
 dist/
 packages/
 build/
+
+# personal todo list
+todo.txt

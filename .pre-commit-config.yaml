@@ -55,7 +55,7 @@ repos:
   - id: unittest
   # todo: reuse test environment!
     name: unittest
-    entry: 'make test'
+    entry: 'make test-without-spark'
     language: conda
     types: [python]
     verbose: true

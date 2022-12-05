@@ -16,10 +16,16 @@ host-pypi-local:
 
 build-and-host-local: clean build host-pypi-local
 
-test:
+test-without-spark:
+	python -m pytest -m "not spark"
+
+test-all:
 	python -m pytest
 
-coverage:
+coverage-without-spark:
+	python -m pytest --cov-report term-missing --cov pype -ra
+
+coverage-all:
 	python -m pytest --cov-report term-missing --cov pype -ra
 
 # Pre-commit defaults

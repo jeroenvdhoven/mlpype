@@ -23,6 +23,7 @@ def experiment_path(dummy_experiment: Experiment):
 class Test_Inferencer:
     def test_from_folder(self):
         path = Path("something")
+        abs_path = path.absolute()
 
         pipeline = MagicMock()
         inputs = MagicMock()
@@ -38,16 +39,16 @@ class Test_Inferencer:
         ):
             result = Inferencer.from_folder(path)
 
-            m_open.assert_called_once_with(path / Constants.EXTRA_FILES, "r")
+            m_open.assert_called_once_with(abs_path / Constants.EXTRA_FILES, "r")
 
-            mock_switch.assert_called_once_with(path, ["1", "2"])
-            mock_model_load.assert_called_once_with(Constants.MODEL_FOLDER)
+            mock_switch.assert_called_once_with(abs_path, ["1", "2"])
+            mock_model_load.assert_called_once_with(abs_path / Constants.MODEL_FOLDER)
 
             mock_deserialise.assert_has_calls(
                 [
-                    call(Constants.PIPELINE_FILE),
-                    call(Constants.INPUT_TYPE_CHECKER_FILE),
-                    call(Constants.OUTPUT_TYPE_CHECKER_FILE),
+                    call(abs_path / Constants.PIPELINE_FILE),
+                    call(abs_path / Constants.INPUT_TYPE_CHECKER_FILE),
+                    call(abs_path / Constants.OUTPUT_TYPE_CHECKER_FILE),
                 ]
             )
 
