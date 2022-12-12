@@ -5,17 +5,15 @@ from typing import Any
 
 from git import InvalidGitRepositoryError
 from git.repo import Repo
-from mlflow.tracking import set_tracking_uri
-from mlflow.tracking.fluent import (
-    create_experiment,
-    get_experiment_by_name,
-    log_artifact,
-    log_metrics,
-    log_params,
-    set_experiment,
-    set_tag,
-    start_run,
-)
+from mlflow import create_experiment  # type: ignore
+from mlflow import get_experiment_by_name  # type: ignore
+from mlflow import log_artifact  # type: ignore
+from mlflow import log_metrics  # type: ignore
+from mlflow import log_params  # type: ignore
+from mlflow import set_experiment  # type: ignore
+from mlflow import set_tag  # type: ignore
+from mlflow import set_tracking_uri  # type: ignore
+from mlflow import start_run  # type: ignore
 
 from pype.base.logger import ExperimentLogger
 
