@@ -148,8 +148,8 @@ class Test_add_argument:
     @mark.parametrize(
         ["class_", "conversion"],
         [
-            [list[int], int],
-            [tuple[float], float],
+            [List[int], int],
+            [Tuple[float], float],
             [Tuple[float], float],
             [Iterable[str], str],
             [List[bool], _convert_bool],

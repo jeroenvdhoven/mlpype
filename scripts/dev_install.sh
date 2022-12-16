@@ -13,7 +13,7 @@ function install_package () {
     if [ $2 != "local" ];
     then
         echo "Installing $1 from host $2"
-        ip=`echo $2 | grep -oE [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`
+        ip=`echo $2 or grep -oE [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`
         echo "IP: $ip"
         pip install -i $2 $1 --trusted-host $ip
     else

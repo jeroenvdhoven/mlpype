@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Any, Dict, List, Optional, Type, Union
 
 from pyspark.ml import Estimator, Transformer
 
@@ -12,10 +12,10 @@ class SparkPipe(Pipe):
         self,
         name: str,
         operator: Type[Operator],
-        inputs: list[str],
-        outputs: list[str],
-        kw_args: dict[str, Any] | None = None,
-        fit_inputs: list[str] | None = None,
+        inputs: List[str],
+        outputs: List[str],
+        kw_args: Optional[Dict[str, Any]] = None,
+        fit_inputs: Optional[List[str]] = None,
     ) -> None:
         """Same init as Pipe."""
         super().__init__(name, operator, inputs, outputs, kw_args, fit_inputs)
@@ -30,7 +30,7 @@ class SparkPipe(Pipe):
         Returns:
             SparkPipe: This object.
         """
-        op: Transformer | Estimator = self.operator
+        op: Union[Transformer, Estimator] = self.operator
 
         if isinstance(op, Transformer):
             self.fitted = op
@@ -61,25 +61,25 @@ class SparkPipe(Pipe):
         result.set_all(self.outputs, transformed)
         return result
 
-    def __setstate__(self, state: dict[str, Any]) -> None:
+    def __setstate__(self, state: Dict[str, Any]) -> None:
         """Sets the state of this object from a dictionary.
 
         Used by pickle to properly prepare the "fitted" and "operator" fields as None's.
 
         Args:
-            state (dict[str, Any]): _description_
+            state (Dict[str, Any]): _description_
         """
         state["fitted"] = None
         state["operator"] = None
         self.__dict__ = state
 
-    def __getstate__(self) -> dict[str, Any]:
+    def __getstate__(self) -> Dict[str, Any]:
         """Gets the state of this object, excluding any Spark objects.
 
         This is to make sure serialisation works as expected.
 
         Returns:
-            dict[str, Any]: A dict representation of this object.
+            Dict[str, Any]: A dict representation of this object.
         """
         dct = self.__dict__.copy()
         if "fitted" in dct:

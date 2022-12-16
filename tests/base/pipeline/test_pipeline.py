@@ -1,3 +1,4 @@
+from typing import List
 from unittest.mock import MagicMock, call, patch
 
 from pytest import fixture
@@ -62,7 +63,7 @@ class Test_Pipeline:
         with pytest_assert(AssertionError, f"{name} is used multiple times."):
             pipeline._assert_all_names_different(set([name]))
 
-    def test_fit(self, pipeline: Pipeline, input_data: DataSet, pipes: list[MagicMock]):
+    def test_fit(self, pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
         result = pipeline.fit(input_data)
 
         assert result == pipeline
@@ -76,7 +77,7 @@ class Test_Pipeline:
         pipes[2].fit.assert_not_called()
         pipes[2].transform.assert_not_called()
 
-    def test_fit_with_pipeline(self, pipeline_with_pipeline: Pipeline, input_data: DataSet, pipes: list[MagicMock]):
+    def test_fit_with_pipeline(self, pipeline_with_pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
         result = pipeline_with_pipeline.fit(input_data)
 
         assert result == pipeline_with_pipeline
@@ -95,7 +96,7 @@ class Test_Pipeline:
         pipes[2].fit.assert_called_once_with(pipes[1].transform.return_value)
         pipes[2].transform.assert_called_once_with(pipes[1].transform.return_value)
 
-    def test_transform(self, pipeline: Pipeline, input_data: DataSet, pipes: list[MagicMock]):
+    def test_transform(self, pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
         pipeline.transform(input_data)
 
         pipes[0].transform.assert_called_once_with(input_data)
@@ -103,7 +104,7 @@ class Test_Pipeline:
         pipes[2].transform.assert_not_called()
 
     def test_transform_with_pipeline(
-        self, pipeline_with_pipeline: Pipeline, input_data: DataSet, pipes: list[MagicMock]
+        self, pipeline_with_pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]
     ):
         pipeline_with_pipeline.transform(input_data)
 
@@ -111,7 +112,7 @@ class Test_Pipeline:
         pipes[1].transform.assert_called_once_with(pipes[0].transform.return_value)
         pipes[2].transform.assert_called_once_with(pipes[1].transform.return_value)
 
-    def test_inverse_transform(self, pipeline: Pipeline, input_data: DataSet, pipes: list[MagicMock]):
+    def test_inverse_transform(self, pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
         pipeline.inverse_transform(input_data)
 
         pipes[1].inverse_transform.assert_called_once_with(input_data)
@@ -120,7 +121,7 @@ class Test_Pipeline:
         pipes[2].inverse_transform.assert_not_called()
 
     def test_inverse_transform_with_pipeline(
-        self, pipeline_with_pipeline: Pipeline, input_data: DataSet, pipes: list[MagicMock]
+        self, pipeline_with_pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]
     ):
         pipeline_with_pipeline.inverse_transform(input_data)
 
@@ -128,7 +129,7 @@ class Test_Pipeline:
         pipes[1].inverse_transform.assert_called_once_with(pipes[2].inverse_transform.return_value)
         pipes[0].inverse_transform.assert_called_once_with(pipes[1].inverse_transform.return_value)
 
-    def test_reinitialise(self, pipeline: Pipeline, input_data: DataSet, pipes: list[MagicMock]):
+    def test_reinitialise(self, pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
         args = {
             "step0__a": 1,
             "step0__b": 2,
@@ -153,7 +154,7 @@ class Test_Pipeline:
         )
 
     def test_reinitialise_with_pipeline(
-        self, pipeline_with_pipeline: Pipeline, input_data: DataSet, pipes: list[MagicMock]
+        self, pipeline_with_pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]
     ):
         args = {
             "step0__a": 1,
@@ -219,21 +220,21 @@ class Test_Pipeline:
             assert actual.outputs == expected.outputs
             assert actual.fit_inputs == expected.fit_inputs
 
-    def test_get_item_int(self, pipeline: Pipeline, pipes: list[MagicMock]):
+    def test_get_item_int(self, pipeline: Pipeline, pipes: List[MagicMock]):
         assert pipeline[0] == pipes[0]
         assert pipeline[1] == pipes[1]
 
-    def test_get_item_str(self, pipeline: Pipeline, pipes: list[MagicMock]):
+    def test_get_item_str(self, pipeline: Pipeline, pipes: List[MagicMock]):
         assert pipeline["step0"] == pipes[0]
         assert pipeline["step1"] == pipes[1]
 
-    def test_get_item_nested(self, pipeline_with_pipeline: Pipeline, pipeline: Pipeline, pipes: list[MagicMock]):
+    def test_get_item_nested(self, pipeline_with_pipeline: Pipeline, pipeline: Pipeline, pipes: List[MagicMock]):
         assert pipeline_with_pipeline[0] == pipeline
         assert pipeline_with_pipeline["step0"] == pipes[0]
         assert pipeline_with_pipeline["step1"] == pipes[1]
         assert pipeline_with_pipeline["step2"] == pipes[2]
 
-    def test_iter(self, pipeline: Pipeline, pipes: list[MagicMock]):
+    def test_iter(self, pipeline: Pipeline, pipes: List[MagicMock]):
         for p_in_pipeline, pipe in zip(pipeline, pipes[:2]):
             assert pipe == p_in_pipeline
 
@@ -243,13 +244,13 @@ class Test_Pipeline:
     def test_len_with_pipeline(self, pipeline_with_pipeline: Pipeline):
         assert len(pipeline_with_pipeline) == 3
 
-    def test_add_pipe(self, pipeline: Pipeline, pipes: list[MagicMock]):
+    def test_add_pipe(self, pipeline: Pipeline, pipes: List[MagicMock]):
         result = pipeline + pipes[2]
         assert len(result) == 3
         assert result[2] == pipes[2]
         assert result != pipeline
 
-    def test_add_pipeline(self, pipeline: Pipeline, pipes: list[MagicMock]):
+    def test_add_pipeline(self, pipeline: Pipeline, pipes: List[MagicMock]):
         pipe_3 = MagicMock(spec=Pipe)
         pipe_3.name = "another step"
         pipeline_2 = Pipeline([pipes[2], pipe_3])

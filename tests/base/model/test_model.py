@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Union
 from unittest.mock import patch
 
 from pytest import fixture
@@ -22,7 +22,7 @@ class DummyModel(Model[int]):
     def set_seed(self) -> None:
         pass
 
-    def _save(self, file: str | Path) -> None:
+    def _save(self, file: Union[str, Path]) -> None:
         pass
 
     @classmethod

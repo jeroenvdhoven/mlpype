@@ -5,11 +5,11 @@ import sys
 from contextlib import contextmanager
 from pathlib import Path
 from types import ModuleType
-from typing import Generator, Set
+from typing import Generator, List, Optional, Set, Union
 
 
 @contextmanager
-def switch_directory(directory: str | Path) -> Generator:
+def switch_directory(directory: Union[str, Path]) -> Generator:
     """Allows you to temporarily switch Python over to a different directory.
 
     This changes the following:
@@ -18,7 +18,7 @@ def switch_directory(directory: str | Path) -> Generator:
     These changes will be undone once the context manager ends.
 
     Args:
-        target_workspace (str | Path): The directory to switch to.
+        target_workspace (Union[str, Path]): The directory to switch to.
     """
     # create backups of the workspace and path.
     target_directory = Path(directory)
@@ -31,7 +31,9 @@ def switch_directory(directory: str | Path) -> Generator:
 
 
 @contextmanager
-def switch_workspace(target_workspace: str | Path, extra_files: list[str | Path] | None = None) -> Generator:
+def switch_workspace(
+    target_workspace: Union[str, Path], extra_files: Optional[List[Union[str, Path]]] = None
+) -> Generator:
     """Allows you to temporarily switch Python over to using a different working directory.
 
     This changes the following:
@@ -46,8 +48,8 @@ def switch_workspace(target_workspace: str | Path, extra_files: list[str | Path]
     These changes will be undone once the context manager ends.
 
     Args:
-        target_workspace (str | Path): The directory to switch to.
-        extra_files (list[str | Path] | None, optional): Any additional files whose contents should
+        target_workspace (Union[str, Path]): The directory to switch to.
+        extra_files (Optional[List[Union[str, Path]]]): Any additional files whose contents should
             be added to the current python program. Defaults to no extra files.
     """
     if extra_files is None:
@@ -68,7 +70,7 @@ def switch_workspace(target_workspace: str | Path, extra_files: list[str | Path]
 
 
 def _reset_workspace(
-    old_workspace: str, old_sys_path: list[str], main_lib: ModuleType, main_to_remove: Set[str]
+    old_workspace: str, old_sys_path: List[str], main_lib: ModuleType, main_to_remove: Set[str]
 ) -> None:
     os.chdir(old_workspace)
     sys.path = old_sys_path
@@ -77,13 +79,13 @@ def _reset_workspace(
 
 
 def _create_temporary_workspace(
-    target_workspace: Path, extra_files: list[str | Path], main_lib: ModuleType
+    target_workspace: Path, extra_files: List[Union[str, Path]], main_lib: ModuleType
 ) -> Set[str]:
     """Perform the actual workspace switching.
 
     Args:
         target_workspace (Path): The directory to switch to.
-        extra_files (list[str  |  Path]): Any additional files whose contents should
+        extra_files (List[Union[str ,  Path]]): Any additional files whose contents should
             be added to the current python program. Empty lists are accepted.
         main_lib (ModuleType): The __main__ module.
 

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Dict, List, Type
 
 from xgboost.sklearn import XGBClassifier
 
@@ -9,7 +9,7 @@ from pype.sklearn.model import SklearnModel
 class XGBClassifierModel(SklearnModel[XGBClassifier]):
     XGB_MODEL_FILE = "model.txt"
 
-    def _init_model(self, args: dict[str, Any]) -> XGBClassifier:
+    def _init_model(self, args: Dict[str, Any]) -> XGBClassifier:
         return XGBClassifier(**args)
 
     def _save(self, folder: Path) -> None:
@@ -17,7 +17,7 @@ class XGBClassifierModel(SklearnModel[XGBClassifier]):
         self.model.save_model(folder / self.XGB_MODEL_FILE)
 
     @classmethod
-    def _load(cls: Type["XGBClassifierModel"], folder: Path, inputs: list[str], outputs: list[str]) -> "SklearnModel":
+    def _load(cls: Type["XGBClassifierModel"], folder: Path, inputs: List[str], outputs: List[str]) -> "SklearnModel":
         model = XGBClassifier()
         model.load_model(folder / cls.XGB_MODEL_FILE)
         return cls(inputs=inputs, outputs=outputs, model=model, seed=1)

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Tuple, Type, Union
 
 from pydantic import create_model
 from pyspark.sql import DataFrame as SparkDataFrame
@@ -64,11 +64,11 @@ class SparkTypeChecker(TypeChecker[SparkDataFrame]):
         self.raw_types = self._convert_dtypes(dict(data.dtypes))
         return self
 
-    def _convert_dtypes(self, dct: dict[str, str]) -> dict[str, tuple[str, type]]:
+    def _convert_dtypes(self, dct: Dict[str, str]) -> Dict[str, Tuple[str, type]]:
         return {name: self._convert_dtype(string_type) for name, string_type in dct.items()}
 
-    def _convert_dtype(self, string_type: str) -> tuple[str, type]:
-        conv_type: Type | None = None
+    def _convert_dtype(self, string_type: str) -> Tuple[str, type]:
+        conv_type: Union[Type, None] = None
         if string_type in ["str", "string"]:
             conv_type = str
         elif string_type in ["int", "bigint"]:
@@ -106,14 +106,14 @@ class SparkTypeChecker(TypeChecker[SparkDataFrame]):
             ), f"Dtypes did not match up for col {name}: Expected {spark_type}, got {actual_dtype}"
         return data
 
-    def get_pydantic_type(self) -> type[SparkData]:
+    def get_pydantic_type(self) -> Type[SparkData]:
         """Creates a Pydantic model for this data to handle serialisation/deserialisation.
 
         Returns:
-            type[SparkData]: A SparkData model that fits the data this wat fitted on.
+            Type[SparkData]: A SparkData model that fits the data this wat fitted on.
         """
         data_type = {
-            name: (list[dtype] | dict[str | int, dtype], ...)  # type: ignore
+            name: (Union[List[dtype], Dict[str or int, dtype]], ...)  # type: ignore
             for name, (_, dtype) in self.raw_types.items()
         }
 

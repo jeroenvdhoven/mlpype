@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Iterable
+from typing import Any, Iterable, Union
 
 from pype.sklearn.data.sklearn_data import SklearnData
 
@@ -10,5 +10,5 @@ class SklearnModelBaseType(ABC):
         """Fit a model to the given data."""
 
     @abstractmethod
-    def predict(self, *x: SklearnData) -> Iterable[SklearnData] | SklearnData:
+    def predict(self, *x: SklearnData) -> Union[Iterable[SklearnData], SklearnData]:
         """Predict for given data using a trained model."""

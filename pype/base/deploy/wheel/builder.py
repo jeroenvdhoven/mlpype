@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from shutil import copytree
 from tempfile import TemporaryDirectory
+from typing import List, Optional, Union
 
 from pype.base.constants import Constants
 from pype.base.utils.workspace import switch_directory
@@ -34,11 +35,11 @@ class WheelBuilder:
         model_name (str): The name of the model. Will be used as package name. Should follow
             proper package naming conventions.
         version (str): Model/package version.
-        output_wheel_file (Path | str | None, optional): The output directory. Defaults to "wheel_output"
+        output_wheel_file (Optional[Union[Path, str]]): The output directory. Defaults to "wheel_output"
             in the current directory.
-        libraries (list[str] | None, optional): A list of (versioned) libraries that are used as
+        libraries (Optional[List[str]]): A list of (versioned) libraries that are used as
             dependencies. By default we use the requirements.txt file from the experiment run.
-        extensions (list[WheelExtension] | None, optional): A list of extension to add to this
+        extensions (Optional[List[WheelExtension]], optional): A list of extension to add to this
             wheel file. Extensions add extra functionality besides the base "import pipeline" functionality.
             This can include hosting a FastAPI app for instance.
     """
@@ -46,9 +47,9 @@ class WheelBuilder:
     model_folder: Path
     model_name: str
     version: str
-    output_wheel_file: Path | str | None = None
-    libraries: list[str] | None = None
-    extensions: list[WheelExtension] | None = None
+    output_wheel_file: Optional[Union[Path, str]] = None
+    libraries: Optional[List[str]] = None
+    extensions: Optional[List[WheelExtension]] = None
 
     def __post_init__(self) -> None:
         """Performs checks and default initialisations."""

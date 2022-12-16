@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from pype.base.data import DataSet
 from pype.base.pipeline.pipe import Pipe
@@ -16,7 +16,7 @@ class Pipeline:
         self.pipes = pipes
         self._assert_all_names_different()
 
-    def _assert_all_names_different(self, names: set | None = None) -> None:
+    def _assert_all_names_different(self, names: Optional[set] = None) -> None:
         if names is None:
             names = set()
 
@@ -90,7 +90,7 @@ class Pipeline:
                 if len(pipe_args) > 0:
                     pipe.reinitialise(pipe_args)
 
-    def copy(self, args: Dict[str, Any] | None = None) -> "Pipeline":
+    def copy(self, args: Optional[Dict[str, Any]] = None) -> "Pipeline":
         """Create a copy of this Pipeline using the given dictionary.
 
         Args:
@@ -123,14 +123,14 @@ class Pipeline:
         self.__iter_n = 0
         return self
 
-    def __next__(self) -> "Pipeline | Pipe":
+    def __next__(self) -> Union["Pipeline", Pipe]:
         """Gets the next item in this Pipeline.
 
         Raises:
             StopIteration: If this object has already been iterated.
 
         Returns:
-            Pipeline | Pipe: The next Pipeline/Pipe.
+            Union[Pipeline, Pipe]: The next Pipeline/Pipe.
         """
         if self.__iter_n >= len(self.pipes):
             raise StopIteration
@@ -139,7 +139,7 @@ class Pipeline:
             self.__iter_n += 1
             return self[pos]
 
-    def __getitem__(self, pos: int | str) -> "Pipeline | Pipe":
+    def __getitem__(self, pos: Union[int, str]) -> Union["Pipeline", Pipe]:
         """Gets the Pipe/Pipeline at the given position.
 
         Raises:
@@ -150,14 +150,14 @@ class Pipeline:
                     important to use different names for Pipes!
 
         Returns:
-            Pipeline | Pipe: The Pipeline/Pipe matching the given position.
+            Union[Pipeline, Pipe]: The Pipeline/Pipe matching the given position.
         """
         value = self._get(pos)
         if value is None:
             raise KeyError(f"{pos} is not found in this pipeline")
         return value
 
-    def _get(self, pos: int | str) -> "Pipeline | Pipe | None":
+    def _get(self, pos: Union[int, str]) -> Union["Pipeline", Pipe, None]:
         if isinstance(pos, int):
             return self.pipes[pos]
         for pipe in self.pipes:
@@ -169,11 +169,11 @@ class Pipeline:
                 return pipe
         return None
 
-    def __add__(self, obj: "Pipeline | Pipe") -> "Pipeline":
+    def __add__(self, obj: Union["Pipeline", Pipe]) -> "Pipeline":
         """Append a Pipe or Pipeline object and return a new Pipeline.
 
         Args:
-            obj (Pipeline | Pipe): The object to be appended. Can be a Pipeline or Pipe.
+            obj (Union[Pipeline, Pipe]): The object to be appended. Can be a Union[Pipeline, Pipe].
 
         Raises:
             TypeError: If `obj` is not a Pipe or Pipeline.

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type
+from typing import Any, Dict, List, Optional, Type
 
 from pype.base.data import DataSet
 from pype.base.pipeline import Operator
@@ -9,10 +9,10 @@ class Pipe:
         self,
         name: str,
         operator: Type[Operator],
-        inputs: list[str],
-        outputs: list[str],
-        kw_args: dict[str, Any] | None = None,
-        fit_inputs: list[str] | None = None,
+        inputs: List[str],
+        outputs: List[str],
+        kw_args: Optional[Dict[str, Any]] = None,
+        fit_inputs: Optional[List[str]] = None,
     ) -> None:
         """A single step in a Pipeline.
 
@@ -21,10 +21,10 @@ class Pipe:
         Args:
             name (str): The name of the Pipe.
             operator (Type[Operator]): The Operator class that this Pipe should use.
-            inputs (list[str]): A list of input dataset names used by this Pipe.
-            outputs (list[str]): A list of output dataset names used by this Pipe.
-            kw_args (dict[str, Any] | None): keyword arguments to initialise the Operator.
-            fit_inputs: (list[str] | None): optional additional arguments to fit().
+            inputs (List[str]): A list of input dataset names used by this Pipe.
+            outputs (List[str]): A list of output dataset names used by this Pipe.
+            kw_args (Optional[Dict[str, Any]]): keyword arguments to initialise the Operator.
+            fit_inputs: (Optional[List[str]]): optional additional arguments to fit().
                 Will not be used in transform().
         """
         assert "__" not in name, "Pipe names cannot contain the string `__`"
@@ -108,11 +108,11 @@ class Pipe:
         """
         self.operator = self.operator_class(**args)
 
-    def copy(self, args: Dict[str, Any] | None = None) -> "Pipe":
+    def copy(self, args: Optional[Dict[str, Any]] = None) -> "Pipe":
         """Create a copy of this Pipe's Operator given a dict of arguments.
 
         Args:
-            args (Dict[str, Any] | None): The dictionary of arguments to use in re-initialisation.
+            args (Optional[Dict[str, Any]]): The dictionary of arguments to use in re-initialisation.
                 If set to None, we'll use the same arguments as before.
 
         Returns:

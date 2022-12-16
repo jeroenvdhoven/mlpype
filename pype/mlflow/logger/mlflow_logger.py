@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 from types import TracebackType
-from typing import Any
+from typing import Any, Dict, Optional, Type, Union
 
 from git import InvalidGitRepositoryError
 from git.repo import Repo
@@ -19,7 +19,7 @@ from pype.base.logger import ExperimentLogger
 
 
 class MlflowLogger(ExperimentLogger):
-    def __init__(self, name: str, uri: str, artifact_location: str | None = None) -> None:
+    def __init__(self, name: str, uri: str, artifact_location: Optional[str] = None) -> None:
         """A logger using mlflow for pype.
 
         Args:
@@ -27,7 +27,7 @@ class MlflowLogger(ExperimentLogger):
                 this with a workspace, like /Users/<your databricks user name>/<experiment name>.
             uri (str): The tracking uri. Should most likely start with `http://` or `databricks`.
                 It can also equal `databricks`.
-            artifact_location (str | None, optional): The artificat uri location. This is needed if you set up
+            artifact_location (Optional[str]): The artificat uri location. This is needed if you set up
                 your own artifact location, to make sure files are copied over to any remote tracking server.
                 This is not required when using hosted databricks. Defaults to None, like in
         """
@@ -69,7 +69,7 @@ class MlflowLogger(ExperimentLogger):
 
         set_tag("git_branch", branch_name)
 
-    def _find_encapsulating_repo(self, directory: Path) -> Repo | None:
+    def _find_encapsulating_repo(self, directory: Path) -> Union[Repo, None]:
         """Finds the current repo we're in, if any.
 
         We'll recursively move up from `directory` until we find a valid
@@ -80,7 +80,7 @@ class MlflowLogger(ExperimentLogger):
                 to the current directory.
 
         Returns:
-            Repo | None: None if no repo is found, otherwise a GitPython Repo.
+            Repo or None: None if no repo is found, otherwise a GitPython Repo.
         """
         repo = None
         directory = directory.absolute()
@@ -93,39 +93,39 @@ class MlflowLogger(ExperimentLogger):
         return repo
 
     def __exit__(
-        self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None
+        self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]
     ) -> None:
         """Exits a run started by __enter__.
 
         Args:
-            exc_type (type[BaseException] | None): Passed to ActiveRun.__exit__()
-            exc_val (BaseException | None): Passed to ActiveRun.__exit__()
-            exc_tb (TracebackType | None): Passed to ActiveRun.__exit__()
+            exc_type (Optional[Type[BaseException]]): Passed to ActiveRun.__exit__()
+            exc_val (Optional[BaseException]): Passed to ActiveRun.__exit__()
+            exc_tb (Optional[TracebackType]): Passed to ActiveRun.__exit__()
         """
         assert self.run is not None, "Run not started, cannot exit!"
         self.run.__exit__(exc_type, exc_val, exc_tb)
 
-    def _log_metrics(self, metrics: dict[str, float | int | str | bool]) -> None:
+    def _log_metrics(self, metrics: Dict[str, Union[str, float, int, str, bool]]) -> None:
         """Perform the actual logging of metrics in mlflow.
 
         Args:
-            metrics (dict[str, float | int | str | bool]): A dictionary of metric names and values.
+            metrics (Dict[str, Union[str, float, int, str, bool]]): A dictionary of metric names and values.
         """
         log_metrics(metrics)
 
-    def log_parameters(self, parameters: dict[str, Any]) -> None:
+    def log_parameters(self, parameters: Dict[str, Any]) -> None:
         """Logs the parameters for a given run.
 
         These will by default be passed on with prefixes such as `model__`.
 
         Args:
-            parameters (dict[str, Any]): The parameters of a given run. Ideally these
+            parameters (Dict[str, Any]): The parameters of a given run. Ideally these
                 parameters should be no more complicated than string, float, int, bool, or a
                 list of these.
         """
         log_params(parameters)
 
-    def log_file(self, file: str | Path) -> None:
+    def log_file(self, file: Union[str, Path]) -> None:
         """Logs a given file as part of an experiment.
 
         This only works well if:
@@ -134,6 +134,6 @@ class MlflowLogger(ExperimentLogger):
             - you have run mlflow ui/server at the same folder where mlruns is located.
 
         Args:
-            file (str | Path): The file to log.
+            file (Union[str, Path]): The file to log.
         """
         log_artifact(str(file))

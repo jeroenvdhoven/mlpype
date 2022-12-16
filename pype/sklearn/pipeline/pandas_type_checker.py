@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Dict, List, Tuple, Type, Union
 
 import numpy as np
 import pandas as pd
@@ -70,10 +70,10 @@ class PandasTypeChecker(TypeChecker[pd.DataFrame]):
             assert checker(data[name]), f"Dtypes did not match up for col {name}."
         return data
 
-    def _convert_raw_types(self, types: dict[str, type]) -> dict[str, tuple[type, Callable]]:
+    def _convert_raw_types(self, types: Dict[str, type]) -> Dict[str, Tuple[type, Callable]]:
         return {name: self._convert_raw_type(type_) for name, type_ in types.items()}
 
-    def _convert_raw_type(self, type_: type) -> tuple[type, Callable]:
+    def _convert_raw_type(self, type_: type) -> Tuple[type, Callable]:
         str_type = str(type_)
         if "int" in str_type:
             return (int, is_integer_dtype)
@@ -88,14 +88,14 @@ class PandasTypeChecker(TypeChecker[pd.DataFrame]):
         else:
             return (str, is_object_dtype)
 
-    def get_pydantic_type(self) -> type[PandasData]:
+    def get_pydantic_type(self) -> Type[PandasData]:
         """Creates a Pydantic model for this data to handle serialisation/deserialisation.
 
         Returns:
-            type[PandasData]: A PandasData model that fits the data this wat fitted on.
+            Type[PandasData]: A PandasData model that fits the data this wat fitted on.
         """
         data_type = {
-            name: (list[dtype] | dict[str | int, dtype], ...)  # type: ignore
+            name: (Union[List[dtype], Dict[str or int, dtype]], ...)  # type: ignore
             for name, (dtype, _) in self.raw_types.items()
         }
 

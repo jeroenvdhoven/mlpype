@@ -1,3 +1,5 @@
+from typing import List, Type, Union
+
 import tensorflow as tf
 from pydantic import create_model
 from tensorflow import DType, Tensor  # type: ignore
@@ -39,7 +41,7 @@ class TensorflowTypeChecker(TypeChecker[Tensor]):
         """
         super().__init__()
         self.dims: tuple = tuple()
-        self.dtype: type | None = None
+        self.dtype: Union[type, None] = None
 
     def fit(self, data: Tensor) -> "TensorflowTypeChecker":
         """Fit this Tensorflow TypeChecker to the given data.
@@ -84,16 +86,16 @@ class TensorflowTypeChecker(TypeChecker[Tensor]):
         else:
             return str
 
-    def get_pydantic_type(self) -> type[TensorflowData]:
+    def get_pydantic_type(self) -> Type[TensorflowData]:
         """Creates a Pydantic model for this data to handle serialisation/deserialisation.
 
         Returns:
-            type[TensorflowData]: A TensorflowData model that fits the data this wat fitted on.
+            Type[TensorflowData]: A TensorflowData model that fits the data this wat fitted on.
         """
-        base_iter: type = list[self.dtype]  # type: ignore
+        base_iter: type = List[self.dtype]  # type: ignore
 
         for _ in range(len(self.dims)):
-            base_iter = list[base_iter]  # type: ignore
+            base_iter = List[base_iter]  # type: ignore
 
         model = create_model("TensorflowData", data=(base_iter, ...), __base__=TensorflowData)
 

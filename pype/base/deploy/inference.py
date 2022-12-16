@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Type
+from typing import Optional, Type, Union
 
 from pype.base.constants import Constants
 from pype.base.data import DataSet, DataSetSource
@@ -34,13 +34,13 @@ class Inferencer:
         self.input_type_checker = input_type_checker
         self.output_type_checker = output_type_checker
 
-    def predict(self, data: DataSet | DataSetSource) -> DataSet:
+    def predict(self, data: Union[DataSet, DataSetSource]) -> DataSet:
         """Predicts using the given data using the Pipeline and Model.
 
         # TODO: inverse transformation.
 
         Args:
-            data (DataSet | DataSetSource): The data to predict for.
+            data (Union[DataSet, DataSetSource]): The data to predict for.
 
         Returns:
             DataSet: The predictions from Model.
@@ -54,7 +54,7 @@ class Inferencer:
         return predicted
 
     @classmethod
-    def from_folder(cls: Type["Inferencer"], folder: Path, serialiser: Serialiser | None = None) -> "Inferencer":
+    def from_folder(cls: Type["Inferencer"], folder: Path, serialiser: Optional[Serialiser] = None) -> "Inferencer":
         """Loads a Inferencer from the results of an Experiment.
 
         We use the absolute version of the path to try and prevent loading issues.
@@ -62,7 +62,7 @@ class Inferencer:
         Args:
             folder (Path): The output folder from an Experiment, from which we load
                 all required elements to make a inference pipeline.
-            serialiser (Serialiser | None): The Serialiser used to deserialise the pipeline and input/output
+            serialiser (Optional[Serialiser]): The Serialiser used to deserialise the pipeline and input/output
                 type checkers. Defaults to a JoblibSerialiser.
 
         Returns:

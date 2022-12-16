@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import List
+from typing import List, Optional
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -112,7 +112,7 @@ class Test_SparkModel:
             ["return only column", "pred_col"],
         ],
     )
-    def test_transform(self, name: str, prediction_col: str | None):
+    def test_transform(self, name: str, prediction_col: Optional[str]):
         predictor = MagicMock()
         model = LinearSparkModel(
             inputs=["x"],

@@ -2,7 +2,7 @@ import json
 from abc import ABC, abstractclassmethod, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Generic, Tuple, TypeVar
+from typing import Generic, List, Tuple, TypeVar, Union
 
 from pype.base.constants import Constants
 from pype.base.data import DataSet
@@ -12,7 +12,7 @@ Data = TypeVar("Data")
 
 
 class Model(ABC, Generic[Data]):
-    def __init__(self, inputs: list[str], outputs: list[str], seed: int = 1) -> None:
+    def __init__(self, inputs: List[str], outputs: List[str], seed: int = 1) -> None:
         """An abstraction of a ML model.
 
         This should provide the basic interface for fitting, inference, and serialisation.
@@ -43,7 +43,7 @@ class Model(ABC, Generic[Data]):
         """Sets the RNG seed."""
         raise NotImplementedError
 
-    def save(self, folder: str | Path) -> None:
+    def save(self, folder: Union[str, Path]) -> None:
         """Stores this model to the given folder.
 
         This function stores the common inputs and outputs list to the given folder,
@@ -51,7 +51,7 @@ class Model(ABC, Generic[Data]):
         It will call _save to allow further models to specify how they are stored.
 
         Args:
-            folder (str | Path): The folder to store the Model in.
+            folder (Union[str, Path]): The folder to store the Model in.
         """
         joblib_serialiser = JoblibSerialiser()
 
@@ -81,11 +81,11 @@ class Model(ABC, Generic[Data]):
         raise NotImplementedError
 
     @classmethod
-    def load(cls, folder: str | Path) -> "Model":
+    def load(cls, folder: Union[str, Path]) -> "Model":
         """Loads a model from file into this Model.
 
         Args:
-            folder (str | Path): The folder to load the model from.
+            folder (Union[str, Path]): The folder to load the model from.
         """
         if isinstance(folder, str):
             folder = Path(folder)
@@ -98,11 +98,11 @@ class Model(ABC, Generic[Data]):
         return model_class._load(folder, lists["inputs"], lists["outputs"])
 
     @abstractclassmethod
-    def _load(cls, folder: Path, inputs: list[str], outputs: list[str]) -> "Model":
+    def _load(cls, folder: Path, inputs: List[str], outputs: List[str]) -> "Model":
         """Loads a model from file into this Model.
 
         Args:
-            folder (str | Path): The folder to load the model from.
+            folder (Union[str, Path]): The folder to load the model from.
         """
         raise NotImplementedError
 
@@ -140,7 +140,7 @@ class Model(ABC, Generic[Data]):
         return DataSet.from_dict({name: data for name, data in zip(self.outputs, result)})  # type: ignore
 
     @abstractmethod
-    def _transform(self, *data: Data) -> Tuple[Data] | Data:
+    def _transform(self, *data: Data) -> Union[Tuple[Data], Data]:
         raise NotImplementedError
 
     def __str__(self) -> str:

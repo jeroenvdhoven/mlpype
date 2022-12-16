@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from typing import Dict
 from unittest.mock import MagicMock, call, patch
 
 from data.data_sink import DataSink
@@ -46,7 +47,7 @@ def tracking():
 
 
 @fixture
-def app_with_tracking(experiment_path: Path, tracking: dict[str, DataSink]):
+def app_with_tracking(experiment_path: Path, tracking: Dict[str, DataSink]):
     return PypeApp("dummy-app", experiment_path, tracking_servers=tracking)
 
 
@@ -115,7 +116,7 @@ class Test_handle_tracking:
         # should just run.
         app._handle_tracking(DataSet(x=data["x"]), DataSet(y=data["y"]), MagicMock(), MagicMock())
 
-    def test_handle_tracking_with_tracking(self, app_with_tracking: PypeApp, tracking: dict[str, MagicMock]):
+    def test_handle_tracking_with_tracking(self, app_with_tracking: PypeApp, tracking: Dict[str, MagicMock]):
         data = get_dummy_data(10, 2, 1).read()
 
         background_tasks = MagicMock()
@@ -130,7 +131,7 @@ class Test_handle_tracking:
             any_order=True,
         )
 
-    def test_handle_tracking_handles_crashes(self, app_with_tracking: PypeApp, tracking: dict[str, MagicMock]):
+    def test_handle_tracking_handles_crashes(self, app_with_tracking: PypeApp, tracking: Dict[str, MagicMock]):
         data = get_dummy_data(10, 2, 1).read()
 
         logger = MagicMock()
@@ -206,7 +207,7 @@ class Test_app:
         mock_handle.assert_called_once_with(DataSet(x=x), DataSet(y=prediction), mock_get_logger.return_value, AnyArg())
 
     def test_predict_with_tracking_integration(
-        self, test_client_with_tracking: TestClient, tracking: dict[str, DummyDataSink]
+        self, test_client_with_tracking: TestClient, tracking: Dict[str, DummyDataSink]
     ):
         x = [1.0, 2.0, 3.0, 4.0]
 

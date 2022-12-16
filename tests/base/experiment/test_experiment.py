@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Tuple
 from unittest.mock import MagicMock, call, mock_open, patch
 
 from pytest import fixture, mark
@@ -16,7 +16,7 @@ dummy_experiment
 
 class Test_run:
     @fixture(scope="class")
-    def run_experiment(self, dummy_experiment: Experiment) -> Iterable[tuple[Experiment, dict]]:
+    def run_experiment(self, dummy_experiment: Experiment) -> Iterable[Tuple[Experiment, dict]]:
         metrics = dummy_experiment.run()
 
         yield dummy_experiment, metrics
@@ -111,7 +111,7 @@ class Test_run:
         mock_log_extra_files.assert_called_once_with()
         mock_log_requirements.assert_called_once_with()
 
-    def test_integration(self, run_experiment: tuple[Experiment, dict]):
+    def test_integration(self, run_experiment: Tuple[Experiment, dict]):
         experiment, metrics = run_experiment
         for ds_name in ["train", "test"]:
             assert ds_name in metrics

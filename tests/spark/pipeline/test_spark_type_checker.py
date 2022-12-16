@@ -1,3 +1,4 @@
+from typing import Dict, List, Union
 from unittest.mock import MagicMock, call, patch
 
 import pandas as pd
@@ -16,8 +17,8 @@ spark_session
 class Test_SparkData:
     def test_convert(self, spark_session: SparkSession):
         data_type = {
-            "a": (list[int] | dict[str | int, int], ...),
-            "b": (list[str] | dict[str | int, str], ...),
+            "a": (Union[List[int], Dict[str or int, int]], ...),
+            "b": (Union[List[str], Dict[str or int, str]], ...),
         }
 
         CustomSparkData = create_model("CustomSparkData", **data_type, __base__=SparkData)
@@ -40,8 +41,8 @@ class Test_SparkData:
 
     def test_to_model(self, spark_session: SparkSession):
         data_type = {
-            "a": (list[int] | dict[str | int, int], ...),
-            "b": (list[str] | dict[str | int, str], ...),
+            "a": (Union[List[int], Dict[str or int, int]], ...),
+            "b": (Union[List[str], Dict[str or int, str]], ...),
         }
         CustomSparkData = create_model("CustomSparkData", **data_type, __base__=SparkData)
 
