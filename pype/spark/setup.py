@@ -1,7 +1,9 @@
 from setuptools import find_namespace_packages, setup
 
+version = "0.1.0"
+
 deps = [
-    "pype-base",
+    f"pype-base=={version}",
     # We will provide absolute no guarantees that our integration will work with
     # EVERY version of pyspark. This has been developed under pyspark==3.2.1.
     "pyspark>=3.2.1",
@@ -13,4 +15,5 @@ setup(
     install_requires=deps,
     extras_require={"dev": deps + test_deps, "test": deps + test_deps},
     packages=find_namespace_packages(include=["pype.*"]),
+    version=version,
 )

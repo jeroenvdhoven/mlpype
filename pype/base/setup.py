@@ -9,4 +9,5 @@ setup(
     install_requires=deps,
     extras_require={"dev": deps + dev_deps + test_deps, "test": deps + test_deps},
     packages=find_namespace_packages(include=["pype.*"]),
+    version="0.1.0",
 )
