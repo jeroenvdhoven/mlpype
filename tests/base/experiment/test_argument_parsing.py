@@ -18,7 +18,7 @@ from pype.base.experiment.argument_parsing import (
 )
 from pype.base.pipeline.pipe import Pipe
 from pype.base.pipeline.pipeline import Pipeline
-from tests.test_utils import pytest_assert
+from tests.utils import pytest_assert
 
 
 class Test_convert_bool:

@@ -27,6 +27,7 @@ class Pipe:
             fit_inputs: (list[str] | None): optional additional arguments to fit().
                 Will not be used in transform().
         """
+        assert "__" not in name, "Pipe names cannot contain the string `__`"
         if fit_inputs is None:
             fit_inputs = []
         if kw_args is None:
@@ -106,3 +107,36 @@ class Pipe:
             args (Dict[str, Any]): The dictionary of arguments to use in re-initialisation.
         """
         self.operator = self.operator_class(**args)
+
+    def copy(self, args: Dict[str, Any] | None = None) -> "Pipe":
+        """Create a copy of this Pipe's Operator given a dict of arguments.
+
+        Args:
+            args (Dict[str, Any] | None): The dictionary of arguments to use in re-initialisation.
+                If set to None, we'll use the same arguments as before.
+
+        Returns:
+            A new copy of this Pipe, with a new Operator object.
+        """
+        if args is None:
+            args = self.args
+
+        return Pipe(
+            self.name,
+            self.operator_class,
+            inputs=self.inputs,
+            outputs=self.outputs,
+            kw_args=args,
+            fit_inputs=self.fit_inputs,
+        )
+
+    def __str__(self) -> str:
+        """Create string representation of this Pipe.
+
+        Returns:
+            str: A string representation of this Pipe.
+        """
+        fit_section = f" (+ {self.fit_inputs})" if len(self.fit_inputs) > 0 else ""
+        input_output_section = f"{self.inputs}{fit_section} -> {self.outputs}"
+
+        return f"Pipe `{self.name}`, {input_output_section}: {self.operator}"

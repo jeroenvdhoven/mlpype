@@ -46,3 +46,15 @@ class Evaluator(Generic[Data]):
         output_data = data.get_all(model.outputs)
 
         return {name: func(*output_data, *predictions) for name, func in self.functions.items()}
+
+    def __str__(self, indents: int = 0) -> str:
+        """Create string representation of this Evaluator.
+
+        Args:
+            indents (int, optional): The number of preceding tabs. Defaults to 0.
+
+        Returns:
+            str: A string representation of this Evaluator.
+        """
+        tabs = "\t" * indents
+        return "\n".join([f"{tabs}{name}: {func.__name__}" for name, func in self.functions.items()])

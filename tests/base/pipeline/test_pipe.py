@@ -4,6 +4,7 @@ from pytest import fixture
 
 from pype.base.data.dataset import DataSet
 from pype.base.pipeline.pipe import Pipe
+from tests.utils import pytest_assert
 
 
 class TestPipe:
@@ -40,6 +41,17 @@ class TestPipe:
             kw_args={"a": 1, "b": "satr"},
         )
         operator.assert_called_once_with(a=1, b="satr")
+
+    def test_init_name_check(self, operator: MagicMock):
+        with pytest_assert(AssertionError, "Pipe names cannot contain the string `__`"):
+            Pipe(
+                "name__something",
+                operator=operator,
+                inputs=["a", "b"],
+                outputs=["out", "out2"],
+                fit_inputs=["c"],
+                kw_args={"a": 1, "b": "satr"},
+            )
 
     def test_fit(self, data: DataSet[int], pipe: Pipe, operator: MagicMock):
         mock_operator = operator.return_value
@@ -129,3 +141,36 @@ class TestPipe:
         assert pipe.operator != operator
         assert pipe.operator == mock_class.return_value
         mock_class.assert_called_once_with(a=3, b=2)
+
+    def test_copy(self, pipe: Pipe, operator: MagicMock):
+        # instantiating the operator generates different objects
+        operator.side_effect = [1, 2]
+        result = pipe.copy()
+
+        assert result.args == pipe.args
+        assert result.operator_class == pipe.operator_class
+        assert result.name == pipe.name
+        assert result.inputs == pipe.inputs
+        assert result.outputs == pipe.outputs
+        assert result.fit_inputs == pipe.fit_inputs
+
+        # the object is not completely the same.
+        assert result.operator != pipe.operator
+
+    def test_copy_with_args(self, pipe: Pipe, operator: MagicMock):
+        # instantiating the operator generates different objects
+        operator.side_effect = [1, 2]
+        args = {"a": 3}
+        result = pipe.copy(args)
+
+        assert result.args != pipe.args
+        assert result.args == args
+        assert result.operator_class == pipe.operator_class
+        assert result.name == pipe.name
+        assert result.inputs == pipe.inputs
+        assert result.outputs == pipe.outputs
+        assert result.fit_inputs == pipe.fit_inputs
+
+        # the object is not completely the same.
+        assert result.operator != pipe.operator
+        result.operator_class.assert_called_with(a=3)

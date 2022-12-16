@@ -1,0 +1,2 @@
+from .xgboost_classifier import XGBClassifierModel
+from .xgboost_regressor import XGBRegressorModel

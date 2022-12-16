@@ -90,6 +90,30 @@ class Pipeline:
                 if len(pipe_args) > 0:
                     pipe.reinitialise(pipe_args)
 
+    def copy(self, args: Dict[str, Any] | None = None) -> "Pipeline":
+        """Create a copy of this Pipeline using the given dictionary.
+
+        Args:
+            args (Dict[str, Any]): Dictionary containing new arguments.
+                The keys of the `args` dict should be of the form `<name>__<arg_name>`:
+                - name: the name of the Pipe.
+                - arg_name: the argument name to use.
+                The values will be used as argument parameters.
+        """
+        result = Pipeline([])
+        for pipe in self.pipes:
+            if isinstance(pipe, Pipeline):
+                extra_pipeline = pipe.copy(args)
+                result += extra_pipeline
+            else:
+                if args is None:
+                    pipe_args = {}
+                else:
+                    pipe_args = get_args_for_prefix(f"{pipe.name}__", args)
+                new_pipe = pipe.copy(pipe_args)
+                result += new_pipe
+        return result
+
     def __iter__(self) -> "Pipeline":
         """Prepares this object for iteration using next().
 
@@ -193,3 +217,22 @@ class Pipeline:
             else:
                 result += 1
         return result
+
+    def __str__(self, indents: int = 0) -> str:
+        """Create string representation of this Pipeline.
+
+        Args:
+            indents (int, optional): The number of preceding tabs. Defaults to 0.
+
+        Returns:
+            str: A string representation of this Pipeline.
+        """
+        tabs = "\t" * indents
+        output = [tabs + "Pipeline:"]
+        indents += 1
+        for pipe in self.pipes:
+            if isinstance(pipe, Pipe):
+                output.append(tabs + str(pipe))
+            else:
+                output.append(pipe.__str__(indents))
+        return "\n".join(output)

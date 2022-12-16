@@ -1,6 +1,5 @@
-import shutil
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, call, mock_open, patch
 
 from pytest import fixture
 
@@ -8,42 +7,48 @@ from pype.base.constants import Constants
 from pype.base.data.dataset import DataSet
 from pype.base.data.dataset_source import DataSetSource
 from pype.base.deploy.inference import Inferencer
-from tests.test_utils import get_dummy_data, get_dummy_experiment
+from pype.base.experiment import Experiment
+from tests.shared_fixtures import dummy_experiment
+from tests.utils import get_dummy_data
+
+dummy_experiment
 
 
 @fixture(scope="module")
-def experiment_path():
-    experiment = get_dummy_experiment()
-    output_folder = experiment.output_folder
-
-    experiment.run()
-
-    yield output_folder
-
-    shutil.rmtree(output_folder)
+def experiment_path(dummy_experiment: Experiment):
+    dummy_experiment.run()
+    yield dummy_experiment.output_folder
 
 
 class Test_Inferencer:
     def test_from_folder(self):
         path = Path("something")
+        abs_path = path.absolute()
 
         pipeline = MagicMock()
         inputs = MagicMock()
         outputs = MagicMock()
         deserialised_values = [pipeline, inputs, outputs]
 
+        read_data = '{"paths": ["1", "2"]}'
+        m_open = mock_open(read_data=read_data)
         with patch("pype.base.deploy.inference.Model.load") as mock_model_load, patch(
             "pype.base.deploy.inference.JoblibSerialiser.deserialise", side_effect=deserialised_values
-        ) as mock_deserialise:
+        ) as mock_deserialise, patch("pype.base.deploy.inference.switch_workspace") as mock_switch, patch(
+            "pype.base.deploy.inference.open", m_open
+        ):
             result = Inferencer.from_folder(path)
 
-            mock_model_load.assert_called_once_with(path / Constants.MODEL_FOLDER)
+            m_open.assert_called_once_with(abs_path / Constants.EXTRA_FILES, "r")
+
+            mock_switch.assert_called_once_with(abs_path, ["1", "2"])
+            mock_model_load.assert_called_once_with(abs_path / Constants.MODEL_FOLDER)
 
             mock_deserialise.assert_has_calls(
                 [
-                    call(path / Constants.PIPELINE_FILE),
-                    call(path / Constants.INPUT_TYPE_CHECKER_FILE),
-                    call(path / Constants.OUTPUT_TYPE_CHECKER_FILE),
+                    call(abs_path / Constants.PIPELINE_FILE),
+                    call(abs_path / Constants.INPUT_TYPE_CHECKER_FILE),
+                    call(abs_path / Constants.OUTPUT_TYPE_CHECKER_FILE),
                 ]
             )
 
@@ -51,6 +56,29 @@ class Test_Inferencer:
             assert result.pipeline == pipeline
             assert result.input_type_checker == inputs
             assert result.output_type_checker == outputs
+
+    def test_from_experiment(self):
+        pipeline = MagicMock()
+        model = MagicMock()
+        itc = MagicMock()
+        otc = MagicMock()
+
+        experiment = Experiment(
+            data_sources={"train": MagicMock()},
+            pipeline=pipeline,
+            model=model,
+            evaluator=MagicMock(),
+            input_type_checker=itc,
+            output_type_checker=otc,
+            logger=MagicMock(),
+        )
+
+        result = Inferencer.from_experiment(experiment)
+
+        assert result.model == model
+        assert result.pipeline == pipeline
+        assert result.input_type_checker == itc
+        assert result.output_type_checker == otc
 
     def test_predict(self):
         model = MagicMock()

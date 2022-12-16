@@ -30,7 +30,6 @@ repos:
   hooks:
   -   id: mypy
       # This setting is not that strict: see https://mypy.readthedocs.io/en/stable/config_file.html for more config options.
-      args: [--no-strict-optional, --ignore-missing-imports, --disallow-untyped-defs, --python-version, "3.10"]
       exclude: ^(tests)|(docs)/
       additional_dependencies:
         - "types-PyYAML"
@@ -56,7 +55,7 @@ repos:
   - id: unittest
   # todo: reuse test environment!
     name: unittest
-    entry: 'make test'
+    entry: 'make test-without-spark'
     language: conda
     types: [python]
     verbose: true

@@ -4,3 +4,8 @@ show_missing=True
 exclude_lines =
     pragma: no cover
     raise NotImplementedError
+omit = 
+    # all python setup.py files
+    */setup.py
+    # cmd_tools, since it's only used for dev now
+    pype/cmd_tools/*

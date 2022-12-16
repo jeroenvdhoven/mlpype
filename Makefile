@@ -1,13 +1,31 @@
 
+build:
+	./scripts/build.sh
+
+clean:
+	rm -rf dist/ packages/
 
 dev-install:
 	pip install -e .
-	pype dev-install --editable
+	./scripts/dev_install.sh -e 1
 
-test:
+host-pypi-local:
+	mkdir -p packages
+	pypi-server run -p 8080 packages -a . -P . &
+	twine upload --repository-url http://0.0.0.0:8080 dist/* -u '' -p ''
+
+build-and-host-local: clean build host-pypi-local
+
+test-without-spark:
+	python -m pytest -m "not spark"
+
+test-all:
 	python -m pytest
 
-coverage:
+coverage-without-spark:
+	python -m pytest --cov-report term-missing --cov pype -ra
+
+coverage-all:
 	python -m pytest --cov-report term-missing --cov pype -ra
 
 # Pre-commit defaults

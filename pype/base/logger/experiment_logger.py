@@ -1,19 +1,20 @@
+import shutil
 from abc import ABC, abstractmethod
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Dict, Union
+from typing import Any
 
 from pype.base.model.model import Model
 from pype.base.serialiser import Serialiser
 
 
 class ExperimentLogger(ABC):
-    # TODO: make a LocalLogger.
-
+    @abstractmethod
     def __enter__(self) -> None:
         """Start the experiment."""
         return
 
+    @abstractmethod
     def __exit__(
         self,
         exc_type: type[BaseException] | None,
@@ -23,7 +24,7 @@ class ExperimentLogger(ABC):
         """Stop the experiment."""
         return
 
-    def log_metrics(self, dataset_name: str, metrics: Dict[str, Union[float, int, str | bool]]) -> None:
+    def log_metrics(self, dataset_name: str, metrics: dict[str, float | int | str | bool]) -> None:
         """Logs the metrics for a given dataset.
 
         Metrics will be stored by default as `<dataset_name>_<metric_name>`.
@@ -74,13 +75,27 @@ class ExperimentLogger(ABC):
 
         Args:
             file (str | Path): The file to serialise to and subsequently log.
-            serialiser (Serialiser): Serialiser used to serialise the given object, if any.
+            serialiser (Serialiser): Serialiser used to serialise the given object.
             object (Any): The object to log. This object will be serialised to the given file
                 using the serialiser and logged using `log_file`
         """
-        if object is not None and serialiser is not None:
-            serialiser.serialise(object, file)
+        serialiser.serialise(object, file)
         self.log_file(file)
+
+    def log_local_file(self, file: str | Path, output_target: str | Path) -> None:
+        """Logs a given local file as part of an experiment.
+
+        First the file is copied to the output directory, then
+        log_file is called to make it part of the experiment.
+
+        Args:
+            file (str | Path): The file to log.
+            output_target (str | Path): The target location of the file.
+        """
+        output_target = Path(output_target)
+        output_target.parent.mkdir(exist_ok=True)
+        shutil.copy(file, output_target)
+        self.log_file(output_target)
 
     @abstractmethod
     def log_file(self, file: str | Path) -> None:

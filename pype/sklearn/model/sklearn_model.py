@@ -1,7 +1,8 @@
-from abc import ABC
+import typing
+from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Iterable, Type
+from typing import Any, Generic, Iterable, Type, TypeVar
 
 import numpy as np
 
@@ -11,29 +12,54 @@ from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from pype.sklearn.data.sklearn_data import SklearnData
 from pype.sklearn.model.sklearn_base_type import SklearnModelBaseType
 
+T = TypeVar("T", bound=SklearnModelBaseType)
 
-class SklearnModel(Model[SklearnData], ABC):
+
+class SklearnModel(Model[SklearnData], ABC, Generic[T]):
     SKLEARN_MODEL_FILE = "model.pkl"
 
     def __init__(
         self,
         inputs: list[str],
         outputs: list[str],
-        model: SklearnModelBaseType,
+        model: T | None = None,
         seed: int = 1,
+        **model_args: Any,
     ) -> None:
         """A generic class for sklearn-like Models.
+
+        You can set a sklearn model as a type hint to this class when defining a new model.
+        This allows us to get the parameters from the documentation of that sklearn model.
+        For an example, see the implementation of LinearModel, especially the `SklearnModel[LinearRegression]` part.
+
+        class LinearRegressionModel(SklearnModel[LinearRegression]):
+            def _init_model(self, **args) -> LinearRegression:
+                return LinearRegression(**args)
+
 
         Args:
             inputs (List[str]): A list of names of input Data. This determines which Data is
                 used to fit the model.
             outputs (List[str]): A list of names of output Data. This determines the names of
                 output variables.
-            model (SklearnModelBaseType): An object that has fit() and predict() methods.
+            model (SklearnModelBaseType | None): An object that has fit() and predict() methods. If none,
+                we will use the model_args to instantiate a new model.
             seed (int, optional): The RNG seed to ensure reproducability.. Defaults to 1.
+            **model_args (Any): Optional keyword arguments passed to the model class to instantiate a new
+                model if `model` is None.
         """
         super().__init__(inputs, outputs, seed)
+        if model is None:
+            model = self._init_model(model_args)
         self.model = model
+
+    @abstractmethod
+    def _init_model(self, args: dict[str, Any]) -> T:
+        raise NotImplementedError
+
+    @classmethod
+    def _get_annotated_class(cls) -> Type[SklearnModelBaseType]:
+        return typing.get_args(cls.__orig_bases__[0])[0]
 
     def set_seed(self) -> None:
         """Sets the RNG seed."""
@@ -50,7 +76,7 @@ class SklearnModel(Model[SklearnData], ABC):
         serialiser.serialise(self.model, folder / self.SKLEARN_MODEL_FILE)
 
     @classmethod
-    def _load(cls: Type["SklearnModel"], folder: Path, inputs: list[str], outputs: list[str]) -> "Model":
+    def _load(cls: Type["SklearnModel"], folder: Path, inputs: list[str], outputs: list[str]) -> "SklearnModel":
         serialiser = JoblibSerialiser()
         model = serialiser.deserialise(folder / cls.SKLEARN_MODEL_FILE)
         return cls(inputs=inputs, outputs=outputs, model=model, seed=1)
@@ -67,6 +93,8 @@ class SklearnModel(Model[SklearnData], ABC):
             parser (ArgumentParser): The ArgumentParser to add arguments to.
         """
         super().get_parameters(parser)
+        BaseModel = cls._get_annotated_class()
+
         add_args_to_parser_for_class(
-            parser, cls, "model", [SklearnModel], excluded_args=["seed", "inputs", "outputs", "model"]
+            parser, BaseModel, "model", [], excluded_args=["seed", "inputs", "outputs", "model"]
         )

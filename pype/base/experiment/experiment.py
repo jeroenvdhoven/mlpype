@@ -1,4 +1,7 @@
-import warnings
+import json
+import os
+import subprocess
+import sys
 from argparse import ArgumentParser
 from logging import getLogger
 from pathlib import Path
@@ -12,7 +15,7 @@ from pype.base.logger import ExperimentLogger
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline
 from pype.base.pipeline.type_checker import TypeCheckerPipe
-from pype.base.serialiser.serialiser import Serialiser
+from pype.base.serialiser import JoblibSerialiser, Serialiser
 from pype.base.utils.parsing import get_args_for_prefix
 
 
@@ -24,11 +27,11 @@ class Experiment:
         pipeline: Pipeline,
         evaluator: Evaluator,
         logger: ExperimentLogger,
-        serialiser: Serialiser,
-        output_folder: Path | str,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
-        additional_files_to_store: list[str] | None = None,
+        serialiser: Serialiser | None = None,
+        output_folder: Path | str = "outputs",
+        additional_files_to_store: list[str | Path] | None = None,
         parameters: dict[str, Any] | None = None,
     ):
         """The core of the pype library: run a standardised ML experiment with the given parameters.
@@ -46,28 +49,31 @@ class Experiment:
             evaluator (Evaluator): The evaluator to test how good your Model performs.
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
-            serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            output_folder: (Path | str): The output folder to log artifacts to.
+            serialiser (Serialiser | None, optional): The serialiser to serialise any Python objects (expect the Model).
+                Defaults to a joblib serialiser.
+            output_folder: (Path | str): The output folder to log artifacts to. Defaults to "outputs".
             input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
-            additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
+            additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
             parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
                 Defaults to None.
         """
         assert "train" in data_sources, "Must provide a 'train' entry in the data_sources dictionary."
+        self.logger = getLogger(__name__)
+        if serialiser is None:
+            serialiser = JoblibSerialiser()
+
         if additional_files_to_store is None:
             additional_files_to_store = []
         if parameters is None:
             parameters = {}
-            warnings.warn(
-                """
-It is highly recommended to provide the parameters used to initialise your
+            self.logger.warning(
+                """It is highly recommended to provide the parameters used to initialise your
 run here for logging purposes. Consider using the `from_command_line` or
-`from_dictionary` initialisation methods
-                """
+`from_dictionary` initialisation methods"""
             )
         if isinstance(output_folder, str):
             output_folder = Path(output_folder)
@@ -79,7 +85,6 @@ run here for logging purposes. Consider using the `from_command_line` or
         self.input_type_checker = input_type_checker
         self.output_type_checker = output_type_checker
 
-        self.logger = getLogger(__name__)
         self.experiment_logger = logger
         self.parameters = parameters
         self.serialiser = serialiser
@@ -111,7 +116,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             self.model.fit(transformed["train"])
 
             self.logger.info("Evaluate model")
-            metrics = {name: self.evaluator.evaluate(self.model, data) for name, data in datasets.items()}
+            metrics = {name: self.evaluator.evaluate(self.model, data) for name, data in transformed.items()}
 
             self.logger.info("Create output type checker")
             predicted_train = self.model.transform(transformed["train"])
@@ -134,16 +139,91 @@ run here for logging purposes. Consider using the `from_command_line` or
             )
             self.experiment_logger.log_parameters(self.parameters)
 
-            for extra_file in self.additional_files_to_store:
-                self.experiment_logger.log_file(extra_file)
+            # log requirements.txt
+            self._log_requirements()
 
+            # extra py files
+            self._log_extra_files()
             self.logger.info("Done")
         return metrics
+
+    def _log_requirements(self) -> None:
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        version_info = {
+            "python_version": python_version,
+            "major": sys.version_info.major,
+            "minor": sys.version_info.minor,
+            "micro": sys.version_info.micro,
+        }
+        version_file = self.output_folder / Constants.PYTHON_VERSION_FILE
+        with open(version_file, "w") as f:
+            json.dump(version_info, f)
+        self.experiment_logger.log_file(version_file)
+
+        reqs = subprocess.check_output([sys.executable, "-m", "pip", "freeze"]).decode()
+        requirements_file = self.output_folder / Constants.REQUIREMENTS_FILE
+        with open(requirements_file, "w") as f:
+            f.write(reqs)
+        self.experiment_logger.log_file(requirements_file)
+
+    def _log_extra_files(self) -> None:
+        """Logs the extra files for an experiment, as specified in the constructor."""
+        paths_to_log = []
+        self.logger.info("Log extra files")
+        for extra_file in self.additional_files_to_store:
+            relative_path = Path(extra_file).relative_to(os.getcwd())
+            self.experiment_logger.log_local_file(relative_path, self.output_folder / relative_path)
+            paths_to_log.append(str(relative_path))
+
+        self.logger.info("Log `extra files`-file")
+        extra_files_file = self.output_folder / Constants.EXTRA_FILES
+        with open(extra_files_file, "w") as f:
+            data = {"paths": paths_to_log}
+            json.dump(data, f)
+        # Make sure the file path is closed before logging anything, to make sure all writes have flushed.
+        self.experiment_logger.log_file(extra_files_file)
 
     def _create_output_folders(self) -> None:
         of = self.output_folder
         of.mkdir(exist_ok=True, parents=True)
         (of / Constants.MODEL_FOLDER).mkdir(exist_ok=True)
+
+    def copy(self, parameters: dict[str, Any], seed: int = 1) -> "Experiment":
+        """Create a fresh copy of this Experiment.
+
+        The Model & Pipeline will be recreated, so any trained versions will be
+        re-initialised.
+
+        Args:
+            parameters (dict[str, Any]): New parameters for the Model and Pipeline
+                to be re-initialised with.
+            seed (int, optional): Training seed. Defaults to 1.
+
+        Returns:
+            Experiment: _description_
+        """
+        model_class = self.model.__class__
+
+        model_args = get_args_for_prefix("model__", parameters)
+        model = model_class(seed=seed, inputs=self.model.inputs, outputs=self.model.outputs, **model_args)
+
+        pipeline_args = get_args_for_prefix("pipeline__", parameters)
+        new_pipeline = self.pipeline.copy(pipeline_args)
+
+        return Experiment(
+            # We might want to also deep copy data_sources, evaluator, type checkers, and experiment_logger.
+            data_sources=self.data_sources,
+            model=model,
+            pipeline=new_pipeline,
+            evaluator=self.evaluator,
+            logger=self.experiment_logger,
+            serialiser=self.serialiser,
+            output_folder=self.output_folder,
+            input_type_checker=self.input_type_checker,
+            output_type_checker=self.output_type_checker,
+            additional_files_to_store=self.additional_files_to_store,
+            parameters=parameters,
+        )
 
     @classmethod
     def from_dictionary(
@@ -154,14 +234,14 @@ run here for logging purposes. Consider using the `from_command_line` or
         evaluator: Evaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
-        output_folder: Path | str,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
         model_inputs: list[str],
         model_outputs: list[str],
         parameters: dict[str, Any],
+        output_folder: Path | str = "outputs",
         seed: int = 1,
-        additional_files_to_store: list[str] | None = None,
+        additional_files_to_store: list[str | Path] | None = None,
     ) -> "Experiment":
         """Creates an Experiment from a dictionary with parameters.
 
@@ -184,7 +264,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             seed (int): The RNG seed to ensure reproducability.
             parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
                 Defaults to None.
-            additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
+            additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
 
         Returns:
@@ -197,13 +277,13 @@ run here for logging purposes. Consider using the `from_command_line` or
         pipeline.reinitialise(pipeline_args)
 
         return Experiment(
-            data_sources,
-            model,
-            pipeline,
-            evaluator,
-            logger,
-            serialiser,
-            output_folder,
+            data_sources=data_sources,
+            model=model,
+            pipeline=pipeline,
+            evaluator=evaluator,
+            logger=logger,
+            serialiser=serialiser,
+            output_folder=output_folder,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
             additional_files_to_store=additional_files_to_store,
@@ -219,13 +299,14 @@ run here for logging purposes. Consider using the `from_command_line` or
         evaluator: Evaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
-        output_folder: Path | str,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
         model_inputs: list[str],
         model_outputs: list[str],
+        output_folder: Path | str = "outputs",
         seed: int = 1,
-        additional_files_to_store: list[str] | None = None,
+        additional_files_to_store: list[str | Path] | None = None,
+        fixed_arguments: dict[str, Any] | None = None,
     ) -> "Experiment":
         """Automatically initialises an Experiment from command line arguments.
 
@@ -248,8 +329,13 @@ run here for logging purposes. Consider using the `from_command_line` or
             model_inputs: (list[str]): Input dataset names to the model.
             model_outputs: (list[str]): Output dataset names to the model.
             seed (int): The RNG seed to ensure reproducability.
-            additional_files_to_store (list[str] | None, optional): Extra files to store, such as python files.
+            additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
                 Defaults to no extra files (None).
+            fixed_arguments (dict[str, Any] | None, optional): Arguments that won't be read from command line.
+                Useful to pass complex objects that you don't want to optimize. Think of classes, loss functions,
+                metrics, etc. Any value in this dict will overwrite values from the command line. These need to be
+                presented in the same `model__<arg>` or `pipeline__<step>__<arg>` format as the command line arguments.
+
 
         Returns:
             Experiment: An Experiment created with the given parameters from the command line.
@@ -257,13 +343,17 @@ run here for logging purposes. Consider using the `from_command_line` or
         arg_parser = cls._get_cmd_args(model_class, pipeline)
         parsed_args, _ = arg_parser.parse_known_args()
 
+        arguments = parsed_args.__dict__
+        if fixed_arguments is not None:
+            arguments.update(fixed_arguments)
+
         return cls.from_dictionary(
-            data_sources,
-            model_class,
-            pipeline,
-            evaluator,
-            logger,
-            serialiser,
+            data_sources=data_sources,
+            model_class=model_class,
+            pipeline=pipeline,
+            evaluator=evaluator,
+            logger=logger,
+            serialiser=serialiser,
             output_folder=output_folder,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
@@ -281,3 +371,24 @@ run here for logging purposes. Consider using the `from_command_line` or
         model_class.get_parameters(parser)
         add_args_to_parser_for_pipeline(parser, pipeline)
         return parser
+
+    def __str__(self) -> str:
+        """Create string representation of this Experiment.
+
+        Returns:
+            str: A string representation of this Experiment.
+        """
+        data_part = "datasets:\n" + "\n\t".join(
+            [
+                f"""\t{name}:
+{ds_source.__str__(indents=2)}"""
+                for name, ds_source in self.data_sources.items()
+            ]
+        )
+
+        pipeline_part = "pipeline:\n" + self.pipeline.__str__(indents=1)
+        model_part = f"model:\n\t{str(self.model)}"
+        logger_part = f"logger:\n\t{str(self.experiment_logger)}"
+        evaluator_part = f"evaluator:\n{self.evaluator.__str__(indents=1)}"
+
+        return "\n\n".join([data_part, pipeline_part, model_part, logger_part, evaluator_part])
