@@ -1,5 +1,8 @@
 """Custom 'function' to test importing / exporting data files."""
 
 
-def reverse(x: list[float]) -> list[float]:
+from typing import List
+
+
+def reverse(x: List[float]) -> List[float]:
     return x[::-1]

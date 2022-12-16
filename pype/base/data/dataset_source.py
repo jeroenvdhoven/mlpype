@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import Dict, TypeVar
 
 from pype.base.data.data_source import DataSource
 from pype.base.data.dataset import DataSet
@@ -6,7 +6,7 @@ from pype.base.data.dataset import DataSet
 Data = TypeVar("Data")
 
 
-class DataSetSource(dict[str, DataSource[Data]]):
+class DataSetSource(Dict[str, DataSource[Data]]):
     """A collection of DataSources that together form a DataSet when loaded."""
 
     def read(self) -> DataSet[Data]:

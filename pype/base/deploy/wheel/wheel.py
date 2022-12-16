@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from shutil import copyfile, copytree
 from tempfile import TemporaryDirectory
+from typing import List, Optional, Union
 
 from pype.base.constants import Constants
 from pype.base.utils.workspace import switch_directory
@@ -12,8 +13,8 @@ def make_wheel(
     model_folder: Path,
     model_name: str,
     version: str,
-    output_wheel_file: Path | str | None = None,
-    libraries: list[str] | None = None,
+    output_wheel_file: Optional[Union[Path, str]] = None,
+    libraries: Optional[List[str]] = None,
 ) -> None:
     """Turns an output folder from an Experiment into a wheel file.
 
@@ -26,9 +27,9 @@ def make_wheel(
         model_name (str): The name of the model. Will be used as package name. Should follow
             proper package naming conventions.
         version (str): Model/package version.
-        output_wheel_file (Path | str | None, optional): The output directory. Defaults to "wheel_output"
+        output_wheel_file (Optional[Union[Path, str]]): The output directory. Defaults to "wheel_output"
             in the current directory.
-        libraries (list[str] | None, optional): A list of (versioned) libraries that are used as
+        libraries (Optional[List[str]]): A list of (versioned) libraries that are used as
             dependencies. By default we use the requirements.txt file from the experiment run.
     """
     if output_wheel_file is None:

@@ -1,17 +1,18 @@
 import os
 from pathlib import Path
+from typing import List, Union
 
 from setuptools import setup
 
 
-def package_files(directory: Path | str) -> list[str]:
+def package_files(directory: Union[Path, str]) -> List[str]:
     """Find all files from the output directory of an Experiment run to include.
 
     Args:
-        directory (Path | str): The main output directory to search.
+        directory (Union[Path, str]): The main output directory to search.
 
     Returns:
-        list[str]: The files to include.
+        List[str]: The files to include.
     """
     paths = []
     for (path, _, filenames) in os.walk(directory):

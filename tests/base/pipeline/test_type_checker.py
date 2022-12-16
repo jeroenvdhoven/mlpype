@@ -1,4 +1,4 @@
-from typing import Type
+from typing import List, Type
 from unittest.mock import call, patch
 
 from pydantic import create_model
@@ -15,13 +15,13 @@ from tests.utils import DummyDataModel, DummyTypeChecker, get_dummy_data, pytest
 
 
 class DummyDataStr(DataModel):
-    data: list[str]
+    data: List[str]
 
-    def convert(self) -> list[str]:
+    def convert(self) -> List[str]:
         return self.data
 
     @classmethod
-    def to_model(cls, data: list[str]) -> "DataModel":
+    def to_model(cls, data: List[str]) -> "DataModel":
         return cls(data=data)
 
 

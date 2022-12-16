@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, List, Type, Union
 
 import joblib
 from pyspark.ml import Transformer
@@ -17,7 +17,7 @@ class SparkSerialiser(Serialiser):
     SPARK_TRANSFORMER_CLASS_FILE = "spark_transformer_class"
     STEPS_FILE = "steps.json"
 
-    def serialise(self, object: Any, file: str | Path) -> None:
+    def serialise(self, object: Any, file: Union[str, Path]) -> None:
         """Serialse a given object.
 
         If the object is:
@@ -26,20 +26,20 @@ class SparkSerialiser(Serialiser):
 
         Args:
             object (Any): The object to serialise.
-            file (str | Path): The path to serialise to.
+            file (Union[str, Path]): The path to serialise to.
         """
         if isinstance(object, Pipeline):
             self._serialise_pipeline(object, file)
         else:
             return self._serialise_joblib(object, file)
 
-    def deserialise(self, file: str | Path) -> Any:
+    def deserialise(self, file: Union[str, Path]) -> Any:
         """Deserialise the object in the given file.
 
         This function can handle Pype Pipelines with PySpark elements.
 
         Args:
-            file (str | Path): The file containing a python object to deserialise.
+            file (Union[str, Path]): The file containing a python object to deserialise.
 
         Returns:
             Any: The deserialised object.
@@ -50,7 +50,7 @@ class SparkSerialiser(Serialiser):
         else:
             return self._deserialise_joblib(file)
 
-    def _serialise_pipeline(self, pipeline: Pipeline, file: str | Path) -> None:
+    def _serialise_pipeline(self, pipeline: Pipeline, file: Union[str, Path]) -> None:
         file = Path(file)
 
         file.mkdir(exist_ok=True)
@@ -80,21 +80,21 @@ class SparkSerialiser(Serialiser):
         with open(file / self.STEPS_FILE, "w") as f:
             json.dump({"steps": steps}, f)
 
-    def _serialise_joblib(self, object: Any, file: str | Path) -> None:
+    def _serialise_joblib(self, object: Any, file: Union[str, Path]) -> None:
         """Serialise the given object to the given file.
 
         Args:
             object (Any): The object to serialise.
-            file (str | Path): The file to serialise to.
+            file (Union[str, Path]): The file to serialise to.
         """
         joblib.dump(object, file)
 
-    def _deserialise_pipeline(self, file: str | Path) -> Pipeline:
+    def _deserialise_pipeline(self, file: Union[str, Path]) -> Pipeline:
         file = Path(file)
         assert file.is_dir()
 
         with open(file / self.STEPS_FILE, "r") as f:
-            steps: list[str] = json.load(f)["steps"]
+            steps: List[str] = json.load(f)["steps"]
 
         pipes = []
         for step in steps:
@@ -106,7 +106,7 @@ class SparkSerialiser(Serialiser):
                     pipes.append(self._deserialise_pipeline(step_path))
                 else:
                     pipe: SparkPipe = self._deserialise_joblib(step_path / self.BASE_PIPE_FILE)
-                    fitted_class: type[Transformer] = self._deserialise_joblib(
+                    fitted_class: Type[Transformer] = self._deserialise_joblib(
                         step_path / self.SPARK_TRANSFORMER_CLASS_FILE
                     )
                     pipe.fitted = fitted_class.load(str(step_path / self.SPARK_TRANSFORMER_FILE))
@@ -116,11 +116,11 @@ class SparkSerialiser(Serialiser):
 
         return Pipeline(pipes)
 
-    def _deserialise_joblib(self, file: str | Path) -> Any:
+    def _deserialise_joblib(self, file: Union[str, Path]) -> Any:
         """Deserialise the object in the given file.
 
         Args:
-            file (str | Path): The file to deserialise.
+            file (Union[str, Path]): The file to deserialise.
 
         Returns:
             Any: The python object stored in the file.

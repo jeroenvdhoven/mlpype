@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from pathlib import Path
+from typing import List, Optional, Tuple, Type, Union
 
 from data.data_sink import DataSink
 
@@ -25,7 +26,7 @@ class AnyArg:
 
 
 @contextmanager
-def pytest_assert(error_class, message: str | None = None, exact: bool = True):
+def pytest_assert(error_class, message: Optional[str] = None, exact: bool = True):
     try:
         yield
         raise ValueError("No error was raised!")
@@ -38,20 +39,20 @@ def pytest_assert(error_class, message: str | None = None, exact: bool = True):
                 assert message in error_message
 
 
-class DummyModel(Model[list[int | float]]):
+class DummyModel(Model[List[Union[int, float]]]):
     mean_file = "mean.txt"
 
-    def __init__(self, inputs: list[str], outputs: list[str], seed: int = 1, a: int = 3) -> None:
+    def __init__(self, inputs: List[str], outputs: List[str], seed: int = 1, a: int = 3) -> None:
         super().__init__(inputs, outputs, seed)
         self.a = a
 
     def set_seed(self) -> None:
         pass
 
-    def _fit(self, x: list[int | float], y: list[int | float]) -> None:
+    def _fit(self, x: List[Union[int, float]], y: List[Union[int, float]]) -> None:
         self.prediction = sum(y) / len(y) + self.a
 
-    def _transform(self, x: list[int | float]) -> list[int | float]:
+    def _transform(self, x: List[Union[int, float]]) -> List[Union[int, float]]:
         return [self.prediction for _ in x]
 
     def _save(self, folder: Path) -> None:
@@ -59,19 +60,19 @@ class DummyModel(Model[list[int | float]]):
             f.write(str(self.prediction))
 
     @classmethod
-    def _load(cls, folder: Path, inputs: list[str], outputs: list[str]) -> "DummyModel":
+    def _load(cls, folder: Path, inputs: List[str], outputs: List[str]) -> "DummyModel":
         result = cls(inputs=inputs, outputs=outputs)
         with open(folder / cls.mean_file, "r") as f:
             result.prediction = float(f.read())
         return result
 
 
-class DummyDataSource(DataSource[list[float]]):
+class DummyDataSource(DataSource[List[float]]):
     def __init__(self, l) -> None:
         super().__init__()
         self.l = l
 
-    def read(self) -> list[float]:
+    def read(self) -> List[float]:
         return self.l
 
     def __eq__(self, __o: object) -> bool:
@@ -85,19 +86,19 @@ def get_dummy_data(n: int, x_offset: int, y_offset: int) -> DataSetSource:
     )
 
 
-class DummyDataSink(DataSink[list[float]]):
+class DummyDataSink(DataSink[List[float]]):
     def __init__(self) -> None:
         self.data = None
 
-    def write(self, data: list[float]) -> None:
+    def write(self, data: List[float]) -> None:
         self.data = data
 
 
-class DummyOperator(Operator[list[float]]):
-    def fit(self, x: list[float]) -> "Operator":
+class DummyOperator(Operator[List[float]]):
+    def fit(self, x: List[float]) -> "Operator":
         return self
 
-    def transform(self, x: list[float]) -> list[float]:
+    def transform(self, x: List[float]) -> List[float]:
         return reverse([i - 1 for i in x])
 
 
@@ -110,13 +111,13 @@ def get_dummy_evaluator() -> Evaluator:
 
 
 class DummyDataModel(DataModel):
-    data: list[float]
+    data: List[float]
 
-    def convert(self) -> list[float]:
+    def convert(self) -> List[float]:
         return self.data
 
     @classmethod
-    def to_model(cls, data: list[float]) -> "DataModel":
+    def to_model(cls, data: List[float]) -> "DataModel":
         return cls(data=data)
 
 
@@ -126,19 +127,19 @@ class DummyDataSet(DataSetModel):
 
 
 class DummyTypeChecker(TypeChecker):
-    def fit(self, data: list[float]) -> "Operator":
+    def fit(self, data: List[float]) -> "Operator":
         return super().fit(data)
 
-    def transform(self, data: list[float]) -> list[float]:
+    def transform(self, data: List[float]) -> List[float]:
         assert isinstance(data, list), "Provide a list!"
         assert isinstance(data[0], float) or isinstance(data[0], int), "Provide a list with ints/floats!"
         return data
 
-    def get_pydantic_type(self) -> type[DataModel]:
+    def get_pydantic_type(self) -> Type[DataModel]:
         return DummyDataModel
 
 
-def get_dummy_type_checkers() -> tuple[TypeCheckerPipe, TypeCheckerPipe]:
+def get_dummy_type_checkers() -> Tuple[TypeCheckerPipe, TypeCheckerPipe]:
     return TypeCheckerPipe("input", ["x"], type_checker_classes=[(list, DummyTypeChecker)]), TypeCheckerPipe(
         "output", ["y"], type_checker_classes=[(list, DummyTypeChecker)]
     )

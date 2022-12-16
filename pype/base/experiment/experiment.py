@@ -5,7 +5,7 @@ import sys
 from argparse import ArgumentParser
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Type
+from typing import Any, Dict, List, Optional, Type, Union
 
 from pype.base.constants import Constants
 from pype.base.data.dataset_source import DataSetSource
@@ -22,17 +22,17 @@ from pype.base.utils.parsing import get_args_for_prefix
 class Experiment:
     def __init__(
         self,
-        data_sources: dict[str, DataSetSource],
+        data_sources: Dict[str, DataSetSource],
         model: Model,
         pipeline: Pipeline,
         evaluator: Evaluator,
         logger: ExperimentLogger,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
-        serialiser: Serialiser | None = None,
-        output_folder: Path | str = "outputs",
-        additional_files_to_store: list[str | Path] | None = None,
-        parameters: dict[str, Any] | None = None,
+        serialiser: Optional[Serialiser] = None,
+        output_folder: Union[Path, str] = "outputs",
+        additional_files_to_store: Optional[List[Union[str, Path]]] = None,
+        parameters: Optional[Dict[str, Any]] = None,
     ):
         """The core of the pype library: run a standardised ML experiment with the given parameters.
 
@@ -42,23 +42,23 @@ class Experiment:
                 - `pipeline__<pipe_name>__<arg> for pipeline parameters.
 
         Args:
-            data_sources (dict[str, DataSetSource]): The DataSets to use, in DataSource form.
+            data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model (Model): The Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
             evaluator (Evaluator): The evaluator to test how good your Model performs.
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
-            serialiser (Serialiser | None, optional): The serialiser to serialise any Python objects (expect the Model).
+            serialiser (Optional[Serialiser]): The serialiser to serialise any Python objects (expect the Model).
                 Defaults to a joblib serialiser.
-            output_folder: (Path | str): The output folder to log artifacts to. Defaults to "outputs".
+            output_folder: (Union[Path, str]): The output folder to log artifacts to. Defaults to "outputs".
             input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
-            additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
+            additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
                 Defaults to no extra files (None).
-            parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
+            parameters (Optional[Dict[str, Any]]): Any parameters to log as part of this experiment.
                 Defaults to None.
         """
         assert "train" in data_sources, "Must provide a 'train' entry in the data_sources dictionary."
@@ -91,11 +91,11 @@ run here for logging purposes. Consider using the `from_command_line` or
         self.output_folder = output_folder
         self.additional_files_to_store = additional_files_to_store
 
-    def run(self) -> dict[str, dict[str, str | float | int | bool]]:
+    def run(self) -> Dict[str, Dict[str, Union[str, float, int, bool]]]:
         """Execute the experiment.
 
         Returns:
-            dict[str, dict[str, str | float | int | bool]]: The performance metrics of this run.
+            Dict[str, Union[str, float, int, bool]]: The performance metrics of this run.
         """
         with self.experiment_logger:
             self.logger.info("Load data")
@@ -188,14 +188,14 @@ run here for logging purposes. Consider using the `from_command_line` or
         of.mkdir(exist_ok=True, parents=True)
         (of / Constants.MODEL_FOLDER).mkdir(exist_ok=True)
 
-    def copy(self, parameters: dict[str, Any], seed: int = 1) -> "Experiment":
+    def copy(self, parameters: Dict[str, Any], seed: int = 1) -> "Experiment":
         """Create a fresh copy of this Experiment.
 
         The Model & Pipeline will be recreated, so any trained versions will be
         re-initialised.
 
         Args:
-            parameters (dict[str, Any]): New parameters for the Model and Pipeline
+            parameters (Dict[str, Any]): New parameters for the Model and Pipeline
                 to be re-initialised with.
             seed (int, optional): Training seed. Defaults to 1.
 
@@ -228,7 +228,7 @@ run here for logging purposes. Consider using the `from_command_line` or
     @classmethod
     def from_dictionary(
         cls,
-        data_sources: dict[str, DataSetSource],
+        data_sources: Dict[str, DataSetSource],
         model_class: Type[Model],
         pipeline: Pipeline,
         evaluator: Evaluator,
@@ -236,17 +236,17 @@ run here for logging purposes. Consider using the `from_command_line` or
         serialiser: Serialiser,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
-        model_inputs: list[str],
-        model_outputs: list[str],
-        parameters: dict[str, Any],
-        output_folder: Path | str = "outputs",
+        model_inputs: List[str],
+        model_outputs: List[str],
+        parameters: Dict[str, Any],
+        output_folder: Union[Path, str] = "outputs",
         seed: int = 1,
-        additional_files_to_store: list[str | Path] | None = None,
+        additional_files_to_store: Optional[List[Union[str, Path]]] = None,
     ) -> "Experiment":
         """Creates an Experiment from a dictionary with parameters.
 
         Args:
-            data_sources (dict[str, DataSetSource]): The DataSets to use, in DataSource form.
+            data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
@@ -254,17 +254,17 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            output_folder: (Path | str): The output folder to log artifacts to.
+            output_folder: (Union[Path, str]): The output folder to log artifacts to.
             input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
-            model_inputs: (list[str]): Input dataset names to the model.
-            model_outputs: (list[str]): Output dataset names to the model.
+            model_inputs: (List[str]): Input dataset names to the model.
+            model_outputs: (List[str]): Output dataset names to the model.
             seed (int): The RNG seed to ensure reproducability.
-            parameters (dict[str, Any] | None, optional): Any parameters to log as part of this experiment.
+            parameters (Optional[Dict[str, Any]]): Any parameters to log as part of this experiment.
                 Defaults to None.
-            additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
+            additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
                 Defaults to no extra files (None).
 
         Returns:
@@ -293,7 +293,7 @@ run here for logging purposes. Consider using the `from_command_line` or
     @classmethod
     def from_command_line(
         cls,
-        data_sources: dict[str, DataSetSource],
+        data_sources: Dict[str, DataSetSource],
         model_class: Type[Model],
         pipeline: Pipeline,
         evaluator: Evaluator,
@@ -301,19 +301,19 @@ run here for logging purposes. Consider using the `from_command_line` or
         serialiser: Serialiser,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
-        model_inputs: list[str],
-        model_outputs: list[str],
-        output_folder: Path | str = "outputs",
+        model_inputs: List[str],
+        model_outputs: List[str],
+        output_folder: Union[Path, str] = "outputs",
         seed: int = 1,
-        additional_files_to_store: list[str | Path] | None = None,
-        fixed_arguments: dict[str, Any] | None = None,
+        additional_files_to_store: Optional[List[Union[str, Path]]] = None,
+        fixed_arguments: Optional[Dict[str, Any]] = None,
     ) -> "Experiment":
         """Automatically initialises an Experiment from command line arguments.
 
         # TODO: how to best store these extra files to the output folder as well?
 
         Args:
-            data_sources (dict[str, DataSetSource]): The DataSets to use, in DataSource form.
+            data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
@@ -321,17 +321,17 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            output_folder: (Path | str): The output folder to log artifacts to.
+            output_folder: (Union[Path, str]): The output folder to log artifacts to.
             input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
-            model_inputs: (list[str]): Input dataset names to the model.
-            model_outputs: (list[str]): Output dataset names to the model.
+            model_inputs: (List[str]): Input dataset names to the model.
+            model_outputs: (List[str]): Output dataset names to the model.
             seed (int): The RNG seed to ensure reproducability.
-            additional_files_to_store (list[str | Path] | None, optional): Extra files to store, such as python files.
-                Defaults to no extra files (None).
-            fixed_arguments (dict[str, Any] | None, optional): Arguments that won't be read from command line.
+            additional_files_to_store (Optional[List[Union[str, Path]]], optional): Extra files to store,
+                such as python files. Defaults to no extra files (None).
+            fixed_arguments (Optional[Dict[str, Any]]): Arguments that won't be read from command line.
                 Useful to pass complex objects that you don't want to optimize. Think of classes, loss functions,
                 metrics, etc. Any value in this dict will overwrite values from the command line. These need to be
                 presented in the same `model__<arg>` or `pipeline__<step>__<arg>` format as the command line arguments.

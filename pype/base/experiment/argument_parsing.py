@@ -3,7 +3,7 @@ import re
 import typing
 import warnings
 from argparse import ArgumentParser
-from typing import Any, Callable, Iterable, List, Tuple, Type
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from docstring_parser import parse
 
@@ -37,8 +37,8 @@ def add_args_to_parser_for_class(
     parser: ArgumentParser,
     class_: Type,
     prefix: str,
-    excluded_superclasses: list[Type],
-    excluded_args: list[str] | None = None,
+    excluded_superclasses: List[Type],
+    excluded_args: Optional[List[str]] = None,
 ) -> None:
     """Adds arguments for the constructor of a class to the given parser.
 
@@ -56,9 +56,9 @@ def add_args_to_parser_for_class(
         class_ (Type): The class who's constructor's arguments we want to add.
         prefix (str): A prefix that should be set on each argument name before adding it to
             the ArgumentParser.
-        excluded_superclasses (list[Type]): Superclasses of the class_ that should be ignored in case
+        excluded_superclasses (List[Type]): Superclasses of the class_ that should be ignored in case
             there are kw-args style arguments to the constructor.
-        excluded_args (list[str] | None, optional): argument names to never include.
+        excluded_args (Optional[List[str]], optional): argument names to never include.
             By default 'self' and 'cls' are ignored.
     """
     init_func = class_.__init__
@@ -82,8 +82,8 @@ def add_args_to_parser_for_function(
     parser: ArgumentParser,
     function: Callable,
     prefix: str,
-    excluded: list[str] | None = None,
-    class_docstring_args: dict[str, type | None] | None = None,
+    excluded: Optional[List[str]] = None,
+    class_docstring_args: Optional[Dict[str, Union[type, None]]] = None,
 ) -> None:
     """Add arguments for a given function to the given parser.
 
@@ -92,8 +92,8 @@ def add_args_to_parser_for_function(
         function (Callable): The function who's arguments we want to add.
         prefix (str): A prefix that should be set on each argument name before adding it to
             the ArgumentParser.
-        excluded (list[str] | None, optional): argument names to never include. By default 'self' and 'cls' are ignored.
-        class_docstring_args: (dict[str, type | None], optional): docstring arguments obtained from the class.
+        excluded (Optional[List[str]]): argument names to never include. By default 'self' and 'cls' are ignored.
+        class_docstring_args: (Optional[Dict[str, Union[type, None]]): docstring arguments obtained from the class.
             Useful for init functions, since those can be documented in multiple places.
     """
     args = inspect.signature(function)
@@ -111,8 +111,8 @@ def add_args_to_parser_for_function(
 
 
 def _parse_docs_to_type_args(
-    func: Callable, extra_mappings: dict[str, type] | None = None, include_none_args: bool = False
-) -> dict[str, type | None]:
+    func: Callable, extra_mappings: Optional[Dict[str, type]] = None, include_none_args: bool = False
+) -> Dict[str, Union[type, None]]:
     """Parses the docstring of a function into an arg-type dictionary.
 
     We only parse the following types, whose first letter can be capitalized.
@@ -127,19 +127,19 @@ def _parse_docs_to_type_args(
 
     Args:
         func (Callable): The function whose docstring needs to be read.
-        extra_mappings (dict[str, type], optional): Optional extra regex -> type mappings.
+        extra_mappings (Dict[str, type], optional): Optional extra regex -> type mappings.
             Defaults to no extra mappings.
         include_none_args (bool, optional): Whether to include arguments in the output
             with no good type mappings. Defaults to False.
 
     Returns:
-        dict[str, type]: A dictionary mapping argument names to types.
+        Dict[str, Union[type, None]]: A dictionary mapping argument names to types.
     """
     signature = inspect.signature(func)
     if extra_mappings is None:
         extra_mappings = {}
 
-    result: dict[str, type | None] = {}
+    result: Dict[str, Union[type, None]] = {}
     doc = inspect.getdoc(func)
     if doc is None:
         return result
@@ -154,7 +154,7 @@ def _parse_docs_to_type_args(
     return result
 
 
-def _parse_type_name(s: str | None, extra_mappings: dict[str, type] | None = None) -> type | None:
+def _parse_type_name(s: Optional[str], extra_mappings: Optional[Dict[str, type]] = None) -> Union[type, None]:
     if extra_mappings is None:
         extra_mappings = {}
     if s is None:
@@ -178,10 +178,10 @@ def add_argument(
     parser: ArgumentParser,
     name: str,
     prefix: str,
-    class_: type | None,
+    class_: Union[type, None],
     is_required: bool,
     default: Any,
-    excluded: list[str] | None = None,
+    excluded: Optional[List[str]] = None,
 ) -> None:
     """Add an argument to the given parser.
 
@@ -195,7 +195,7 @@ def add_argument(
             - lists / tuples / iterables of the above 4 arguments.
         is_required (bool): Whether the argument is required or optional.
         default (Any): the default value if is_required is False.
-        excluded (list[str] | None, optional): argument names to never include. By default 'self' and 'cls' are ignored.
+        excluded (Optional[List[str]]): argument names to never include. By default 'self' and 'cls' are ignored.
     """
     if excluded is None:
         excluded = []

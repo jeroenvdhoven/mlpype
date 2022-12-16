@@ -6,7 +6,6 @@ clean:
 	rm -rf dist/ packages/
 
 dev-install:
-	pip install -e .
 	./scripts/dev_install.sh -e 1
 
 host-pypi-local:

@@ -24,8 +24,8 @@ class Test_PandasData:
     def model_class(self) -> Type[PandasData]:
         return create_model(
             "PandasData",
-            x=(Union[List[int], Dict[str or int, int]], ...),
-            y=(Union[List[str], Dict[str or int, str]], ...),
+            x=(Union[List[int], Dict[Union[str, int], int]], ...),
+            y=(Union[List[str], Dict[Union[str, int], str]], ...),
             __base__=PandasData,
         )
 
