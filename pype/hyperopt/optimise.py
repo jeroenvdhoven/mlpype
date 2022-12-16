@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from hyperopt.base import Trials
 from hyperopt.fmin import fmin, space_eval
@@ -9,37 +9,37 @@ from pype.base.experiment import Experiment
 
 def create_optimisation_function(
     experiment_template: Experiment,
-    target_metric: tuple[str, str],
+    target_metric: Tuple[str, str],
     minimise_target: bool,
     seed: int,
-) -> Callable[[dict], float | int]:
+) -> Callable[[dict], Union[float, int]]:
     """Create an optimisation function that hyperopt can use to find the best model.
 
     Args:
         experiment_template (Experiment): An example Experiment that will be run
             multiple times to find the best hyperparameters. We will create clean copies
             of this Experiment for every run.
-        target_metric (tuple[str, str]): The target metric to optimise. Should be of the form
+        target_metric (Tuple[str, str]): The target metric to optimise. Should be of the form
             (dataset name, metric name). The dataset name needs to match one in the DataSet from the Experiment.
             The metric name should match a metric from the Evaluator in the Experiment.
         minimise_target (bool): A boolean indicating if the target metric should be minimised or not.
         seed (int): The seed used for training.
 
     Returns:
-        Callable[[dict], float | int]: The optimisation function to be used by hyperopt's fmin
+        Callable[[dict], Union[float, int]]: The optimisation function to be used by hyperopt's fmin
     """
 
-    def optimise(hyper_params: dict[str, Any]) -> float | int:
+    def optimise(hyper_params: Dict[str, Any]) -> Union[float, int]:
         """Optimise a given Experiment at the give hyperparameters.
 
         Args:
-            hyper_params (dict[str, Any]): The hyperparameters to initialise
+            hyper_params (Dict[str, Any]): The hyperparameters to initialise
                 a new Experiment with. Make sure these are properly prefixed with
                 model__ and pipeline__<pipe name>__, as you would initialise a
                 regular Experiment from arguments.
 
         Returns:
-            float | int: The performance of this Experiment on the given parameters
+            Union[float, int]: The performance of this Experiment on the given parameters
                 on one metric and dataset.
         """
         experiment = experiment_template.copy(hyper_params, seed=seed)
@@ -60,17 +60,17 @@ def create_optimisation_function(
 
 def optimise_experiment(
     experiment_template: Experiment,
-    search_space: dict[str, tuple[str, Callable]],
-    target_metric: tuple[str, str],
+    search_space: Dict[str, Tuple[str, Callable]],
+    target_metric: Tuple[str, str],
     max_evals: int,
     minimise_target: bool,
     trial_type: str = "normal",
-    mongo_url: str | None = None,
+    mongo_url: Optional[str] = None,
     mongo_exp_key: str = "experiment",
-    trials: Trials | None = None,
+    trials: Optional[Trials] = None,
     training_seed: int = 1,
     **kwargs: Any,
-) -> tuple[int | None, float | None, dict[str, Any], Trials]:
+) -> Tuple[Union[int, None], Union[float, None], Dict[str, Any], Trials]:
     """Optimise a pype Experiment given a search space using Hyperopt.
 
     We attempt to create a clean copy of Experiments between runs to preserve run independency.
@@ -82,12 +82,12 @@ def optimise_experiment(
             We try to ensure a new, clean Experiment is created for each run. Please allow this by
             not sharing important, trained variables between Models or Operators of the same class.
             Each call to any DataSource provided should also return the same dataset.
-        search_space (dict[str, tuple[str, Callable]]): A search space defined in the standard hyperopt way.
+        search_space (Dict[str, Tuple[str, Callable]]): A search space defined in the standard hyperopt way.
             We suggest providing this as a dictionary in the form:
                 {<argument name>: (<name>, <hyperopt callable like hp.choice(...)>)}
             Make sure these are properly prefixed with model__ and pipeline__<pipe name>__, as you would
             initialise a regular Experiment from arguments.
-        target_metric (tuple[str, str]): The target metric to optimise. Should be of the form
+        target_metric (Tuple[str, str]): The target metric to optimise. Should be of the form
             (dataset name, metric name). The dataset name needs to match one in the DataSet from the Experiment.
             The metric name should match a metric from the Evaluator in the Experiment.
         max_evals (int): The maximum number of runs to perform for this hyperoptimisation search. Note that
@@ -101,13 +101,14 @@ def optimise_experiment(
                 # TODO: SparkTrials integration.
                 - 'spark': A SparkTrials object will be created. Currently not supported yet, WIP. Providing your own
                     SparkTrials object should still work.
-        mongo_url (str | None): The link to the mongodb that should be used. Only used if `trial_type` == 'mongo', and
-            is required in that case.
+        mongo_url (Optional[str]): The link to the mongodb that should be used.
+            Only used if `trial_type` == 'mongo', and is required in that case.
         mongo_exp_key (str): The experiment name in the mongodb that should be used.
             Only used if `trial_type` == 'mongo'. We encourage you to set this to distinguish between runs.
             The default is "experiment"
-        trials (Trials | None): An existing Trials object with previous runs of the optimisation. Useful if you want to
-            continue an old optimisation run without losing information. By default a new Trials object will be created.
+        trials (Optional[Trials]): An existing Trials object with previous runs of the optimisation.
+            Useful if you want to continue an old optimisation run without losing information.
+            By default a new Trials object will be created.
         training_seed (int): Seed used to initialise a new Experiment (and run).
         **kwargs: Additional arguments to be provided to hyperopt's `fmin`.
 

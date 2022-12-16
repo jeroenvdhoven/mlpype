@@ -3,7 +3,7 @@ import typing
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any, Generic, Iterable, Type, TypeVar
+from typing import Any, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
 
 from pyspark.ml import Model as BaseSparkModel
 from pyspark.ml import Predictor
@@ -25,25 +25,25 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
 
     def __init__(
         self,
-        inputs: list[str],
-        outputs: list[str],
-        output_col: str | None = None,
-        model: BaseSparkModel | None = None,
-        predictor: T | None = None,
+        inputs: List[str],
+        outputs: List[str],
+        output_col: Optional[str] = None,
+        model: Optional[BaseSparkModel] = None,
+        predictor: Optional[T] = None,
         seed: int = 1,
         **model_args: Any,
     ) -> None:
         """A Pype-compliant framework for using Spark Models.
 
         Args:
-            inputs (list[str]): The name of the input DataFrame. Should be a list of 1 string.
-            outputs (list[str]): The name of the output DataFrame. Should be a list of 1 string, the same as `inputs`
-            output_col (str | None, optional): The name of the column where the model will put the output.
+            inputs (List[str]): The name of the input DataFrame. Should be a list of 1 string.
+            outputs (List[str]): The name of the output DataFrame. Should be a list of 1 string, the same as `inputs`
+            output_col (Optional[str]): The name of the column where the model will put the output.
                 Defaults to None, which means we won't select any columns and instead return the full output
                 of the model.
-            predictor (Predictor, optional): The Spark Predictor. If not set, we try to instantiate it
+            predictor (Optional[Predictor]): The Spark Predictor. If not set, we try to instantiate it
                 using `model_args`
-            model (BaseSparkModel, optional): The Spark Model. Defaults to None. If set to None,
+            model (Optional[BaseSparkModel]): The Spark Model. Defaults to None. If set to None,
                 this model can't be serialised or used for inference.
             seed (int, optional): Spark Seed. Currently ignored, unfortunately. Defaults to 1.
         """
@@ -59,7 +59,7 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         self.output_col = output_col
 
     @abstractmethod
-    def _init_model(self, args: dict[str, Any]) -> T:
+    def _init_model(self, args: Dict[str, Any]) -> T:
         raise NotImplementedError
 
     @classmethod
@@ -87,7 +87,7 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         assert len(data) == 1, f"SparkML needs a single DataFrame as input, got {len(data)}"
         self.model = self.predictor.fit(data[0])
 
-    def _transform(self, *data: SparkDataFrame) -> Iterable[SparkDataFrame] | SparkDataFrame:
+    def _transform(self, *data: SparkDataFrame) -> Union[Iterable[SparkDataFrame], SparkDataFrame]:
         assert len(data) == 1, f"SparkML needs a single DataFrame as input, got {len(data)}"
         assert self.model is not None, "Please fit this model before transforming data."
 
@@ -109,14 +109,14 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         serialiser.serialise(type(self.model), str(folder / self.SPARK_MODEL_CLASS_PATH))
 
     @classmethod
-    def _load(cls: Type["SparkModel"], folder: Path, inputs: list[str], outputs: list[str]) -> "SparkModel":
+    def _load(cls: Type["SparkModel"], folder: Path, inputs: List[str], outputs: List[str]) -> "SparkModel":
         serialiser = JoblibSerialiser()
 
         with open(folder / cls.PYPE_MODEL_CONFIG, "r") as f:
             config = json.load(f)
         output_col = config["output_col"]
 
-        predictor_class: type[Predictor] = cls._get_annotated_class()
+        predictor_class: Type[Predictor] = cls._get_annotated_class()
         model_class: Type[BaseSparkModel] = serialiser.deserialise(str(folder / cls.SPARK_MODEL_CLASS_PATH))
 
         predictor: Predictor = predictor_class.load(str(folder / cls.SPARK_PREDICTOR_PATH))

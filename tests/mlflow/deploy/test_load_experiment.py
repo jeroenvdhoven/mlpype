@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Union
 from unittest.mock import MagicMock, patch
 
 from pytest import mark
@@ -52,7 +53,7 @@ class Test_load_experiment_from_mlflow:
                 load_experiment_from_mlflow(url, name, run_id)
 
     @mark.parametrize(["directory"], [["str-directory"], [Path("path-directory")]])
-    def test_with_folder(self, directory: str | Path):
+    def test_with_folder(self, directory: Union[str, Path]):
         url = "some_url"
         name = "some name"
         run_id = "jkldsf9032sd"

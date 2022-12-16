@@ -2,7 +2,7 @@ import typing
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any, Generic, Iterable, Type, TypeVar
+from typing import Any, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
 
 import numpy as np
 
@@ -20,9 +20,9 @@ class SklearnModel(Model[SklearnData], ABC, Generic[T]):
 
     def __init__(
         self,
-        inputs: list[str],
-        outputs: list[str],
-        model: T | None = None,
+        inputs: List[str],
+        outputs: List[str],
+        model: Optional[T] = None,
         seed: int = 1,
         **model_args: Any,
     ) -> None:
@@ -42,7 +42,7 @@ class SklearnModel(Model[SklearnData], ABC, Generic[T]):
                 used to fit the model.
             outputs (List[str]): A list of names of output Data. This determines the names of
                 output variables.
-            model (SklearnModelBaseType | None): An object that has fit() and predict() methods. If none,
+            model (Optional[SklearnModelBaseType]): An object that has fit() and predict() methods. If none,
                 we will use the model_args to instantiate a new model.
             seed (int, optional): The RNG seed to ensure reproducability.. Defaults to 1.
             **model_args (Any): Optional keyword arguments passed to the model class to instantiate a new
@@ -54,7 +54,7 @@ class SklearnModel(Model[SklearnData], ABC, Generic[T]):
         self.model = model
 
     @abstractmethod
-    def _init_model(self, args: dict[str, Any]) -> T:
+    def _init_model(self, args: Dict[str, Any]) -> T:
         raise NotImplementedError
 
     @classmethod
@@ -68,7 +68,7 @@ class SklearnModel(Model[SklearnData], ABC, Generic[T]):
     def _fit(self, *data: SklearnData) -> None:
         self.model.fit(*data)
 
-    def _transform(self, *data: SklearnData) -> Iterable[SklearnData] | SklearnData:
+    def _transform(self, *data: SklearnData) -> Union[Iterable[SklearnData], SklearnData]:
         return self.model.predict(*data)
 
     def _save(self, folder: Path) -> None:
@@ -76,7 +76,7 @@ class SklearnModel(Model[SklearnData], ABC, Generic[T]):
         serialiser.serialise(self.model, folder / self.SKLEARN_MODEL_FILE)
 
     @classmethod
-    def _load(cls: Type["SklearnModel"], folder: Path, inputs: list[str], outputs: list[str]) -> "SklearnModel":
+    def _load(cls: Type["SklearnModel"], folder: Path, inputs: List[str], outputs: List[str]) -> "SklearnModel":
         serialiser = JoblibSerialiser()
         model = serialiser.deserialise(folder / cls.SKLEARN_MODEL_FILE)
         return cls(inputs=inputs, outputs=outputs, model=model, seed=1)

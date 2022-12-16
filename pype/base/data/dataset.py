@@ -1,9 +1,9 @@
-from typing import Iterable, List, TypeVar
+from typing import Dict, Iterable, List, TypeVar
 
 Data = TypeVar("Data")
 
 
-class DataSet(dict[str, Data]):
+class DataSet(Dict[str, Data]):
     """A DataSet consisting of multiple name-Data pairs.
 
     The Data can be multiple types of objects:
@@ -24,11 +24,11 @@ class DataSet(dict[str, Data]):
         return [self[key] for key in keys]
 
     @classmethod
-    def from_dict(cls, dct: dict[str, Data]) -> "DataSet[Data]":
+    def from_dict(cls, dct: Dict[str, Data]) -> "DataSet[Data]":
         """Creates a DataSet from a dictionary.
 
         Args:
-            dct (dict[str, Data]): The dictionary containing data.
+            dct (Dict[str, Data]): The dictionary containing data.
 
         Returns:
             DataSet[Data]: A DataSet based on the given dict.

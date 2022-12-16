@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from logging import Logger, getLogger
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, Optional, Type, Union
 
 from fastapi.applications import FastAPI
 from fastapi.background import BackgroundTasks
@@ -15,8 +15,8 @@ from pype.base.pipeline.type_checker import DataModel, DataSetModel
 @dataclass
 class PypeApp:
     name: str
-    folder: str | Path
-    tracking_servers: dict[str, DataSink] | None = None
+    folder: Union[str, Path]
+    tracking_servers: Optional[Dict[str, DataSink]] = None
 
     def __post_init__(self):  # type: ignore
         """Makes sure the folder is an actual Path."""
@@ -33,8 +33,8 @@ class PypeApp:
         inferencer = self._load_model()
         logger = getLogger(self.name)
 
-        InputType: type[DataSetModel] = inferencer.input_type_checker.get_pydantic_types()
-        OutputType: type[DataSetModel] = inferencer.output_type_checker.get_pydantic_types()
+        InputType: Type[DataSetModel] = inferencer.input_type_checker.get_pydantic_types()
+        OutputType: Type[DataSetModel] = inferencer.output_type_checker.get_pydantic_types()
         self._verify_tracking_servers(InputType, OutputType, logger)
 
         @app.get("/")
@@ -61,7 +61,7 @@ class PypeApp:
             for name, sink in self.tracking_servers.items():
                 try:
                     # Try to find the name of the dataset in the tracking servers.
-                    ds: DataModel | None = None
+                    ds: Union[DataModel, None] = None
                     if name in outputs:
                         ds = outputs[name]
                     elif name in inputs:
@@ -78,8 +78,8 @@ class PypeApp:
 
     def _verify_tracking_servers(
         self,
-        inputs: type[DataSetModel],
-        outputs: type[DataSetModel],
+        inputs: Type[DataSetModel],
+        outputs: Type[DataSetModel],
         logger: Logger,
     ) -> None:
         # Since it could be possible someone wants to log an intermediate dataset,

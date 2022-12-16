@@ -2,7 +2,18 @@ import typing
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any, Callable, Generic, Iterable, Type, TypeVar
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from keras import Model as KerasBaseModel
 from keras.losses import Loss
@@ -26,31 +37,31 @@ class KerasPypeModel(Model[Tensor], ABC, Generic[T]):
 
     def __init__(
         self,
-        inputs: list[str],
-        outputs: list[str],
-        loss: Callable | Loss,
+        inputs: List[str],
+        outputs: List[str],
+        loss: Union[Callable, Loss],
         optimizer_class: Type[Optimizer],
         epochs: int = 10,
         batch_size: int = 32,
         learning_rate: float = 0.001,
-        metrics: list[Metric] | dict[str, Metric] | None = None,
-        model: T | None = None,
+        metrics: Optional[List[Union[Metric, Dict[str, Metric]]]] = None,
+        model: Optional[T] = None,
         seed: int = 1,
         **model_args: Any,
     ) -> None:
         """A Model to integrate Keras models with the Pype framework.
 
         Args:
-            inputs (list[str]): Input names from the DataSet to use.
-            outputs (list[str]): Output names from the DataSet to use.
-            loss (Callable | Loss): The loss for your Keras Model.
+            inputs (List[str]): Input names from the DataSet to use.
+            outputs (List[str]): Output names from the DataSet to use.
+            loss (Union[Callable, Loss]): The loss for your Keras Model.
             optimizer_class (Type[Optimizer]): The optimization class to use.
             epochs (int, optional): The number of epochs to use for training. Defaults to 10.
             batch_size (int, optional): The batch size to use for training. Defaults to 32.
             learning_rate (float, optional): The learning rate to use for training. Defaults to 0.001.
-            metrics (list[Metric] | dict[str, Metric] | None, optional): Additional metrics to
+            metrics (Optional[List[Union[Metric, Dict[str, Metric]]]]): Additional metrics to
                 use while training th emodel. Defaults to no metrics.
-            model (T | None, optional): The Keras Model to train. By Default we'll use excess arguments
+            model (Optional[T]): The Keras Model to train. By Default we'll use excess arguments
                 to initialise the default model.
             seed (int, optional): The seed to initialise tensorflow with. Defaults to 1.
         """
@@ -72,7 +83,7 @@ class KerasPypeModel(Model[Tensor], ABC, Generic[T]):
         self.batch_size = batch_size
 
     @abstractmethod
-    def _init_model(self, args: dict[str, Any]) -> T:
+    def _init_model(self, args: Dict[str, Any]) -> T:
         raise NotImplementedError
 
     @classmethod
@@ -89,7 +100,7 @@ class KerasPypeModel(Model[Tensor], ABC, Generic[T]):
         self.model.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
         self.model.fit(dataset, epochs=self.epochs)
 
-    def _transform(self, *data: Tensor) -> Iterable[Tensor] | Tensor:
+    def _transform(self, *data: Tensor) -> Union[Iterable[Tensor], Tensor]:
         return self.model.call(*data)
 
     def _save(self, folder: Path) -> None:
@@ -98,7 +109,7 @@ class KerasPypeModel(Model[Tensor], ABC, Generic[T]):
         self.model.save(folder / self.KERAS_MODEL_FILE)
 
     @classmethod
-    def _load(cls: Type["KerasPypeModel"], folder: Path, inputs: list[str], outputs: list[str]) -> "KerasPypeModel":
+    def _load(cls: Type["KerasPypeModel"], folder: Path, inputs: List[str], outputs: List[str]) -> "KerasPypeModel":
         model: KerasBaseModel = keras_load_model(folder / cls.KERAS_MODEL_FILE)
 
         serialiser = JoblibSerialiser()

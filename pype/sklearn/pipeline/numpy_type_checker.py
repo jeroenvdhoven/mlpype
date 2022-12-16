@@ -1,3 +1,5 @@
+from typing import List, Type, Union
+
 import numpy as np
 from pydantic import create_model
 
@@ -38,7 +40,7 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
         """
         super().__init__()
         self.dims: tuple = tuple()
-        self.dtype: type | None = None
+        self.dtype: Union[type, None] = None
 
     def fit(self, data: np.ndarray) -> "NumpyTypeChecker":
         """Fit this Numpy TypeChecker to the given data.
@@ -81,16 +83,16 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
         else:
             return str
 
-    def get_pydantic_type(self) -> type[NumpyData]:
+    def get_pydantic_type(self) -> Type[NumpyData]:
         """Creates a Pydantic model for this data to handle serialisation/deserialisation.
 
         Returns:
-            type[NumpyData]: A NumpyData model that fits the data this wat fitted on.
+            Type[NumpyData]: A NumpyData model that fits the data this wat fitted on.
         """
-        base_iter: type = list[self.dtype]  # type: ignore
+        base_iter: type = List[self.dtype]  # type: ignore
 
         for _ in range(len(self.dims)):
-            base_iter = list[base_iter]  # type: ignore
+            base_iter = List[base_iter]  # type: ignore
 
         model = create_model("NumpyData", data=(base_iter, ...), __base__=NumpyData)
 

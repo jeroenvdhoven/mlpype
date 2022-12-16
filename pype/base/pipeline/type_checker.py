@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractclassmethod, abstractmethod
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel, create_model
 
@@ -84,26 +84,26 @@ class TypeChecker(Operator[Data], ABC):
         """
 
     @abstractmethod
-    def get_pydantic_type(self) -> type[DataModel]:
+    def get_pydantic_type(self) -> Type[DataModel]:
         """Returns a Pydantic type for data serialisation/deserialistion based on this pipe.
 
         Returns:
-            type[DataModel]: The data model for the data this was fitted on.
+            Type[DataModel]: The data model for the data this was fitted on.
         """
 
 
 class TypeCheckerPipe(Pipe):
     def __init__(
-        self, name: str, input_names: list[str], type_checker_classes: list[tuple[type, type[TypeChecker]]]
+        self, name: str, input_names: List[str], type_checker_classes: List[Tuple[type, Type[TypeChecker]]]
     ) -> None:
         """A pipe that fully checks an incoming DataSet for type consistency.
 
         Args:
             name (str): The name of the pipe.
-            input_names (list[str]): The names of datasets to be checked by this type checker.
+            input_names (List[str]): The names of datasets to be checked by this type checker.
                 We highly recommend to make sure this encompasses the datasets used by
                 the model at inference time (or the predicted datasets for the output type checker).
-            type_checker_classes (list[tuple[type, type[TypeChecker]]]): A list of pairs
+            type_checker_classes (List[Tuple[type, Type[TypeChecker]]]): A list of pairs
                 of data types and the type checker that should be used for that class.
                 E.g. (pandas.DataFrame, PandasTypeChecker) for pandas data.
         """
@@ -119,15 +119,15 @@ class TypeCheckerPipe(Pipe):
         )
         self.input_names = input_names
 
-    def get_pydantic_types(self, names: list[str] | None = None) -> type[DataSetModel]:
+    def get_pydantic_types(self, names: Optional[List[str]] = None) -> Type[DataSetModel]:
         """Generate a Pydantic model for the given dataset names.
 
         Args:
-            names (list[str] | None, optional): The type checker for which we want data models
+            names (Optional[List[str]]): The type checker for which we want data models
                 to be returned. Defaults to all input datasets.
 
         Returns:
-            type[DataSetModel]: A pydantic model to serialise/deserialise data for the given
+            Type[DataSetModel]: A pydantic model to serialise/deserialise data for the given
                 names.
         """
         if names is None:
@@ -137,23 +137,23 @@ class TypeCheckerPipe(Pipe):
 
 
 class DataSetTypeChecker(Operator[Data]):
-    def __init__(self, input_names: list[str], type_checker_classes: list[tuple[type, type[TypeChecker]]]) -> None:
+    def __init__(self, input_names: List[str], type_checker_classes: List[Tuple[type, Type[TypeChecker]]]) -> None:
         """A TypeChecker that conforms to the Operator class.
 
         Mainly used by TypeCheckerPipe for easy type checking of incoming data.
 
         Args:
-            input_names (list[str]): The names of datasets to be checked by this type checker.
+            input_names (List[str]): The names of datasets to be checked by this type checker.
                 We highly recommend to make sure this encompasses the datasets used by
                 the model at inference time (or the predicted datasets for the output type checker).
-            type_checker_classes (list[tuple[type, type[TypeChecker]]]): A list of pairs
+            type_checker_classes (List[Tuple[type, Type[TypeChecker]]]): A list of pairs
                 of data types and the type checker that should be used for that class.
                 E.g. (pandas.DataFrame, PandasTypeChecker) for pandas data.
         """
         super().__init__()
         self.input_names = input_names
         self.type_checker_classes = type_checker_classes
-        self.type_checkers: dict[str, TypeChecker] = {}
+        self.type_checkers: Dict[str, TypeChecker] = {}
 
     def fit(self, *data: Data) -> "Operator":
         """Fits all type checkers to the given data.
@@ -174,11 +174,11 @@ class DataSetTypeChecker(Operator[Data]):
                 self.type_checkers[ds_name] = checker
         return self
 
-    def transform(self, *data: Data) -> tuple[Data, ...]:
+    def transform(self, *data: Data) -> Tuple[Data, ...]:
         """Checks if the given data fits the fitted Type Checkers.
 
         Returns:
-            tuple[Data, ...]: data, if all data fits the Type Checkers.
+            Tuple[Data, ...]: data, if all data fits the Type Checkers.
         """
         for ds_name, dataset in zip(self.input_names, data):
             assert ds_name in self.type_checkers, f"{ds_name} does not have a type checker"
@@ -188,21 +188,21 @@ class DataSetTypeChecker(Operator[Data]):
 
         return data
 
-    def _get_type_checker(self, data: Data) -> type[TypeChecker] | None:
+    def _get_type_checker(self, data: Data) -> Union[Type[TypeChecker], None]:
         for ref_type, type_checker in self.type_checker_classes:
             if isinstance(data, ref_type):
                 return type_checker
         return None
 
-    def get_pydantic_types(self, names: list[str] | None = None) -> type[DataSetModel]:
+    def get_pydantic_types(self, names: Optional[List[str]] = None) -> Type[DataSetModel]:
         """Generates a DataModel for the given input datasets after fitting.
 
         Args:
-            names (list[str] | None, optional): The type checker for which we want data models
+            names (Optional[List[str]]): The type checker for which we want data models
                 to be returned. Defaults to all input datasets.
 
         Returns:
-            type[DataSetModel]: A pydantic model to serialise/deserialise data for the given
+            Type[DataSetModel]: A pydantic model to serialise/deserialise data for the given
                 input_names.
         """
         if names is None:
@@ -224,10 +224,10 @@ class DataSetTypeChecker(Operator[Data]):
 #     Returns:
 #         _type_: _description_
 #     """
-#     registry: dict[str, tuple[type, type[TypeChecker]]] = {}
+#     registry: Dict[str, Tuple[type, Type[TypeChecker]]] = {}
 #
 #     @classmethod
-#     def get_type_checker(cls, type_: type) -> type[TypeChecker] | None:
+#     def get_type_checker(cls, type_: type) -> Type[TypeChecker] or None:
 #         for ref_type, type_checker in cls.registry.values():
 #             if ref_type == type_:
 #                 return type_checker

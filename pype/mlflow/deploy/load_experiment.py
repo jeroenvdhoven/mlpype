@@ -1,5 +1,6 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Optional, Union
 
 from mlflow.artifacts import download_artifacts
 from mlflow.tracking import set_tracking_uri
@@ -12,7 +13,7 @@ def load_experiment_from_mlflow(
     url: str,
     experiment_name: str,
     run_id: str,
-    directory: Path | str | None = None,
+    directory: Optional[Union[Path, str]] = None,
 ) -> Inferencer:
     """Download and import a trained Pype Model from mlflow's artifact store.
 
@@ -21,7 +22,7 @@ def load_experiment_from_mlflow(
         experiment_name (str): The name of the experiment. Used to verify that the
             run_id is the correct one.
         run_id (str): The run id. Used to pull the actual experiment.
-        directory (Path | str | None, optional): Optional directory to store the results
+        directory (Optional[Union[Path, str]]): Optional directory to store the results
             in. By default, a temporary directory is used.
 
     Returns:

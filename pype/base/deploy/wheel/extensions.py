@@ -2,6 +2,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from shutil import copyfile
+from typing import List, Tuple
 
 
 @dataclass
@@ -29,8 +30,8 @@ class WheelExtension:
     """
 
     name: str
-    functionality: list[tuple[Path, list[str]]]
-    libraries: list[str]
+    functionality: List[Tuple[Path, List[str]]]
+    libraries: List[str]
 
     def __post_init__(self) -> None:
         """Perform checks on inputs."""
@@ -71,14 +72,14 @@ class WheelExtension:
     def extend(
         self,
         package_name: str,
-        libraries: list[str],
+        libraries: List[str],
         wheel_package_dir: Path,
     ) -> None:
         """Extends the given wheel file with this extension.
 
         Args:
             package_name (str): The name of the main package.
-            libraries (list[str]): The current set of libraries to be installed.
+            libraries (List[str]): The current set of libraries to be installed.
             wheel_package_dir (Path): The Path to the main package.
         """
         libraries.extend(self.libraries)

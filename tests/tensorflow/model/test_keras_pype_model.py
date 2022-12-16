@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 from unittest.mock import MagicMock, call, patch
 
 import numpy as np
@@ -16,7 +16,7 @@ from pype.tensorflow.model import KerasPypeModel, MLPKeras
 
 
 class DummyKerasModel(KerasPypeModel[MLPKeras]):
-    def _init_model(self, args: dict[str, Any]) -> MLPKeras:
+    def _init_model(self, args: Dict[str, Any]) -> MLPKeras:
         return MLPKeras(10, 2, 2)
 
 
