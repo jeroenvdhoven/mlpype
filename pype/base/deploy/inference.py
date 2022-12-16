@@ -4,6 +4,7 @@ from typing import Type
 
 from pype.base.constants import Constants
 from pype.base.data import DataSet, DataSetSource
+from pype.base.experiment.experiment import Experiment
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline
 from pype.base.pipeline.type_checker import TypeCheckerPipe
@@ -85,6 +86,26 @@ class Inferencer:
             pipeline=pipeline,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
+        )
+
+    @classmethod
+    def from_experiment(cls, experiment: Experiment) -> "Inferencer":
+        """Generates an Inferencer from an experiment.
+
+        We currently cannot check if the experiment has been trained already.
+
+        Args:
+            experiment (Experiment): The experiment to convert to a inferencing
+                pipeline.
+
+        Returns:
+            Inferencer: An inferencing pipeline obtained from the given experiment.
+        """
+        return cls(
+            model=experiment.model,
+            pipeline=experiment.pipeline,
+            input_type_checker=experiment.input_type_checker,
+            output_type_checker=experiment.output_type_checker,
         )
 
     def __str__(self) -> str:

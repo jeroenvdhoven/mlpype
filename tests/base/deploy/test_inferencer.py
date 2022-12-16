@@ -57,6 +57,29 @@ class Test_Inferencer:
             assert result.input_type_checker == inputs
             assert result.output_type_checker == outputs
 
+    def test_from_experiment(self):
+        pipeline = MagicMock()
+        model = MagicMock()
+        itc = MagicMock()
+        otc = MagicMock()
+
+        experiment = Experiment(
+            data_sources={"train": MagicMock()},
+            pipeline=pipeline,
+            model=model,
+            evaluator=MagicMock(),
+            input_type_checker=itc,
+            output_type_checker=otc,
+            logger=MagicMock(),
+        )
+
+        result = Inferencer.from_experiment(experiment)
+
+        assert result.model == model
+        assert result.pipeline == pipeline
+        assert result.input_type_checker == itc
+        assert result.output_type_checker == otc
+
     def test_predict(self):
         model = MagicMock()
         pipeline = MagicMock()
