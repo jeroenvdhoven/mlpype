@@ -2,7 +2,7 @@ from typing import List
 
 from setuptools import find_namespace_packages, setup
 
-version = "0.1.0"
+version = "0.1.1"
 deps: List[str] = [f"pype-base=={version}", "hyperopt>=0.2.7"]
 strict_deps = [s.replace(">=", "==") for s in deps]
 

@@ -5,7 +5,7 @@ setup(
     packages=find_namespace_packages(include=["pype.*"]),
     namespace_packages=["pype"],
     python_requires=">=3.10",
-    version="0.1.0",
+    version="0.1.1",
     license="MIT",
     author="Jeroen van den Hoven",
     url="https://github.com/jeroenvdhoven/pype",
