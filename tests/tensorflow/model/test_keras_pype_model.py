@@ -79,7 +79,7 @@ class Test_keras_pype_model:
         y = MagicMock()
         pype_model._transform(x, y)
 
-        model.call.assert_called_once_with(x, y)
+        model.assert_called_once_with(x, y)
 
     def test_integration_with_save(self):
         folder = Path(__file__).parent / "tmp"
