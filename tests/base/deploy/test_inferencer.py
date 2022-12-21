@@ -91,7 +91,7 @@ class Test_Inferencer:
         result = inferencer.predict(dataset)
 
         inputs.transform.assert_called_once_with(dataset)
-        pipeline.transform.assert_called_once_with(dataset)
+        pipeline.transform.assert_called_once_with(dataset, is_inference=True)
         model.transform.assert_called_once_with(pipeline.transform.return_value)
         outputs.transform.assert_called_once_with(model.transform.return_value)
 
@@ -109,7 +109,7 @@ class Test_Inferencer:
 
         dataset.read.assert_called_once_with()
         inputs.transform.assert_called_once_with(dataset.read.return_value)
-        pipeline.transform.assert_called_once_with(dataset.read.return_value)
+        pipeline.transform.assert_called_once_with(dataset.read.return_value, is_inference=True)
         model.transform.assert_called_once_with(pipeline.transform.return_value)
         outputs.transform.assert_called_once_with(model.transform.return_value)
 

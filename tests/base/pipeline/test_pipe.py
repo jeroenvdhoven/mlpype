@@ -86,6 +86,22 @@ class TestPipe:
         assert input_backup == data
         mock_operator.transform.assert_called_once_with(9, 10)
 
+    def test_transform_with_inference_skip(self, data: DataSet[int], operator: MagicMock):
+        pipe = Pipe(
+            "name",
+            operator=operator,
+            inputs=["a", "b"],
+            outputs=["out", "out2"],
+            fit_inputs=["c"],
+            skip_on_inference=True,
+        )
+        mock_operator = operator.return_value
+
+        result = pipe.transform(data, is_inference=True)
+
+        assert result == data
+        mock_operator.transform.assert_not_called()
+
     def test_transform_with_extra_args(self, data: DataSet[int], pipe: Pipe, operator: MagicMock):
         mock_operator = operator.return_value
         mock_operator.transform.return_value = [1, 2]
@@ -117,6 +133,22 @@ class TestPipe:
         )
         assert result == expected
         mock_operator.inverse_transform.assert_called_once_with(2, 5)
+
+    def test_inverse_transform_with_inference_skip(self, data: DataSet[int], operator: MagicMock):
+        pipe = Pipe(
+            "name",
+            operator=operator,
+            inputs=["a", "b"],
+            outputs=["out", "out2"],
+            fit_inputs=["c"],
+            skip_on_inference=True,
+        )
+        mock_operator = operator.return_value
+
+        result = pipe.inverse_transform(data, is_inference=True)
+
+        assert result == data
+        mock_operator.inverse_transform.assert_not_called()
 
     def test_inverse_transform_passed(self, pipe: Pipe, operator: MagicMock):
         mock_operator = operator.return_value

@@ -48,7 +48,7 @@ class Inferencer:
         if isinstance(data, DataSetSource):
             data = data.read()
         self.input_type_checker.transform(data)
-        transformed = self.pipeline.transform(data)
+        transformed = self.pipeline.transform(data, is_inference=True)
         predicted = self.model.transform(transformed)
         self.output_type_checker.transform(predicted)
         return predicted
