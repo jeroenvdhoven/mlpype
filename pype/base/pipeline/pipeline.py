@@ -38,25 +38,28 @@ class Pipeline:
         """
         for pipe in self.pipes:
             pipe.fit(data)
-            data = pipe.transform(data)
+            data = pipe.transform(data, is_inference=False)
         return self
 
-    def transform(self, data: DataSet) -> DataSet:
+    def transform(self, data: DataSet, is_inference: bool = False) -> DataSet:
         """Transforms the given data using this Pipeline.
 
         This Pipeline should be fitted first using fit().
 
         Args:
             data (DataSet): The DataSet to use in transforming.
+            is_inference (Optional[bool]): Flag indicating if we're in inference
+                mode for this transformation. We'll skip this step if
+                skip_on_inference was set to True.
 
         Returns:
             DataSet: The Transformed Data.
         """
         for pipe in self.pipes:
-            data = pipe.transform(data)
+            data = pipe.transform(data, is_inference=is_inference)
         return data
 
-    def inverse_transform(self, data: DataSet) -> DataSet:
+    def inverse_transform(self, data: DataSet, is_inference: bool = False) -> DataSet:
         """Inverse transforms the DataSet using this Pipeline.
 
         Note that this is automatically done in reverse: the inverse steps
@@ -64,12 +67,15 @@ class Pipeline:
 
         Args:
             data (DataSet): The DataSet to use in inverse transforming.
+            is_inference (Optional[bool]): Flag indicating if we're in inference
+                mode for this transformation. We'll skip this step if
+                skip_on_inference was set to True.
 
         Returns:
             DataSet: The inverse transformed DataSet
         """
         for pipe in reversed(self.pipes):
-            data = pipe.inverse_transform(data)
+            data = pipe.inverse_transform(data, is_inference=is_inference)
         return data
 
     def reinitialise(self, args: Dict[str, Any]) -> None:

@@ -74,7 +74,9 @@ class Test_run:
 
         # pipeline fitting
         pipeline.fit.assert_called_once_with(dataset_train)
-        pipeline.transform.assert_has_calls([call(dataset_train), call(dataset_test)])
+        pipeline.transform.assert_has_calls(
+            [call(dataset_train, is_inference=False), call(dataset_test, is_inference=False)]
+        )
 
         # model fitting
         model.fit.assert_called_once_with(train_transform)

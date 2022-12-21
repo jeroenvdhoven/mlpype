@@ -16,9 +16,10 @@ class SparkPipe(Pipe):
         outputs: List[str],
         kw_args: Optional[Dict[str, Any]] = None,
         fit_inputs: Optional[List[str]] = None,
+        skip_on_inference: bool = False,
     ) -> None:
         """Same init as Pipe."""
-        super().__init__(name, operator, inputs, outputs, kw_args, fit_inputs)
+        super().__init__(name, operator, inputs, outputs, kw_args, fit_inputs, skip_on_inference)
         self.fitted = None
 
     def fit(self, data: DataSet) -> "SparkPipe":
@@ -40,7 +41,7 @@ class SparkPipe(Pipe):
             raise ValueError(f"In a SparkPipe, the operator must be a Transformer or Estimator. Got: {type(op)}")
         return self
 
-    def transform(self, data: DataSet) -> DataSet:
+    def transform(self, data: DataSet, is_inference: bool = False) -> DataSet:
         """Transforms the given data using this Pipe.
 
         This Pipe should be fitted first using fit().
@@ -49,11 +50,19 @@ class SparkPipe(Pipe):
 
         Args:
             data (DataSet): The DataSet to use in transforming.
+            is_inference (Optional[bool]): Flag indicating if we're in inference
+                mode for this transformation. We'll skip this step if
+                skip_on_inference was set to True.
 
         Returns:
             DataSet: The transformed Data.
         """
         assert self.fitted is not None, "Make sure you fit the pipeline before transforming."
+
+        # skip this step if we're in inference mode and this Pipe is marked as such.
+        if is_inference and self.skip_on_inference:
+            return data
+
         transformed = self.fitted.transform(*data.get_all(self.inputs))
         if len(self.outputs) < 2:
             transformed = [transformed]

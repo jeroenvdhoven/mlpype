@@ -73,6 +73,17 @@ class Test_SparkPipe:
         pipe.fitted.transform.assert_called_once_with(data["x"])
         assert result["y"] == pipe.fitted.transform.return_value
 
+    def test_transform_in_inference(self, data: DataSet):
+        pipe = SparkPipe("test", DummyEstimator, ["x"], ["y"], skip_on_inference=True)
+
+        pipe.fitted = MagicMock()
+
+        assert "y" not in data
+        result = pipe.transform(data, is_inference=True)
+        assert "y" not in result
+
+        pipe.fitted.transform.assert_not_called()
+
     def test_set_state(self):
         warnings.warn("SparkPipe's __set_state__ is not tested atm.")
 
