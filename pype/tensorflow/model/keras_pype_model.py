@@ -101,7 +101,7 @@ class KerasPypeModel(Model[Tensor], ABC, Generic[T]):
         self.model.fit(dataset, epochs=self.epochs)
 
     def _transform(self, *data: Tensor) -> Union[Iterable[Tensor], Tensor]:
-        return self.model.call(*data)
+        return self.model(*data)
 
     def _save(self, folder: Path) -> None:
         serialiser = JoblibSerialiser()
