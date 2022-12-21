@@ -11,6 +11,7 @@ from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql import SparkSession
 
 from pype.base.data import DataSetSource
+from pype.base.deploy import Inferencer
 from pype.base.evaluate import Evaluator
 from pype.base.experiment import Experiment
 from pype.base.logger import LocalLogger
@@ -37,7 +38,9 @@ pipeline = Pipeline(
     ]
 )
 
-model = LinearSparkModel(["x"], ["x"], featuresCol="a_scaled", labelCol="target", predictionCol="prediction")
+model = LinearSparkModel(
+    ["x"], ["x"], featuresCol="a_scaled", labelCol="target", predictionCol="prediction", output_col="prediction"
+)
 
 logger = LocalLogger()
 
@@ -54,3 +57,9 @@ experiment = Experiment(
 )
 
 experiment.run()
+
+# Test running
+inferencer = Inferencer.from_experiment(experiment)
+prediction = inferencer.predict(data["train"])
+
+print(prediction["x"].toPandas())

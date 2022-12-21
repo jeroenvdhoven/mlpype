@@ -113,7 +113,7 @@ if __name__ == "__main__":
         [
             Pipe("scale", StandardScaler, inputs=["x"], outputs=["x_scaled"]),
             Pipe("to_tf_x", NumpyToTensor, inputs=["x_scaled"], outputs=["x_tf"]),
-            Pipe("to_tf_y", NumpyToTensor, inputs=["y"], outputs=["y_tf"]),
+            Pipe("to_tf_y", NumpyToTensor, inputs=["y"], outputs=["y_tf"], skip_on_inference=True),
         ]
     )
     of = Path("outputs")
@@ -147,7 +147,6 @@ if __name__ == "__main__":
     train_x, test_x, train_y, test_y = _make_data()
     test_data = DataSetSource(
         x=DataFrameSource(test_x),
-        y=DataFrameSource(test_y),
     )
     result = inferencer.predict(test_data)
     print(result)

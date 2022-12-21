@@ -30,13 +30,13 @@ from pype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
 #  Try a run with sklearn and argument reading
 def _make_data() -> Iterable[np.ndarray]:
-    iris = load_iris()
-    x = iris["data"]
-    y = iris["target"]
+    iris = load_iris(as_frame=True)
+    x = pd.DataFrame(iris["data"])
+    y = pd.DataFrame(iris["target"])
 
-    kept_rows = y < 2
-    x = x[kept_rows, :]
-    y = y[kept_rows]
+    kept_rows = y["target"] < 2
+    x = x.loc[kept_rows, :]
+    y = y.loc[kept_rows, :]
 
     return train_test_split(x, y, test_size=0.2)
 
