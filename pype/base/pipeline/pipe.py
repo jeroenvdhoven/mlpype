@@ -13,6 +13,7 @@ class Pipe:
         outputs: List[str],
         kw_args: Optional[Dict[str, Any]] = None,
         fit_inputs: Optional[List[str]] = None,
+        skip_on_inference: bool = False,
     ) -> None:
         """A single step in a Pipeline.
 
@@ -26,6 +27,8 @@ class Pipe:
             kw_args (Optional[Dict[str, Any]]): keyword arguments to initialise the Operator.
             fit_inputs: (Optional[List[str]]): optional additional arguments to fit().
                 Will not be used in transform().
+            skip_on_inference (Optional[bool]): Flag indicating if this step should be skipped
+                at inference time. Useful to pre-process response variables in the pipeline.
         """
         assert "__" not in name, "Pipe names cannot contain the string `__`"
         if fit_inputs is None:
@@ -40,6 +43,7 @@ class Pipe:
         self.inputs = inputs
         self.outputs = outputs
         self.fit_inputs = fit_inputs
+        self.skip_on_inference = skip_on_inference
 
     def fit(self, data: DataSet) -> "Pipe":
         """Fits the Pipe to the given DataSet.
@@ -53,17 +57,24 @@ class Pipe:
         self.operator.fit(*data.get_all(self.inputs), *data.get_all(self.fit_inputs))
         return self
 
-    def transform(self, data: DataSet) -> DataSet:
+    def transform(self, data: DataSet, is_inference: bool = False) -> DataSet:
         """Transforms the given data using this Pipe.
 
         This Pipe should be fitted first using fit().
 
         Args:
             data (DataSet): The DataSet to use in transforming.
+            is_inference (Optional[bool]): Flag indicating if we're in inference
+                mode for this transformation. We'll skip this step if
+                skip_on_inference was set to True.
 
         Returns:
             DataSet: The transformed Data.
         """
+        # skip this step if we're in inference mode and this Pipe is marked as such.
+        if is_inference and self.skip_on_inference:
+            return data
+
         transformed = self.operator.transform(*data.get_all(self.inputs))
         if len(self.outputs) < 2:
             transformed = [transformed]
@@ -71,7 +82,7 @@ class Pipe:
         result.set_all(self.outputs, transformed)
         return result
 
-    def inverse_transform(self, data: DataSet) -> DataSet:
+    def inverse_transform(self, data: DataSet, is_inference: bool = False) -> DataSet:
         """Inverse transforms the DataSet using this Pipe.
 
         Note that this is automatically done in reverse: the inverse steps
@@ -84,10 +95,17 @@ class Pipe:
 
         Args:
             data (DataSet): The DataSet to use in inverse transforming.
+            is_inference (Optional[bool]): Flag indicating if we're in inference
+                mode for this inverse transformation. We'll skip this step if
+                skip_on_inference was set to True.
 
         Returns:
             DataSet: The inverse transformed DataSet
         """
+        # skip this step if we're in inference mode and this Pipe is marked as such.
+        if is_inference and self.skip_on_inference:
+            return data
+
         # We do not inverse transform if not all outputs (the inputs for the inverse) are present.
         # It is up to the user to make sure the inverse transformations
         # work if used on a partial dataset (e.g. only the output data).

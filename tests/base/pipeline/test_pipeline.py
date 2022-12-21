@@ -69,10 +69,10 @@ class Test_Pipeline:
         assert result == pipeline
 
         pipes[0].fit.assert_called_once_with(input_data)
-        pipes[0].transform.assert_called_once_with(input_data)
+        pipes[0].transform.assert_called_once_with(input_data, is_inference=False)
 
         pipes[1].fit.assert_called_once_with(pipes[0].transform.return_value)
-        pipes[1].transform.assert_called_once_with(pipes[0].transform.return_value)
+        pipes[1].transform.assert_called_once_with(pipes[0].transform.return_value, is_inference=False)
 
         pipes[2].fit.assert_not_called()
         pipes[2].transform.assert_not_called()
@@ -85,22 +85,34 @@ class Test_Pipeline:
         # pipes 0 and 1 will get their transform called twice. Once during their pipeline's fit method,
         # once during the main pipeline's transform.
         pipes[0].fit.assert_called_once_with(input_data)
-        pipes[0].transform.assert_has_calls([call(input_data), call(input_data)])
+        pipes[0].transform.assert_has_calls(
+            [call(input_data, is_inference=False), call(input_data, is_inference=False)]
+        )
 
         pipes[1].fit.assert_called_once_with(pipes[0].transform.return_value)
         pipes[1].transform.assert_has_calls(
-            [call(pipes[0].transform.return_value), call(pipes[0].transform.return_value)]
+            [
+                call(pipes[0].transform.return_value, is_inference=False),
+                call(pipes[0].transform.return_value, is_inference=False),
+            ]
         )
 
         # pipe 2's transform will only be called once.
         pipes[2].fit.assert_called_once_with(pipes[1].transform.return_value)
-        pipes[2].transform.assert_called_once_with(pipes[1].transform.return_value)
+        pipes[2].transform.assert_called_once_with(pipes[1].transform.return_value, is_inference=False)
 
     def test_transform(self, pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
         pipeline.transform(input_data)
 
-        pipes[0].transform.assert_called_once_with(input_data)
-        pipes[1].transform.assert_called_once_with(pipes[0].transform.return_value)
+        pipes[0].transform.assert_called_once_with(input_data, is_inference=False)
+        pipes[1].transform.assert_called_once_with(pipes[0].transform.return_value, is_inference=False)
+        pipes[2].transform.assert_not_called()
+
+    def test_transform_in_inference(self, pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
+        pipeline.transform(input_data, is_inference=True)
+
+        pipes[0].transform.assert_called_once_with(input_data, is_inference=True)
+        pipes[1].transform.assert_called_once_with(pipes[0].transform.return_value, is_inference=True)
         pipes[2].transform.assert_not_called()
 
     def test_transform_with_pipeline(
@@ -108,15 +120,23 @@ class Test_Pipeline:
     ):
         pipeline_with_pipeline.transform(input_data)
 
-        pipes[0].transform.assert_called_once_with(input_data)
-        pipes[1].transform.assert_called_once_with(pipes[0].transform.return_value)
-        pipes[2].transform.assert_called_once_with(pipes[1].transform.return_value)
+        pipes[0].transform.assert_called_once_with(input_data, is_inference=False)
+        pipes[1].transform.assert_called_once_with(pipes[0].transform.return_value, is_inference=False)
+        pipes[2].transform.assert_called_once_with(pipes[1].transform.return_value, is_inference=False)
 
     def test_inverse_transform(self, pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
         pipeline.inverse_transform(input_data)
 
-        pipes[1].inverse_transform.assert_called_once_with(input_data)
-        pipes[0].inverse_transform.assert_called_once_with(pipes[1].inverse_transform.return_value)
+        pipes[1].inverse_transform.assert_called_once_with(input_data, is_inference=False)
+        pipes[0].inverse_transform.assert_called_once_with(pipes[1].inverse_transform.return_value, is_inference=False)
+
+        pipes[2].inverse_transform.assert_not_called()
+
+    def test_inverse_transform_in_inference(self, pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
+        pipeline.inverse_transform(input_data, is_inference=True)
+
+        pipes[1].inverse_transform.assert_called_once_with(input_data, is_inference=True)
+        pipes[0].inverse_transform.assert_called_once_with(pipes[1].inverse_transform.return_value, is_inference=True)
 
         pipes[2].inverse_transform.assert_not_called()
 
@@ -125,9 +145,9 @@ class Test_Pipeline:
     ):
         pipeline_with_pipeline.inverse_transform(input_data)
 
-        pipes[2].inverse_transform.assert_called_once_with(input_data)
-        pipes[1].inverse_transform.assert_called_once_with(pipes[2].inverse_transform.return_value)
-        pipes[0].inverse_transform.assert_called_once_with(pipes[1].inverse_transform.return_value)
+        pipes[2].inverse_transform.assert_called_once_with(input_data, is_inference=False)
+        pipes[1].inverse_transform.assert_called_once_with(pipes[2].inverse_transform.return_value, is_inference=False)
+        pipes[0].inverse_transform.assert_called_once_with(pipes[1].inverse_transform.return_value, is_inference=False)
 
     def test_reinitialise(self, pipeline: Pipeline, input_data: DataSet, pipes: List[MagicMock]):
         args = {
