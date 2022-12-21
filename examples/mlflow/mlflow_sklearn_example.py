@@ -2,7 +2,7 @@
 
 We do not guarantee results if you use `python examples/mlflow/mlflow_sklearn_example.py`
 You can use command line arguments in this example, such as:
-python -m examples.mlflow.mlflow_sklearn_example --model__fit_intercept=False
+python -m examples.mlflow.mlflow_sklearn_example --model__fit_intercept=False --pipeline__impute__verbose 0
 
 This requires the pype.sklearn package to also be installed.
 
@@ -14,12 +14,12 @@ This will make sure the artifacts will show up.
 
 from pathlib import Path
 from typing import Iterable
-from unittest.mock import MagicMock
 
 import numpy as np
 import pandas as pd
 from mlflow.tracking.fluent import get_experiment_by_name
 from sklearn.datasets import load_iris
+from sklearn.impute import SimpleImputer
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -34,18 +34,9 @@ from pype.base.pipeline.type_checker import TypeCheckerPipe
 from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from pype.mlflow.logger.mlflow_logger import MlflowLogger
 from pype.sklearn.data.data_frame_source import DataFrameSource
-from pype.sklearn.model.linear_regression_model import LinearRegressionModel
 from pype.sklearn.model.logistic_regression_model import LogisticRegressionModel
 from pype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
 from pype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
-
-# %%
-
-parser = MagicMock()
-# parser = ArgumentParser()
-model = LinearRegressionModel.get_parameters(parser)
-
-print(parser.add_argument.call_args_list)
 
 # %% [markdown]
 # Try a run with sklearn
@@ -78,7 +69,7 @@ def _make_data() -> Iterable[np.ndarray]:
 
 train_x, test_x, train_y, test_y = _make_data()
 
-ds = {
+datasets = {
     "train": DataSetSource(
         x=DataFrameSource(train_x),
         y=DataFrameSource(train_y),
@@ -112,11 +103,16 @@ output_ds_type_checker = TypeCheckerPipe(
     type_checker_classes=tcc,
 )
 
-pipeline = Pipeline([Pipe("scale", StandardScaler, inputs=["x"], outputs=["x"])])
+pipeline = Pipeline(
+    [
+        Pipe("scale", StandardScaler, inputs=["x"], outputs=["x"]),
+        Pipe("impute", SimpleImputer, inputs=["x"], outputs=["x"], kw_args={"missing_values": ""}),
+    ]
+)
 of = Path("outputs")
 
 experiment = Experiment.from_command_line(
-    data_sources=ds,
+    data_sources=datasets,
     model_class=LogisticRegressionModel,
     model_inputs=["x"],
     model_outputs=["y"],
@@ -139,7 +135,6 @@ inferencer = Inferencer.from_folder(folder)
 train_x, test_x, train_y, test_y = _make_data()
 test_data = DataSetSource(
     x=DataFrameSource(test_x),
-    y=DataFrameSource(test_y),
 )
 result = inferencer.predict(test_data)
 print(result)
