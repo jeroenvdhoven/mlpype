@@ -83,18 +83,25 @@ class ExperimentLogger(ABC):
         self.log_file(file)
 
     def log_local_file(self, file: Union[str, Path], output_target: Union[str, Path]) -> None:
-        """Logs a given local file as part of an experiment.
+        """Logs a given local file / directory as part of an experiment.
 
-        First the file is copied to the output directory, then
+        First the file / directory is copied to the output directory, then
         log_file is called to make it part of the experiment.
 
         Args:
-            file (Union[str, Path]): The file to log.
-            output_target (Union[str, Path]): The target location of the file.
+            file (Union[str, Path]): The file / directory to log.
+            output_target (Union[str, Path]): The target location of the file / directory.
         """
+        file = Path(file)
         output_target = Path(output_target)
-        output_target.parent.mkdir(exist_ok=True)
-        shutil.copy(file, output_target)
+        output_target.parent.mkdir(exist_ok=True, parents=True)
+
+        if file.is_file():
+            shutil.copy(file, output_target)
+        else:
+            if output_target.exists():
+                shutil.rmtree(output_target)
+            shutil.copytree(file, output_target)
         self.log_file(output_target)
 
     @abstractmethod

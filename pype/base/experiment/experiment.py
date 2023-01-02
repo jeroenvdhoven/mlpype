@@ -57,6 +57,7 @@ class Experiment:
             output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
+                It is possible to select a directory as well, not just individual files.
                 Defaults to no extra files (None).
             parameters (Optional[Dict[str, Any]]): Any parameters to log as part of this experiment.
                 Defaults to None.

@@ -1,6 +1,6 @@
-"""Please run this file using `python -m examples.custom_model_example`.
+"""Please run this file using `python -m examples.custom_classes.custom_model_example`.
 
-We do not guarantee results if you use `python examples/custom_model_example.py`
+We do not guarantee results if you use `python examples/custom_classes/custom_model_example.py`
 """
 
 from pathlib import Path
@@ -24,7 +24,7 @@ from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from pype.sklearn.data.data_frame_source import DataFrameSource
 from pype.sklearn.model.logistic_regression_model import LogisticRegressionModel
 
-from .custom_processer import CustomStandardScaler, tcc
+from .model.custom_processer import CustomStandardScaler, tcc
 
 
 # classes / functions defined in the core file can be imported
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         serialiser=JoblibSerialiser(),
         output_folder=of,
         # Need to add this file to output to make sure we can import CustomModel and CustomStandardScaler/tcc
-        additional_files_to_store=[this_file, this_file.parent / "custom_processer.py"],
+        additional_files_to_store=[this_file, this_file.parent / "model"],
     )
 
     metrics = experiment.run()
