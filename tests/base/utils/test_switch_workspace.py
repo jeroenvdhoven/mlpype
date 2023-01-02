@@ -2,13 +2,16 @@ import importlib
 import os
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, call, patch
 
 from pype.base.utils.workspace import (
     _create_temporary_workspace,
+    _find_all_py_files,
     _reset_workspace,
     switch_workspace,
 )
+from tests.utils import pytest_assert
 
 
 def test_reset_workspace():
@@ -38,6 +41,7 @@ def make_moduled_variable(module: str):
 def test_create_temporary_workspace():
     target_workspace = Path("directory")
     extra_files = ["a.py", "example/b.py", "dummy_file.txt"]  # the last file will be ignored.
+    extra_files_expected = ["a.py", "example/b.py"]
     main_lib = MagicMock()
 
     v1 = MagicMock()
@@ -59,8 +63,10 @@ def test_create_temporary_workspace():
     libs = [a_lib, example_b_lib]
 
     with patch("pype.base.utils.workspace.os.chdir") as mock_chdir, patch(
-        "pype.base.utils.workspace.sys"
-    ) as mock_sys, patch("pype.base.utils.workspace.importlib.import_module", side_effect=libs) as mock_import:
+        "pype.base.utils.workspace._find_all_py_files", return_value=extra_files_expected
+    ) as mock_find_all_py, patch("pype.base.utils.workspace.sys") as mock_sys, patch(
+        "pype.base.utils.workspace.importlib.import_module", side_effect=libs
+    ) as mock_import:
         result = _create_temporary_workspace(target_workspace, extra_files, main_lib)
 
         mock_chdir.assert_called_once_with(target_workspace)
@@ -73,6 +79,7 @@ def test_create_temporary_workspace():
             any_order=True,
         )
 
+        mock_find_all_py.assert_called_once_with(extra_files)
         mock_import.assert_has_calls([call("directory.a"), call("directory.example.b")])
 
         assert main_lib.__dict__ == {
@@ -139,3 +146,51 @@ def test_switch_workspace_integration():
     finally:
         sys.path = c_sys_path
         os.chdir(cwd)
+
+
+def test_find_all_py_files_files():
+    with TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+
+        files = [tmp_dir / "a.py", tmp_dir / "ignored.txt"]
+        all_files = ["a.py", "ignored.txt", "b.py"]
+        for f in all_files:
+            _make_dummy_file(tmp_dir / f)
+
+        result = _find_all_py_files(files)
+
+        assert result == [str(tmp_dir / "a.py")]
+
+
+def test_find_all_py_files_directories():
+    with TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+
+        files = [tmp_dir / "a.py", tmp_dir / "ignored.txt", tmp_dir / "b"]
+        all_files = ["a.py", "ignored.txt", "b/b.py", "b/table.csv", "c/c.py", "b/b-2.py"]
+        for f in all_files:
+            _make_dummy_file(tmp_dir / f)
+
+        result = _find_all_py_files(files)
+        result.sort()
+        expected = ["a.py", "b/b.py", "b/b-2.py"]
+        expected = [str(tmp_dir / f) for f in expected]
+        expected.sort()
+
+        assert result == expected
+
+
+def test_find_all_py_files_assert():
+    with TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+
+        missing_file = tmp_dir / "definitely not there"
+        with pytest_assert(AssertionError, f"`{str(missing_file)}` not found!"):
+            assert not missing_file.exists()
+            _find_all_py_files([missing_file])
+
+
+def _make_dummy_file(f: Path):
+    f.parent.mkdir(exist_ok=True, parents=True)
+    with open(f, "w") as f_pointer:
+        f_pointer.write("text!")
