@@ -69,6 +69,32 @@ def switch_workspace(
     _reset_workspace(old_workspace, old_sys_path, main_lib, main_to_remove)
 
 
+def _find_all_py_files(files: List[Union[str, Path]]) -> List[str]:
+    """Finds all .py files in the given list of files/directories.
+
+    Args:
+        files (List[Union[str, Path]]): A list of files / directories for which
+            we want to collect the python files.
+
+    Returns:
+        List[str]: The list of python files in the given directories and files.
+    """
+    result = []
+    for file in files:
+        file_p = Path(file)
+        assert file_p.exists(), f"`{file}` not found!"
+        if Path(file_p).is_file():
+            if str(file).endswith(".py"):
+                result.append(str(file))
+        else:
+            # directory
+            for root, _, walked_files in os.walk(file):
+                for walked_file in walked_files:
+                    if walked_file.endswith(".py"):
+                        result.append(os.path.join(root, walked_file))
+    return result
+
+
 def _reset_workspace(
     old_workspace: str, old_sys_path: List[str], main_lib: ModuleType, main_to_remove: Set[str]
 ) -> None:
@@ -101,8 +127,8 @@ def _create_temporary_workspace(
     sys.path.append(str(target_workspace))
     directory_name = target_workspace.name
 
-    for file in extra_files:
-        file = str(file)
+    extra_files_walked = _find_all_py_files(extra_files)
+    for file in extra_files_walked:
         if not file.endswith(".py"):
             logger.warning(f"Not adding {file} to path since it is not a python file!")
             continue
