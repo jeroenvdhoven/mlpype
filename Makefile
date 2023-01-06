@@ -22,7 +22,7 @@ test-all:
 	python -m pytest
 
 coverage-without-spark:
-	python -m pytest --cov-report term-missing --cov pype -ra
+	python -m pytest -m "not spark" --cov-report term-missing --cov pype -ra
 
 coverage-all:
 	python -m pytest --cov-report term-missing --cov pype -ra
