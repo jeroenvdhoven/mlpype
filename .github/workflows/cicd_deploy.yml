@@ -1,0 +1,28 @@
+name: build-and-publish
+run-name: ${{ github.ref_name }} is being tested
+on: 
+  push:
+    tags:
+      - '*'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      - name: Build src
+        run: make build
+
+      - name: Run pre-commit
+        run: make pre-commit-run
+
+      - name: Push
+        run: twine upload dist/* -u ${{ secrets.TWINE_USER }} -p ${{ secrets.TWINE_PW }}
+
+      
