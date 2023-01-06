@@ -1,0 +1,26 @@
+name: test-pr
+run-name: ${{ github.ref }} is being tested
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Test for multiple python versions
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: make dev-install
+      - name: Install pre-commit
+        run: make pre-commit-install
+      - name: Run pre-commit
+        run: make pre-commit-run
+      - name: Test 
+        run: make test-without-spark
