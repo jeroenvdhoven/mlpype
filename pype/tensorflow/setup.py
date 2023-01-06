@@ -7,7 +7,7 @@ deps = [
     # on mac, it is recommended to use conda/mamba or source to install tensorflow
     "tensorflow>=2.9.1",
     "numpy>=1.23.0",
-    "protobuf>=3.20.1",
+    "protobuf>=3.19",
 ]
 strict_deps = [s.replace(">=", "==") for s in deps]
 
