@@ -95,14 +95,14 @@ class ExperimentLogger(ABC):
         file = Path(file)
         output_target = Path(output_target)
         output_target.parent.mkdir(exist_ok=True, parents=True)
-        
+
         if file.is_file():
             shutil.copy(file, output_target)
         else:
             if output_target.exists():
                 shutil.rmtree(output_target)
             shutil.copytree(file, output_target)
-            
+
         self.log_file(output_target)
 
     @abstractmethod
