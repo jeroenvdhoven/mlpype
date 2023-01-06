@@ -1,5 +1,5 @@
 name: test-pr
-run-name: ${{ github.ref }} is being tested
+run-name: ${{ github.ref_name }} is being tested
 on: push
 jobs:
   test:
@@ -12,15 +12,29 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '11'
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      
+      - uses: vemonet/setup-spark@v1
+        with:
+          spark-version: '3.2.1'
+          hadoop-version: '3.2'
+
       - name: Install dependencies
         run: make dev-install
+
       - name: Install pre-commit
         run: make pre-commit-install
+
       - name: Run pre-commit
         run: make pre-commit-run
+        
       - name: Test 
-        run: make test-without-spark
+        run: make test-all
