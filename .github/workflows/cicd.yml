@@ -38,3 +38,6 @@ jobs:
         
       - name: Test 
         run: make test-all
+
+      - name: Coverage
+        run: make coverage-all
