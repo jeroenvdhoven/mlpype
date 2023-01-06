@@ -35,9 +35,14 @@ jobs:
 
       - name: Run pre-commit
         run: make pre-commit-run
-        
-      - name: Test 
-        run: make test-all
 
-      - name: Coverage
-        run: make coverage-all
+      - name: Test and coverage
+        run: python -m pytest --cov-report term-missing --cov pype -ra --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+      
+      - name: Upload test/covarage test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: pytest-results-${{ matrix.python-version }}
+          path: junit/test-results-${{ matrix.python-version }}.xml
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}
