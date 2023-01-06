@@ -1,5 +1,5 @@
 name: build-and-publish
-run-name: ${{ github.ref_name }} is being tested
+run-name: ${{ github.ref_name }} is being pushed to pypi
 on: 
   push:
     tags:
