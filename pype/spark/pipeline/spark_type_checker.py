@@ -120,3 +120,15 @@ class SparkTypeChecker(TypeChecker[SparkDataFrame]):
         model = create_model("SparkData", **data_type, __base__=SparkData)
 
         return model
+
+    @classmethod
+    def supports_object(cls, obj: Any) -> bool:
+        """Returns True if the object is a Spark DataFrame.
+
+        Args:
+            obj (Any): The object to check.
+
+        Returns:
+            bool: True if the given object is a Spark DataFrame, False otherwise.
+        """
+        return isinstance(obj, SparkDataFrame)

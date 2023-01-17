@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Callable, Dict, List, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
 import numpy as np
 import pandas as pd
@@ -102,3 +102,15 @@ class PandasTypeChecker(TypeChecker[pd.DataFrame]):
         model = create_model("PandasData", **data_type, __base__=PandasData)
 
         return model
+
+    @classmethod
+    def supports_object(cls, obj: Any) -> bool:
+        """Returns True if the object is a pandas DataFrame.
+
+        Args:
+            obj (Any): The object to check.
+
+        Returns:
+            bool: True if the given object is a pandas DataFrame, False otherwise.
+        """
+        return isinstance(obj, pd.DataFrame)
