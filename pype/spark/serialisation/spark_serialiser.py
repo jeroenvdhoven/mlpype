@@ -11,6 +11,13 @@ from pype.spark.pipeline.spark_pipe import SparkPipe
 
 
 class SparkSerialiser(Serialiser):
+    """A Serialiser to integrate Spark with Pype.
+
+    It is highly recommended to initialise SparkSession manually before calling this,
+    with all proper configuration done beforehand. A SparkSession is needed to
+    serialise / deserialise objects stored using this class.
+    """
+
     SUB_PIPE_PREFIX = "__sub_pipe_"
     BASE_PIPE_FILE = "pipe.pkl"
     SPARK_TRANSFORMER_FILE = "spark_transformer"
