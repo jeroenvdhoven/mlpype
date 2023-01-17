@@ -114,3 +114,7 @@ class Test_TensorflowTypeChecker:
         # fails
         with pytest_assert(ValidationError):
             TensorflowSpecificType(data=[[1, 2, 3]])
+
+    @mark.parametrize(["obj", "expected"], [[[], False], [1, False], [tf.convert_to_tensor([1.0, 2.0]), True]])
+    def test_supports_object(self, obj, expected: bool):
+        assert TensorflowTypeChecker.supports_object(obj) == expected

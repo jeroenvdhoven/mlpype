@@ -91,11 +91,21 @@ class TypeChecker(Operator[Data], ABC):
             Type[DataModel]: The data model for the data this was fitted on.
         """
 
+    @classmethod
+    @abstractmethod
+    def supports_object(cls, obj: Any) -> bool:
+        """Class method to determine if this TypeChecker supports the given object.
+
+        Args:
+            obj (Any): The object to check.
+
+        Returns:
+            bool: True if this TypeChecker supports the given object, False otherwise.
+        """
+
 
 class TypeCheckerPipe(Pipe):
-    def __init__(
-        self, name: str, input_names: List[str], type_checker_classes: List[Tuple[type, Type[TypeChecker]]]
-    ) -> None:
+    def __init__(self, name: str, input_names: List[str], type_checker_classes: List[Type[TypeChecker]]) -> None:
         """A pipe that fully checks an incoming DataSet for type consistency.
 
         Args:
@@ -103,9 +113,8 @@ class TypeCheckerPipe(Pipe):
             input_names (List[str]): The names of datasets to be checked by this type checker.
                 We highly recommend to make sure this encompasses the datasets used by
                 the model at inference time (or the predicted datasets for the output type checker).
-            type_checker_classes (List[Tuple[type, Type[TypeChecker]]]): A list of pairs
-                of data types and the type checker that should be used for that class.
-                E.g. (pandas.DataFrame, PandasTypeChecker) for pandas data.
+            type_checker_classes (List[Type[TypeChecker]]): A list of TypeChecker classes.
+                E.g. PandasTypeChecker for pandas data (requires pype.sklearn).
         """
         super().__init__(
             name,
@@ -132,12 +141,14 @@ class TypeCheckerPipe(Pipe):
         """
         if names is None:
             names = self.input_names
-
+        assert isinstance(
+            self.operator, DataSetTypeChecker
+        ), f"Operators of TypeCheckerPipes should be DataSetTypeChecker, got: `{type(self.operator)}`"
         return self.operator.get_pydantic_types(names)
 
 
 class DataSetTypeChecker(Operator[Data]):
-    def __init__(self, input_names: List[str], type_checker_classes: List[Tuple[type, Type[TypeChecker]]]) -> None:
+    def __init__(self, input_names: List[str], type_checker_classes: List[Type[TypeChecker]]) -> None:
         """A TypeChecker that conforms to the Operator class.
 
         Mainly used by TypeCheckerPipe for easy type checking of incoming data.
@@ -146,9 +157,8 @@ class DataSetTypeChecker(Operator[Data]):
             input_names (List[str]): The names of datasets to be checked by this type checker.
                 We highly recommend to make sure this encompasses the datasets used by
                 the model at inference time (or the predicted datasets for the output type checker).
-            type_checker_classes (List[Tuple[type, Type[TypeChecker]]]): A list of pairs
-                of data types and the type checker that should be used for that class.
-                E.g. (pandas.DataFrame, PandasTypeChecker) for pandas data.
+            type_checker_classes (List[Type[TypeChecker]]): A list of TypeChecker classes.
+                E.g. PandasTypeChecker for pandas data (requires pype.sklearn).
         """
         super().__init__()
         self.input_names = input_names
@@ -189,8 +199,8 @@ class DataSetTypeChecker(Operator[Data]):
         return data
 
     def _get_type_checker(self, data: Data) -> Union[Type[TypeChecker], None]:
-        for ref_type, type_checker in self.type_checker_classes:
-            if isinstance(data, ref_type):
+        for type_checker in self.type_checker_classes:
+            if type_checker.supports_object(data):
                 return type_checker
         return None
 

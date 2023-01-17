@@ -1,19 +1,13 @@
 from datetime import datetime
 from typing import Dict, List, Type, Union
 
+import numpy as np
 import pandas as pd
 from pandas.api import types as pandas_types
-from pandas.api.types import (
-    is_bool_dtype,
-    is_datetime64_any_dtype,
-    is_float_dtype,
-    is_integer_dtype,
-    is_object_dtype,
-    is_string_dtype,
-)
+from pandas.api.types import is_integer_dtype, is_object_dtype
 from pandas.testing import assert_frame_equal
 from pydantic import create_model
-from pytest import fixture
+from pytest import fixture, mark
 
 from pype.sklearn.pipeline.pandas_type_checker import PandasData, PandasTypeChecker
 from tests.utils import pytest_assert
@@ -164,18 +158,8 @@ class Test_PandasTypeChecker:
 
         assert_frame_equal(df, result)
 
-    # def test_get_pydantic_types_strict_on_bool(self):
-    #     type_checker = PandasTypeChecker()
-    #     array = np.array([
-    #         [True, False]
-    #     ])
-    #     type_checker.fit(array)
-
-    #     PandasSpecificType = type_checker.get_pydantic_type()
-
-    #     # succeed
-    #     PandasSpecificType(data=[[False, False]])
-
-    #     # fails
-    #     with pytest_assert(ValidationError):
-    #         PandasSpecificType(data=[[1, 2 ,3]])
+    @mark.parametrize(
+        ["obj", "expected"], [[[], False], [1, False], [pd.DataFrame({"a": [1]}), True], [np.array([1.0, 2.0]), False]]
+    )
+    def test_supports_object(self, obj, expected: bool):
+        assert PandasTypeChecker.supports_object(obj) == expected
