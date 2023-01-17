@@ -60,7 +60,7 @@ class Test_TypeCheckerPipe:
         pipe = TypeCheckerPipe(
             "inputs",
             ["x"],
-            [tuple()],
+            [],
         )
 
         with patch.object(pipe.operator, "get_pydantic_types") as mock_get:
@@ -73,7 +73,7 @@ class Test_TypeCheckerPipe:
         pipe = TypeCheckerPipe(
             "inputs",
             ["x"],
-            [tuple()],
+            [],
         )
 
         with patch.object(pipe.operator, "get_pydantic_types") as mock_get:
@@ -87,7 +87,7 @@ class Test_TypeCheckerPipe:
 class Test_DataSetTypeChecker:
     @fixture
     def type_checker(self, data: DataSet) -> DataSetTypeChecker:
-        return DataSetTypeChecker(input_names=list(data.keys()), type_checker_classes=[(list, DummyTypeChecker)])
+        return DataSetTypeChecker(input_names=list(data.keys()), type_checker_classes=[DummyTypeChecker])
 
     @fixture
     def data(self) -> DataSet:

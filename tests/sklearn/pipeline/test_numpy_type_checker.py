@@ -1,13 +1,8 @@
 import numpy as np
+import pandas as pd
 from pydantic import ValidationError
 from pytest import mark
 
-from pype.base.pipeline.type_checker import (
-    DataModel,
-    DataSetModel,
-    DataSetTypeChecker,
-    TypeCheckerPipe,
-)
 from pype.sklearn.pipeline.numpy_type_checker import NumpyData, NumpyTypeChecker
 from tests.utils import pytest_assert
 
@@ -113,3 +108,9 @@ class Test_NumpyTypeChecker:
         # fails
         with pytest_assert(ValidationError):
             NumpySpecificType(data=[[1, 2, 3]])
+
+    @mark.parametrize(
+        ["obj", "expected"], [[[], False], [1, False], [pd.DataFrame({"a": [1]}), False], [np.array([1.0, 2.0]), True]]
+    )
+    def test_supports_object(self, obj, expected: bool):
+        assert NumpyTypeChecker.supports_object(obj) == expected

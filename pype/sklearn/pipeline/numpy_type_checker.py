@@ -1,4 +1,4 @@
-from typing import List, Type, Union
+from typing import Any, List, Type, Union
 
 import numpy as np
 from pydantic import create_model
@@ -97,3 +97,15 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
         model = create_model("NumpyData", data=(base_iter, ...), __base__=NumpyData)
 
         return model
+
+    @classmethod
+    def supports_object(cls, obj: Any) -> bool:
+        """Returns True if the object is a numpy array.
+
+        Args:
+            obj (Any): The object to check.
+
+        Returns:
+            bool: True if the given object is a numpy array, False otherwise.
+        """
+        return isinstance(obj, np.ndarray)

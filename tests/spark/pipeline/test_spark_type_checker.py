@@ -149,3 +149,11 @@ class Test_SparkTypeChecker:
         converted = Model.to_model(spark_df)
         assert converted.a == df["a"].to_list()
         assert converted.b == df["b"].to_list()
+
+    @mark.parametrize(["obj"], [[[]], [pd.DataFrame({"a": [1]})]])
+    def test_supports_object_fail(self, obj):
+        assert not SparkTypeChecker.supports_object(obj)
+
+    def test_supports_object_success(self, spark_session: SparkSession):
+        df = spark_session.createDataFrame(pd.DataFrame({"a": [1]}))
+        assert SparkTypeChecker.supports_object(df)

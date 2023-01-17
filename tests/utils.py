@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from pathlib import Path
-from typing import List, Optional, Tuple, Type, Union
+from typing import Any, List, Optional, Tuple, Type, Union
 
 from data.data_sink import DataSink
 
@@ -138,8 +138,12 @@ class DummyTypeChecker(TypeChecker):
     def get_pydantic_type(self) -> Type[DataModel]:
         return DummyDataModel
 
+    @classmethod
+    def supports_object(cls, obj: Any) -> bool:
+        return isinstance(obj, list)
+
 
 def get_dummy_type_checkers() -> Tuple[TypeCheckerPipe, TypeCheckerPipe]:
-    return TypeCheckerPipe("input", ["x"], type_checker_classes=[(list, DummyTypeChecker)]), TypeCheckerPipe(
-        "output", ["y"], type_checker_classes=[(list, DummyTypeChecker)]
+    return TypeCheckerPipe("input", ["x"], type_checker_classes=[DummyTypeChecker]), TypeCheckerPipe(
+        "output", ["y"], type_checker_classes=[DummyTypeChecker]
     )
