@@ -7,7 +7,6 @@ We do not guarantee results if you use `python examples/spark/example.py`
 import pandas as pd
 from pipeline.type_checker import TypeCheckerPipe
 from pyspark.ml.feature import StandardScaler, VectorAssembler
-from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql import SparkSession
 
 from pype.base.data import DataSetSource
@@ -52,8 +51,8 @@ experiment = Experiment(
     logger=logger,
     serialiser=SparkSerialiser(),
     output_folder="outputs",
-    input_type_checker=TypeCheckerPipe("inputs", ["x"], [(SparkDataFrame, SparkTypeChecker)]),
-    output_type_checker=TypeCheckerPipe("outputs", ["x"], [(SparkDataFrame, SparkTypeChecker)]),
+    input_type_checker=TypeCheckerPipe("inputs", ["x"], [SparkTypeChecker]),
+    output_type_checker=TypeCheckerPipe("outputs", ["x"], [SparkTypeChecker]),
 )
 
 experiment.run()
