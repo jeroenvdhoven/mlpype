@@ -1,4 +1,4 @@
-"""Please run this file using `python -m examples.mlflow.mlflow_sklearn_example`.
+"""Please run this file using `python -m examples.mlflow.mlflow_sklearn_example --pipeline__impute__verbose 0`.
 
 We do not guarantee results if you use `python examples/mlflow/mlflow_sklearn_example.py`
 You can use command line arguments in this example, such as:
@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import Iterable
 
 import numpy as np
-import pandas as pd
 from mlflow.tracking.fluent import get_experiment_by_name
 from sklearn.datasets import load_iris
 from sklearn.impute import SimpleImputer
@@ -86,10 +85,7 @@ evaluator = Evaluator(
     }
 )
 
-tcc = [
-    (np.ndarray, NumpyTypeChecker),
-    (pd.DataFrame, PandasTypeChecker),
-]
+tcc = [NumpyTypeChecker, PandasTypeChecker]
 
 input_ds_type_checker = TypeCheckerPipe(
     "type_checker-in",
