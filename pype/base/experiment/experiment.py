@@ -53,7 +53,8 @@ class Experiment:
                 Defaults to a joblib serialiser.
             output_folder: (Union[Path, str]): The output folder to log artifacts to. Defaults to "outputs".
             input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
-                data and standardise the order of data. Will be used later to help serialise/deserialise data.
+                data and standardise the order of data. Will be used later to help serialise/deserialise data. Only
+                select datasets required to do a run during inference.
             output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
                 data and standardise the order of data. Will be used later to help serialise/deserialise data.
             additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
