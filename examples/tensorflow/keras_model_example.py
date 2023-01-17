@@ -44,11 +44,7 @@ class NumpyToTensor(Operator):
 
 
 if __name__ == "__main__":
-    tcc = [
-        (np.ndarray, NumpyTypeChecker),
-        (pd.DataFrame, PandasTypeChecker),
-        (tf.Tensor, TensorflowTypeChecker),  # type: ignore
-    ]
+    tcc = [NumpyTypeChecker, PandasTypeChecker, TensorflowTypeChecker]  # type: ignore
 
     def _make_data() -> Iterable[np.ndarray]:
         iris = load_iris(as_frame=True)

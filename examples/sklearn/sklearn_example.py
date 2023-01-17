@@ -82,10 +82,7 @@ evaluator = Evaluator(
     }
 )
 
-tcc = [
-    (np.ndarray, NumpyTypeChecker),
-    (pd.DataFrame, PandasTypeChecker),
-]
+tcc = [NumpyTypeChecker, PandasTypeChecker]
 
 input_ds_type_checker = TypeCheckerPipe(
     "type_checker-in",
