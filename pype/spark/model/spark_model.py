@@ -87,14 +87,35 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         assert len(data) == 1, f"SparkML needs a single DataFrame as input, got {len(data)}"
         self.model = self.predictor.fit(data[0])
 
-    def _transform(self, *data: SparkDataFrame) -> Union[Iterable[SparkDataFrame], SparkDataFrame]:
+    def _transform(
+        self, *data: SparkDataFrame, reduce_columns_if_possible: bool = True
+    ) -> Union[Iterable[SparkDataFrame], SparkDataFrame]:
         assert len(data) == 1, f"SparkML needs a single DataFrame as input, got {len(data)}"
         assert self.model is not None, "Please fit this model before transforming data."
 
         result = self.model.transform(data[0])
-        if self.output_col is not None:
+        if self.output_col is not None and reduce_columns_if_possible:
             result = result.select(self.output_col)
         return result
+
+    def transform_for_evaluation(self, data: DataSet) -> DataSet:
+        """Applies the SparkModel to the given DataSet in an evaluation way.
+
+        The DataSet should contain all inputs. This will not reduce the output dataset
+        to the predicted columns such that we can use it in evaluation steps.
+
+        Args:
+            data (DataSet): The DataSet to transform using this Model.
+
+        Returns:
+            DataSet: The outputs as a Dataset.
+        """
+        result = self._transform(*data.get_all(self.inputs), reduce_columns_if_possible=False)
+        if len(self.outputs) == 1:
+            result = [result]  # type: ignore
+
+        # type check handled by above check.
+        return DataSet.from_dict({name: data for name, data in zip(self.outputs, result)})  # type: ignore
 
     def _save(self, folder: Path) -> None:
         assert self.model is not None, "Please fit this model before transforming data."

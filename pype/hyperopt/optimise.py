@@ -21,7 +21,7 @@ def create_optimisation_function(
             of this Experiment for every run.
         target_metric (Tuple[str, str]): The target metric to optimise. Should be of the form
             (dataset name, metric name). The dataset name needs to match one in the DataSet from the Experiment.
-            The metric name should match a metric from the Evaluator in the Experiment.
+            The metric name should match a metric from the BaseEvaluator in the Experiment.
         minimise_target (bool): A boolean indicating if the target metric should be minimised or not.
         seed (int): The seed used for training.
 
@@ -89,7 +89,7 @@ def optimise_experiment(
             initialise a regular Experiment from arguments.
         target_metric (Tuple[str, str]): The target metric to optimise. Should be of the form
             (dataset name, metric name). The dataset name needs to match one in the DataSet from the Experiment.
-            The metric name should match a metric from the Evaluator in the Experiment.
+            The metric name should match a metric from the BaseEvaluator in the Experiment.
         max_evals (int): The maximum number of runs to perform for this hyperoptimisation search. Note that
             hyperopt will not create more runs if you provide a trials object with more trials than max_evals.
         minimise_target (bool): A boolean indicating if the target metric should be minimised or not.

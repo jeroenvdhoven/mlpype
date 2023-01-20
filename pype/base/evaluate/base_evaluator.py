@@ -1,29 +1,20 @@
-from typing import Callable, Dict, Optional, TypeVar, Union
+from abc import ABC, abstractmethod
+from typing import Dict, Generic, Optional, TypeVar, Union
 
 from pype.base.data import DataSet
-from pype.base.evaluate.base_evaluator import BaseEvaluator
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline
 
 Data = TypeVar("Data")
 
 
-class Evaluator(BaseEvaluator[Data]):
+class BaseEvaluator(Generic[Data], ABC):
     def __init__(
         self,
-        functions: Dict[str, Callable[[Union[Data, Data]], Union[float, int, str, bool]]],
     ) -> None:
-        """Evaluates a Model on the given Functions.
+        """Evaluates a Model on the given data."""
 
-        Args:
-            functions (Dict[str, Callable[[Union[Data, Data]], Union[float, int, str, bool]]]):
-                A dict of metric names and metric functions. We expect each to return
-                a float, int, string, or boolean value. We provide the arguments as follows:
-                    - first, all labeled data, e.g. y_true.
-                    - second, all predicted data, e.g. y_pred.
-        """
-        self.functions = functions
-
+    @abstractmethod
     def evaluate(
         self, model: Model, data: DataSet, pipeline: Optional[Pipeline] = None
     ) -> Dict[str, Union[str, float, int, str, bool]]:
@@ -40,14 +31,8 @@ class Evaluator(BaseEvaluator[Data]):
             Dict[str, Union[str, float, int, str, bool]]: A dictionary of metric_name-value pairs. The result
                 of the evaluation.
         """
-        if pipeline is not None:
-            data = pipeline.transform(data)
 
-        predictions = model.transform(data).get_all(model.outputs)
-        output_data = data.get_all(model.outputs)
-
-        return {name: func(*output_data, *predictions) for name, func in self.functions.items()}
-
+    @abstractmethod
     def __str__(self, indents: int = 0) -> str:
         """Create string representation of this Evaluator.
 
@@ -57,5 +42,3 @@ class Evaluator(BaseEvaluator[Data]):
         Returns:
             str: A string representation of this Evaluator.
         """
-        tabs = "\t" * indents
-        return "\n".join([f"{tabs}{name}: {func.__name__}" for name, func in self.functions.items()])
