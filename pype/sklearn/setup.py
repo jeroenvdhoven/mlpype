@@ -1,6 +1,6 @@
 from setuptools import find_namespace_packages, setup
 
-version = "0.1.2"
+version = "0.2.0"
 
 deps = [
     f"pype-base=={version}",
