@@ -256,3 +256,23 @@ class Test_SparkModel:
             loaded_preds = loaded_model.transform(dataset)["df"].toPandas()
 
             assert_frame_equal(transformed_df, loaded_preds)
+
+    def test_transform_for_evaluation(self, spark_session: SparkSession):
+        df = MagicMock()
+        data = DataSet(df=df)
+        model = LinearSparkModel(
+            inputs=["df"],
+            outputs=["df"],
+            output_col="prediction_col",
+            predictionCol="prediction_col",
+            featuresCol="vector",
+            labelCol="response",
+            fitIntercept=False,
+        )
+        with patch.object(model, "_transform") as mock_transform:
+            result = model.transform_for_evaluation(data)
+
+            mock_transform.assert_called_once_with(df, reduce_columns_if_possible=False)
+            assert isinstance(result, DataSet)
+            assert len(result) == 1
+            assert result["df"] == mock_transform.return_value

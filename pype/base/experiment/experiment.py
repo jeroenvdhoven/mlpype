@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 from pype.base.constants import Constants
 from pype.base.data.dataset_source import DataSetSource
-from pype.base.evaluate import Evaluator
+from pype.base.evaluate import BaseEvaluator
 from pype.base.experiment.argument_parsing import add_args_to_parser_for_pipeline
 from pype.base.logger import ExperimentLogger
 from pype.base.model import Model
@@ -25,7 +25,7 @@ class Experiment:
         data_sources: Dict[str, DataSetSource],
         model: Model,
         pipeline: Pipeline,
-        evaluator: Evaluator,
+        evaluator: BaseEvaluator,
         logger: ExperimentLogger,
         input_type_checker: TypeCheckerPipe,
         output_type_checker: TypeCheckerPipe,
@@ -46,7 +46,7 @@ class Experiment:
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model (Model): The Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
-            evaluator (Evaluator): The evaluator to test how good your Model performs.
+            evaluator (BaseEvaluator): The evaluator to test how good your Model performs.
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Optional[Serialiser]): The serialiser to serialise any Python objects (expect the Model).
@@ -233,7 +233,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         data_sources: Dict[str, DataSetSource],
         model_class: Type[Model],
         pipeline: Pipeline,
-        evaluator: Evaluator,
+        evaluator: BaseEvaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
         input_type_checker: TypeCheckerPipe,
@@ -252,7 +252,7 @@ run here for logging purposes. Consider using the `from_command_line` or
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
-            evaluator (Evaluator): The evaluator to test how good your Model performs.
+            evaluator (BaseEvaluator): The evaluator to test how good your Model performs.
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
@@ -298,7 +298,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         data_sources: Dict[str, DataSetSource],
         model_class: Type[Model],
         pipeline: Pipeline,
-        evaluator: Evaluator,
+        evaluator: BaseEvaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
         input_type_checker: TypeCheckerPipe,
@@ -319,7 +319,7 @@ run here for logging purposes. Consider using the `from_command_line` or
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
-            evaluator (Evaluator): The evaluator to test how good your Model performs.
+            evaluator (BaseEvaluator): The evaluator to test how good your Model performs.
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
