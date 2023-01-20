@@ -6,16 +6,17 @@ We do not guarantee results if you use `python examples/spark/example.py`
 
 import pandas as pd
 from pipeline.type_checker import TypeCheckerPipe
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import StandardScaler, VectorAssembler
 from pyspark.sql import SparkSession
 
 from pype.base.data import DataSetSource
 from pype.base.deploy import Inferencer
-from pype.base.evaluate import Evaluator
 from pype.base.experiment import Experiment
 from pype.base.logger import LocalLogger
 from pype.base.pipeline import Pipeline
 from pype.spark.data.spark_data_frame_source import SparkDataFrameSource
+from pype.spark.evaluate.spark_evaluator import SparkEvaluator
 from pype.spark.model import LinearSparkModel
 from pype.spark.pipeline import SparkTypeChecker
 from pype.spark.pipeline.spark_pipe import SparkPipe
@@ -43,11 +44,16 @@ model = LinearSparkModel(
 
 logger = LocalLogger()
 
+evaluator = SparkEvaluator(
+    BinaryClassificationEvaluator(rawPredictionCol="prediction", labelCol="target"),
+    metrics=["areaUnderROC", "areaUnderPR"],
+)
+
 experiment = Experiment(
     data_sources=data,
     model=model,
     pipeline=pipeline,
-    evaluator=Evaluator({}),
+    evaluator=evaluator,
     logger=logger,
     serialiser=SparkSerialiser(),
     output_folder="outputs",
