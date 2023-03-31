@@ -312,8 +312,6 @@ run here for logging purposes. Consider using the `from_command_line` or
     ) -> "Experiment":
         """Automatically initialises an Experiment from command line arguments.
 
-        # TODO: how to best store these extra files to the output folder as well?
-
         Args:
             data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.

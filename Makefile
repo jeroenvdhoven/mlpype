@@ -1,12 +1,13 @@
+# For local development setup
+dev-install:
+	./scripts/dev_install.sh -e 1
 
+# To test if packages can be build
 build:
 	./scripts/build.sh
 
 clean:
 	rm -rf dist/ packages/
-
-dev-install:
-	./scripts/dev_install.sh -e 1
 
 host-pypi-local:
 	mkdir -p packages
@@ -15,6 +16,7 @@ host-pypi-local:
 
 build-and-host-local: clean build host-pypi-local
 
+# Test and coverage commands
 test-without-spark:
 	python -m pytest -m "not spark"
 
@@ -26,6 +28,10 @@ coverage-without-spark:
 
 coverage-all:
 	python -m pytest --cov-report term-missing --cov pype -ra
+
+# Document code
+create-docs:
+	pdoc ./pype -o ./docs -d google
 
 # Pre-commit defaults
 pre-commit-install:
