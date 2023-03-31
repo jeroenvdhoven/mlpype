@@ -37,14 +37,13 @@ class Inferencer:
     def predict(self, data: Union[DataSet, DataSetSource]) -> DataSet:
         """Predicts using the given data using the Pipeline and Model.
 
-        # TODO: inverse transformation.
-
         Args:
             data (Union[DataSet, DataSetSource]): The data to predict for.
 
         Returns:
             DataSet: The predictions from Model.
         """
+        # TODO: inverse transformation after prediction
         if isinstance(data, DataSetSource):
             data = data.read()
         self.input_type_checker.transform(data)

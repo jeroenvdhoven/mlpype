@@ -98,7 +98,6 @@ def optimise_experiment(
                 - 'normal': A regular Trials object, stored locally.
                 - 'mongo': A MongoTrials object, storing trials in a mongodb. You will need to provide `mongo_url` and
                     `mongo_exp_key` to choose this type of trial.
-                # TODO: SparkTrials integration.
                 - 'spark': A SparkTrials object will be created. Currently not supported yet, WIP. Providing your own
                     SparkTrials object should still work.
         mongo_url (Optional[str]): The link to the mongodb that should be used.
@@ -119,6 +118,7 @@ def optimise_experiment(
             - The arguments for the best trial.
             - The Trials object created by this run.
     """
+    # TODO: SparkTrials setup integration.
     optimise = create_optimisation_function(experiment_template, target_metric, minimise_target, seed=training_seed)
 
     if not minimise_target:

@@ -24,7 +24,6 @@ class WheelBuilder:
 
     This should allow you to save models into shippable packages
     quite easily.
-    # TODO: add proper tests
 
     The functionality can be extended quite easily using the `extensions` argument.
     See `WheelExtension` for how to make your own. The base functionality is also
@@ -44,6 +43,7 @@ class WheelBuilder:
             This can include hosting a FastAPI app for instance.
     """
 
+    # TODO: add proper tests?
     model_folder: Path
     model_name: str
     version: str

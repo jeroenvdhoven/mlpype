@@ -48,8 +48,7 @@ class MlflowLogger(ExperimentLogger):
 
         if experiment is None:
             # this is a new experiment: create it explicitly with the artifact uri
-            # TODO: make sure this works on S3 / databricks!
-            # Note: this works on databricks.
+            # TODO: make sure this works on S3
             create_experiment(self.name, self.artifact_location)
 
         set_experiment(experiment_name=self.name)
