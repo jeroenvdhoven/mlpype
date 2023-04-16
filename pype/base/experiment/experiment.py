@@ -147,6 +147,10 @@ run here for logging purposes. Consider using the `from_command_line` or
             # extra py files
             self._log_extra_files()
             self.logger.info("Done")
+
+            # log serialiser using a JoblibSerialiser
+            jl_serialiser = JoblibSerialiser()
+            self.experiment_logger.log_artifact(of / Constants.SERIALISER_FILE, jl_serialiser, object=self.serialiser)
         return metrics
 
     def _log_requirements(self) -> None:

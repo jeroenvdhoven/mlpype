@@ -5,7 +5,11 @@ from typing import Any, Union
 
 class Serialiser(ABC):
     def __init__(self) -> None:
-        """A base class for Serialisers, used to log extra files in Experiments."""
+        """A base class for Serialisers, used to log extra files in Experiments.
+
+        Please make sure any Serialiser you create can be deserialised using a JoblibSerialiser.
+        These are used in the Experiment/Inferencer to save/load your Serialisers.
+        """
         super().__init__()
 
     @abstractmethod

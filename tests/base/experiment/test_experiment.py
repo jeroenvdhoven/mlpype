@@ -56,7 +56,9 @@ class Test_run:
 
         with patch.object(experiment, "_create_output_folders") as mock_create_folders, patch.object(
             experiment, "_log_extra_files"
-        ) as mock_log_extra_files, patch.object(experiment, "_log_requirements") as mock_log_requirements:
+        ) as mock_log_extra_files, patch.object(experiment, "_log_requirements") as mock_log_requirements, patch(
+            "pype.base.experiment.experiment.JoblibSerialiser"
+        ) as mock_joblib:
             result = experiment.run()
 
         logger.__enter__.assert_called_once()
@@ -105,6 +107,7 @@ class Test_run:
                 call(output_folder / Constants.PIPELINE_FILE, serialiser, object=pipeline),
                 call(output_folder / Constants.INPUT_TYPE_CHECKER_FILE, serialiser, object=input_type_checker),
                 call(output_folder / Constants.OUTPUT_TYPE_CHECKER_FILE, serialiser, object=output_type_checker),
+                call(output_folder / Constants.SERIALISER_FILE, mock_joblib.return_value, object=serialiser),
             ]
         )
         logger.log_parameters.assert_called_once_with({})
