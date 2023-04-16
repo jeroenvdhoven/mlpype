@@ -6,6 +6,7 @@ class Constants:
     INPUT_TYPE_CHECKER_FILE: str = "input_type_checker.pkl"
     OUTPUT_TYPE_CHECKER_FILE: str = "output_type_checker.pkl"
     EXTRA_FILES: str = "extra_files.json"
+    SERIALISER_FILE: str = "serialiser.pkl"
 
     PYTHON_VERSION_FILE: str = "python_version.json"
     REQUIREMENTS_FILE: str = "requirements.txt"
