@@ -124,34 +124,38 @@ run here for logging purposes. Consider using the `from_command_line` or
             predicted_train = self.model.transform(transformed["train"])
             self.output_type_checker.fit(predicted_train)
 
-            self.logger.info("Log results: metrics, parameters, pipeline, model")
+            self.logger.info("Log results: metrics, parameters")
             for dataset_name, metric_set in metrics.items():
                 self.experiment_logger.log_metrics(dataset_name, metric_set)
-
-            self._create_output_folders()
-
-            of = self.output_folder
-            self.experiment_logger.log_model(self.model, of / Constants.MODEL_FOLDER)
-            self.experiment_logger.log_artifact(of / Constants.PIPELINE_FILE, self.serialiser, object=self.pipeline)
-            self.experiment_logger.log_artifact(
-                of / Constants.INPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.input_type_checker
-            )
-            self.experiment_logger.log_artifact(
-                of / Constants.OUTPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.output_type_checker
-            )
             self.experiment_logger.log_parameters(self.parameters)
 
-            # log requirements.txt
-            self._log_requirements()
-
-            # extra py files
-            self._log_extra_files()
-            self.logger.info("Done")
-
-            # log serialiser using a JoblibSerialiser
-            jl_serialiser = JoblibSerialiser()
-            self.experiment_logger.log_artifact(of / Constants.SERIALISER_FILE, jl_serialiser, object=self.serialiser)
+            self.logger.info("Log results: pipeline, model, serialiser")
+            self._log_run()
         return metrics
+
+    def _log_run(self) -> None:
+        self._create_output_folders()
+
+        of = self.output_folder
+        self.experiment_logger.log_model(self.model, of / Constants.MODEL_FOLDER)
+        self.experiment_logger.log_artifact(of / Constants.PIPELINE_FILE, self.serialiser, object=self.pipeline)
+        self.experiment_logger.log_artifact(
+            of / Constants.INPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.input_type_checker
+        )
+        self.experiment_logger.log_artifact(
+            of / Constants.OUTPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.output_type_checker
+        )
+
+        # log requirements.txt
+        self._log_requirements()
+
+        # extra py files
+        self._log_extra_files()
+        self.logger.info("Done")
+
+        # log serialiser using a JoblibSerialiser
+        jl_serialiser = JoblibSerialiser()
+        self.experiment_logger.log_artifact(of / Constants.SERIALISER_FILE, jl_serialiser, object=self.serialiser)
 
     def _log_requirements(self) -> None:
         python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
