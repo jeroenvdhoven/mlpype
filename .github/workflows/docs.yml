@@ -1,4 +1,5 @@
 name: website
+run-name: ${{ github.ref_name }} documentation is being deployed
 
 # build the documentation whenever there are new commits on main
 on:
