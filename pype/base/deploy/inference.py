@@ -67,14 +67,16 @@ class Inferencer:
         Returns:
             Inferencer: The inference pipeline that can predict for new data.
         """
-        if serialiser is None:
-            serialiser = JoblibSerialiser()
-
         folder = folder.absolute()
         with open(folder / Constants.EXTRA_FILES, "r") as f:
             extra_files = json.load(f)["paths"]
 
         with switch_workspace(folder, extra_files):
+            if serialiser is None:
+                tmp_serialiser = JoblibSerialiser()
+                serialiser = tmp_serialiser.deserialise(folder / Constants.SERIALISER_FILE)
+            assert isinstance(serialiser, Serialiser), "Please provide a Serialiser!"
+
             model = Model.load(folder / Constants.MODEL_FOLDER)
             pipeline = serialiser.deserialise(folder / Constants.PIPELINE_FILE)
             input_type_checker = serialiser.deserialise(folder / Constants.INPUT_TYPE_CHECKER_FILE)

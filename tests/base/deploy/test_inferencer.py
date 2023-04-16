@@ -1,13 +1,14 @@
 from pathlib import Path
 from unittest.mock import MagicMock, call, mock_open, patch
 
-from pytest import fixture
+from pytest import fixture, mark
 
 from pype.base.constants import Constants
 from pype.base.data.dataset import DataSet
 from pype.base.data.dataset_source import DataSetSource
 from pype.base.deploy.inference import Inferencer
 from pype.base.experiment import Experiment
+from pype.base.serialiser import JoblibSerialiser
 from tests.shared_fixtures import dummy_experiment
 from tests.utils import get_dummy_data
 
@@ -21,30 +22,37 @@ def experiment_path(dummy_experiment: Experiment):
 
 
 class Test_Inferencer:
-    def test_from_folder(self):
+    @mark.parametrize(["name", "use_inferencer_directly"], [["without inferencer", False], ["with inferencer", True]])
+    def test_from_folder(self, name: str, use_inferencer_directly: bool):
         path = Path("something")
         abs_path = path.absolute()
 
         pipeline = MagicMock()
         inputs = MagicMock()
         outputs = MagicMock()
-        deserialised_values = [pipeline, inputs, outputs]
+        mocked_serialiser = MagicMock(spec=JoblibSerialiser)
+        mocked_serialiser.deserialise.side_effect = [pipeline, inputs, outputs]
 
         read_data = '{"paths": ["1", "2"]}'
         m_open = mock_open(read_data=read_data)
         with patch("pype.base.deploy.inference.Model.load") as mock_model_load, patch(
-            "pype.base.deploy.inference.JoblibSerialiser.deserialise", side_effect=deserialised_values
+            "pype.base.deploy.inference.JoblibSerialiser.deserialise", return_value=mocked_serialiser
         ) as mock_deserialise, patch("pype.base.deploy.inference.switch_workspace") as mock_switch, patch(
             "pype.base.deploy.inference.open", m_open
         ):
-            result = Inferencer.from_folder(path)
+            serialiser = mocked_serialiser if use_inferencer_directly else None
+            result = Inferencer.from_folder(path, serialiser=serialiser)
 
             m_open.assert_called_once_with(abs_path / Constants.EXTRA_FILES, "r")
 
             mock_switch.assert_called_once_with(abs_path, ["1", "2"])
             mock_model_load.assert_called_once_with(abs_path / Constants.MODEL_FOLDER)
 
-            mock_deserialise.assert_has_calls(
+            if use_inferencer_directly:
+                mock_deserialise.assert_not_called()
+            else:
+                mock_deserialise.assert_called_once_with(abs_path / Constants.SERIALISER_FILE)
+            mocked_serialiser.deserialise.assert_has_calls(
                 [
                     call(abs_path / Constants.PIPELINE_FILE),
                     call(abs_path / Constants.INPUT_TYPE_CHECKER_FILE),
