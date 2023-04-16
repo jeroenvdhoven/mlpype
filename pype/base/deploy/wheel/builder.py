@@ -13,7 +13,7 @@ from .extensions import WheelExtension
 
 BaseExtension = WheelExtension(
     "base",
-    functionality=[(Path(__file__).parent / "helpers" / "load_model.py", ["load_model"])],
+    functionality=[(Path(__file__).parent / "helpers" / "wheel_main.py", ["load_model"])],
     libraries=["pype.base"],
 )
 
@@ -103,7 +103,7 @@ class WheelBuilder:
 
             assert isinstance(self.extensions, list)
             for extension in self.extensions:
-                print(extension, extension.name)
+                print(f"Adding extension `{extension.name}`:", extension)
                 extension.extend(self.model_name, libraries, tmp_package_dir)
 
             requirements = '", "'.join(libraries)
