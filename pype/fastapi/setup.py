@@ -3,7 +3,7 @@ from typing import List
 from setuptools import find_namespace_packages, setup
 
 if __name__ == "__main__":
-    version = "0.2.1"
+    version = "0.3.0"
     deps: List[str] = [f"pype-base=={version}", "fastapi>=0.79.0"]
     dev_deps = ["uvicorn==0.18.2"]
     strict_deps = [s.replace(">=", "==") for s in deps]
