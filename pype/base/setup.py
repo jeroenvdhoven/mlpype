@@ -15,5 +15,5 @@ if __name__ == "__main__":
             "strict": strict_deps,
         },
         packages=find_namespace_packages(include=["pype.*"]),
-        version="0.2.1",
+        version="0.3.0",
     )
