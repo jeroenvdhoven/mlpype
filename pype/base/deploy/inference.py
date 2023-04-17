@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional, Type, Union
 
 from pype.base.constants import Constants
-from pype.base.data import DataSet, DataSetSource
+from pype.base.data import DataCatalog, DataSet
 from pype.base.experiment.experiment import Experiment
 from pype.base.model import Model
 from pype.base.pipeline import Pipeline
@@ -34,17 +34,17 @@ class Inferencer:
         self.input_type_checker = input_type_checker
         self.output_type_checker = output_type_checker
 
-    def predict(self, data: Union[DataSet, DataSetSource]) -> DataSet:
+    def predict(self, data: Union[DataSet, DataCatalog]) -> DataSet:
         """Predicts using the given data using the Pipeline and Model.
 
         Args:
-            data (Union[DataSet, DataSetSource]): The data to predict for.
+            data (Union[DataSet, DataCatalog]): The data to predict for.
 
         Returns:
             DataSet: The predictions from Model.
         """
         # TODO: inverse transformation after prediction
-        if isinstance(data, DataSetSource):
+        if isinstance(data, DataCatalog):
             data = data.read()
         self.input_type_checker.transform(data)
         transformed = self.pipeline.transform(data, is_inference=True)

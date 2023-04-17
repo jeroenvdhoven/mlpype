@@ -23,7 +23,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from pype.base.data import DataSetSource
+from pype.base.data import DataCatalog
 from pype.base.deploy.inference import Inferencer
 from pype.base.evaluate.evaluator import Evaluator
 from pype.base.experiment.experiment import Experiment
@@ -69,11 +69,11 @@ def _make_data() -> Iterable[np.ndarray]:
 train_x, test_x, train_y, test_y = _make_data()
 
 datasets = {
-    "train": DataSetSource(
+    "train": DataCatalog(
         x=DataFrameSource(train_x),
         y=DataFrameSource(train_y),
     ),
-    "test": DataSetSource(
+    "test": DataCatalog(
         x=DataFrameSource(test_x),
         y=DataFrameSource(test_y),
     ),
@@ -129,7 +129,7 @@ folder = Path("outputs")
 inferencer = Inferencer.from_folder(folder)
 
 train_x, test_x, train_y, test_y = _make_data()
-test_data = DataSetSource(
+test_data = DataCatalog(
     x=DataFrameSource(test_x),
 )
 result = inferencer.predict(test_data)
