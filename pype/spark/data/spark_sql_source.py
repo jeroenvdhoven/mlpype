@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql import SparkSession
 
@@ -7,8 +9,8 @@ from pype.base.data.data_source import DataSource
 class SparkSqlSource(DataSource[SparkDataFrame]):
     def __init__(
         self,
-        spark_session: SparkSession,
         query: str,
+        spark_session: Optional[SparkSession] = None,
     ) -> None:
         """Use Spark SQL as an input data source.
 
@@ -18,6 +20,8 @@ class SparkSqlSource(DataSource[SparkDataFrame]):
         """
         super().__init__()
         self.query = query
+        if spark_session is None:
+            spark_session = SparkSession.getActiveSession()
         self.spark_session = spark_session
 
     def read(self) -> SparkDataFrame:

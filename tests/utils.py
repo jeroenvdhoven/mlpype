@@ -4,8 +4,8 @@ from typing import Any, List, Optional, Tuple, Type, Union
 
 from data.data_sink import DataSink
 
+from pype.base.data.data_catalog import DataCatalog
 from pype.base.data.data_source import DataSource
-from pype.base.data.dataset_source import DataSetSource
 from pype.base.evaluate.evaluator import Evaluator
 from pype.base.model import Model
 from pype.base.pipeline.operator import Operator
@@ -79,8 +79,8 @@ class DummyDataSource(DataSource[List[float]]):
         return self.l == __o.l
 
 
-def get_dummy_data(n: int, x_offset: int, y_offset: int) -> DataSetSource:
-    return DataSetSource(
+def get_dummy_data(n: int, x_offset: int, y_offset: int) -> DataCatalog:
+    return DataCatalog(
         x=DummyDataSource([i + x_offset for i in range(n)]),
         y=DummyDataSource([i + y_offset for i in range(n)]),
     )
