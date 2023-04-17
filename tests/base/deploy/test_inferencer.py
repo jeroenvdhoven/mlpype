@@ -4,8 +4,7 @@ from unittest.mock import MagicMock, call, mock_open, patch
 from pytest import fixture, mark
 
 from pype.base.constants import Constants
-from pype.base.data.dataset import DataSet
-from pype.base.data.dataset_source import DataSetSource
+from pype.base.data import DataCatalog, DataSet
 from pype.base.deploy.inference import Inferencer
 from pype.base.experiment import Experiment
 from pype.base.serialiser import JoblibSerialiser
@@ -110,7 +109,7 @@ class Test_Inferencer:
         pipeline = MagicMock()
         inputs = MagicMock()
         outputs = MagicMock()
-        dataset = MagicMock(spec=DataSetSource)
+        dataset = MagicMock(spec=DataCatalog)
 
         inferencer = Inferencer(model, pipeline, inputs, outputs)
         result = inferencer.predict(dataset)

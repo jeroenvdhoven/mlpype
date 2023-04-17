@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union
 
 from pype.base.constants import Constants
-from pype.base.data.dataset_source import DataSetSource
+from pype.base.data.data_catalog import DataCatalog
 from pype.base.evaluate import BaseEvaluator
 from pype.base.experiment.argument_parsing import add_args_to_parser_for_pipeline
 from pype.base.logger import ExperimentLogger
@@ -22,7 +22,7 @@ from pype.base.utils.parsing import get_args_for_prefix
 class Experiment:
     def __init__(
         self,
-        data_sources: Dict[str, DataSetSource],
+        data_sources: Dict[str, DataCatalog],
         model: Model,
         pipeline: Pipeline,
         evaluator: BaseEvaluator,
@@ -42,7 +42,7 @@ class Experiment:
                 - `pipeline__<pipe_name>__<arg> for pipeline parameters.
 
         Args:
-            data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
+            data_sources (Dict[str, DataCatalog]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model (Model): The Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
@@ -238,7 +238,7 @@ run here for logging purposes. Consider using the `from_command_line` or
     @classmethod
     def from_dictionary(
         cls,
-        data_sources: Dict[str, DataSetSource],
+        data_sources: Dict[str, DataCatalog],
         model_class: Type[Model],
         pipeline: Pipeline,
         evaluator: BaseEvaluator,
@@ -256,7 +256,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         """Creates an Experiment from a dictionary with parameters.
 
         Args:
-            data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
+            data_sources (Dict[str, DataCatalog]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
@@ -303,7 +303,7 @@ run here for logging purposes. Consider using the `from_command_line` or
     @classmethod
     def from_command_line(
         cls,
-        data_sources: Dict[str, DataSetSource],
+        data_sources: Dict[str, DataCatalog],
         model_class: Type[Model],
         pipeline: Pipeline,
         evaluator: BaseEvaluator,
@@ -321,7 +321,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         """Automatically initialises an Experiment from command line arguments.
 
         Args:
-            data_sources (Dict[str, DataSetSource]): The DataSets to use, in DataSource form.
+            data_sources (Dict[str, DataCatalog]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.

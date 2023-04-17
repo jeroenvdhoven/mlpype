@@ -10,7 +10,7 @@ from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import StandardScaler, VectorAssembler
 from pyspark.sql import SparkSession
 
-from pype.base.data import DataSetSource
+from pype.base.data import DataCatalog
 from pype.base.deploy import Inferencer
 from pype.base.experiment import Experiment
 from pype.base.logger import LocalLogger
@@ -25,7 +25,7 @@ from pype.spark.serialisation.spark_serialiser import SparkSerialiser
 ss = SparkSession.builder.getOrCreate()
 
 data = {
-    "train": DataSetSource(
+    "train": DataCatalog(
         x=SparkDataFrameSource(ss.createDataFrame(pd.DataFrame({"a": [1, 2, 3.0], "target": [2, 3, 4.0]}))),
         helper=SparkDataFrameSource(ss.createDataFrame(pd.DataFrame({"a": [2, 3, 4]}))),
     )
