@@ -10,7 +10,10 @@ from pytest import fixture, mark
 from pype.base.deploy.wheel import WheelBuilder, WheelExtension
 from pype.base.deploy.wheel.builder import BaseExtension
 from pype.base.experiment.experiment import Experiment
+from tests.shared_fixtures import dummy_experiment
 from tests.utils import pytest_assert
+
+dummy_experiment
 
 
 @fixture(scope="module")
