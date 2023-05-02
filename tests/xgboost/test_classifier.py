@@ -3,9 +3,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data.dataset import DataSet
 from pytest import fixture
 
+from pype.base.data.dataset import DataSet
 from pype.xgboost.model import XGBClassifierModel
 
 

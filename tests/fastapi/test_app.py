@@ -4,11 +4,11 @@ from pathlib import Path
 from typing import Dict
 from unittest.mock import MagicMock, call, patch
 
-from data.data_sink import DataSink
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pytest import fixture
 
+from pype.base.data.data_sink import DataSink
 from pype.base.data.dataset import DataSet
 from pype.base.deploy.inference import Inferencer
 from pype.base.experiment import Experiment
