@@ -17,14 +17,14 @@ host-pypi-local:
 build-and-host-local: clean build host-pypi-local
 
 # Test and coverage commands
-test-without-spark:
-	python -m pytest -m "not spark"
+test-unit:
+	python -m pytest -m "not spark and not wheel"
 
 test-all:
 	python -m pytest
 
-coverage-without-spark:
-	python -m pytest -m "not spark" --cov-report term-missing --cov pype -ra
+coverage-unit:
+	python -m pytest -m "not spark and not wheel" --cov-report term-missing --cov pype -ra
 
 coverage-all:
 	python -m pytest --cov-report term-missing --cov pype -ra

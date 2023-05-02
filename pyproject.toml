@@ -14,11 +14,13 @@ known_third_party = "kedro"
 [tool.pytest.ini_options]
 markers = [
     "end_to_end: End to end test, tends to be slow.",
-    "spark: uses Spark, will take extra time to set up."
+    "spark: uses Spark, will take extra time to set up.",
+    "wheel: will do wheel integrations, will take extra time"
 ]
 filterwarnings = [
     'ignore:Call to deprecated create function',  # Some tensorboard internal stuff
-]
+    'ignore:Creating a LegacyVersion has been deprecated',  # Some pip internal stuff
+]   
 
 [tool.black]
 line-length = 120
