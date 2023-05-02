@@ -15,10 +15,10 @@ function install_package () {
         echo "Installing $1 from host $2"
         ip=`echo $2 or grep -oE [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`
         echo "IP: $ip"
-        pip install -i $2 $1 --trusted-host $ip
+        pip install -i $2 $1 --trusted-host $ip --upgrade
     else
         echo "Installing ${package} from local machine"
-        pip install $3 "${package}[dev]"
+        pip install $3 "${package}[dev]"  --upgrade
     fi;
 }
 
