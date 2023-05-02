@@ -2,9 +2,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, List, Optional, Tuple, Type, Union
 
-from data.data_sink import DataSink
-
 from pype.base.data.data_catalog import DataCatalog
+from pype.base.data.data_sink import DataSink
 from pype.base.data.data_source import DataSource
 from pype.base.evaluate.evaluator import Evaluator
 from pype.base.model import Model
