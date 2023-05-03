@@ -1,3 +1,14 @@
+[project]
+name = "pype"
+authors = [
+    {name = "Jeroen van den Hoven"},
+]
+description = "Standardise model training across libraries"
+readme = "README.md"
+requires-python = ">=3.8"
+version = "0.4.0"
+dynamic = ["license"]
+
 [tool.kedro]
 package_name = "data_cube_pipeline"
 project_name = "Data Cube Pipeline"

@@ -11,7 +11,7 @@ clean:
 
 host-pypi-local:
 	mkdir -p packages
-	pypi-server run -p 8080 packages -a . -P . &
+	pypi-server run -p 8080 packages -a . -P . --overwrite &
 	twine upload --repository-url http://0.0.0.0:8080 dist/* -u '' -p ''
 
 build-and-host-local: clean build host-pypi-local

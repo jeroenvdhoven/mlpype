@@ -14,6 +14,8 @@ then
     packages=($(ls pype))
 fi
 
+python -m build . --outdir $output_dir
+
 # Build all requested packages.
 for package in "${packages[@]}"
 do

@@ -24,7 +24,12 @@ function install_package () {
         fi
         
         echo "Installing ${package} from local machine"
-        pip install $3 "${package}[dev]"  --upgrade
+        if [ $3 == 1 ];
+        then
+            pip install -e "${package}[dev]"  --upgrade
+        else
+            pip install "${package}[dev]"  --upgrade
+        fi;        
     fi;
 }
 
@@ -41,23 +46,15 @@ editable="${editable:-1}"
 
 echo "Editable state: $editable, host: $host"
 
-# Set editable
-if [ $editable == 1 ];
-then
-    editable_string=" -e "
-else
-    editable_string=""
-fi;
-
 # Install priority packages first: base and sklearn. These are packages that others depend on.
 # Please note, that especially tensorflow may run into issues. On some Mac machines (M1 versions)
-# the result installation may fail. It is recommended in those cases to first manually install
+# the installation may fail. It is recommended in those cases to first manually install
 # tensorflow, then install all pype packages.
 priority_packages=( "pype" "pype.base" "pype.sklearn" )
 for priority_package in "${priority_packages[@]}"
 do
     echo "Priority installing: ${priority_package}"
-    install_package $priority_package $host $editable_string
+    install_package $priority_package $host $editable
 done
 
 # Install all remaining packages.
@@ -68,6 +65,6 @@ do
     if [[ ! " ${priority_packages[*]} " =~ " ${package_path} " ]]; then
         # only install if package wasn't priority package
         echo "Installing: ${package_path}"
-        install_package $package_path $host $editable_string
+        install_package $package_path $host $editable
     fi
 done
