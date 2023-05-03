@@ -1,14 +1,14 @@
 from setuptools import find_namespace_packages, setup
 
 if __name__ == "__main__":
-    version = "0.3.0"
+    version = "0.4.0"
 
     deps = [
         f"pype-base=={version}",
         # on mac, it is recommended to use conda/mamba or source to install tensorflow
-        "tensorflow>=2.9.1",
+        "tensorflow>=2.12",
         "numpy>=1.23.0",
-        "protobuf>=3.20",
+        "protobuf>=3.20.3",
     ]
     strict_deps = [s.replace(">=", "==") for s in deps]
 
