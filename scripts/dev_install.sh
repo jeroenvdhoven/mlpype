@@ -5,9 +5,6 @@ function install_package () {
     # 1: package name
     # 2: host
     # 3: editable. Ignored if host is set.
-    raw_name=$1
-    package="${raw_name/.//}"
-
     echo "host: $2"
     
     if [ $2 != "local" ];
@@ -17,6 +14,15 @@ function install_package () {
         echo "IP: $ip"
         pip install -i $2 $1 --trusted-host $ip --upgrade
     else
+        # make sure we use the right path for local installation
+        if [ $1 == "pype" ];
+        then
+            package="."
+        else
+            raw_name=$1
+            package="${raw_name/.//}"
+        fi
+        
         echo "Installing ${package} from local machine"
         pip install $3 "${package}[dev]"  --upgrade
     fi;
@@ -47,7 +53,7 @@ fi;
 # Please note, that especially tensorflow may run into issues. On some Mac machines (M1 versions)
 # the result installation may fail. It is recommended in those cases to first manually install
 # tensorflow, then install all pype packages.
-priority_packages=( "pype.base" "pype.sklearn" )
+priority_packages=( "pype" "pype.base" "pype.sklearn" )
 for priority_package in "${priority_packages[@]}"
 do
     echo "Priority installing: ${priority_package}"
