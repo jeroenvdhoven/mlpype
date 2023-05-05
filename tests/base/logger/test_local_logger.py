@@ -2,7 +2,7 @@
 
 from unittest.mock import call, patch
 
-from pype.base.logger.local_logger import LocalLogger
+from mlpype.base.logger.local_logger import LocalLogger
 
 
 class Test_local_logger:
@@ -11,7 +11,7 @@ class Test_local_logger:
         logger = LocalLogger(ws)
         metrics = {"a": 2, "b4": 9}
 
-        with patch("pype.base.logger.local_logger.print") as mock_print:
+        with patch("mlpype.base.logger.local_logger.print") as mock_print:
             logger._log_metrics(metrics)
 
             mock_print.assert_has_calls(
@@ -26,7 +26,7 @@ class Test_local_logger:
         logger = LocalLogger(ws)
         parameters = {"a": 2, "b4": 9}
 
-        with patch("pype.base.logger.local_logger.print") as mock_print:
+        with patch("mlpype.base.logger.local_logger.print") as mock_print:
             logger.log_parameters(parameters)
 
             mock_print.assert_has_calls(

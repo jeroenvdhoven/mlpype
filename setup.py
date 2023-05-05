@@ -1,11 +1,11 @@
 from setuptools import find_namespace_packages, setup
 
 setup(
-    name="pype",
-    packages=find_namespace_packages(include=["pype.*"]),
+    name="mlpype",
+    packages=find_namespace_packages(include=["mlpype.*"]),
     python_requires=">=3.8",
     version="0.4.0",
     license="MIT",
     author="Jeroen van den Hoven",
-    url="https://github.com/jeroenvdhoven/pype",
+    url="https://github.com/jeroenvdhoven/mlpype",
 )

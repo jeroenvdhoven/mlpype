@@ -1,7 +1,7 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from pype.sklearn.data.data_frame_source import DataFrameSource
+from mlpype.sklearn.data.data_frame_source import DataFrameSource
 
 
 def test_DataFrameSource():

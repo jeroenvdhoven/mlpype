@@ -38,7 +38,7 @@ jobs:
         run: make pre-commit-run
 
       - name: Test and coverage
-        run: python -m pytest -m "not wheel" --cov-report term-missing --cov pype -ra --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+        run: python -m pytest -m "not wheel" --cov-report term-missing --cov mlpype -ra --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       
       - name: Upload test/covarage test results
         uses: actions/upload-artifact@v3

@@ -6,10 +6,10 @@ from pandas.testing import assert_frame_equal
 from pyspark.ml.feature import StandardScaler, VectorAssembler
 from pyspark.sql import SparkSession
 
-from pype.base.data import DataSet
-from pype.base.pipeline import Pipeline
-from pype.spark.pipeline import SparkPipe
-from pype.spark.serialisation import SparkSerialiser
+from mlpype.base.data import DataSet
+from mlpype.base.pipeline import Pipeline
+from mlpype.spark.pipeline import SparkPipe
+from mlpype.spark.serialisation import SparkSerialiser
 from tests.spark.utils import spark_session
 
 spark_session

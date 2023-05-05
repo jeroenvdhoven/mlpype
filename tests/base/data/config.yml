@@ -1,13 +1,13 @@
 pandas_sql:
   # please make sure the class is an importable callable
   # this can be a class constructor or a function.
-  callable: pype.sklearn.data.SqlSource
+  callable: mlpype.sklearn.data.SqlSource
   args:
     sql: select * from database.table
     con: http://<your database url>
 dataframe:
   # This will create a fixed DataFrame to read using this source.
-  callable: pype.sklearn.data.DataFrameSource
+  callable: mlpype.sklearn.data.DataFrameSource
   args:
     df:
       # We can instantiate complex objects in the same way 

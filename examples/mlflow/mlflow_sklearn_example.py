@@ -4,7 +4,7 @@ We do not guarantee results if you use `python examples/mlflow/mlflow_sklearn_ex
 You can use command line arguments in this example, such as:
 python -m examples.mlflow.mlflow_sklearn_example --model__fit_intercept=False --pipeline__impute__verbose 0
 
-This requires the pype.sklearn package to also be installed.
+This requires the mlpype.sklearn package to also be installed.
 
 Please make sure mlflow is running locally before starting this script, e.g. by using `mlflow ui`
 If you are running this example locally, make sure you run this from the top level directory.
@@ -23,19 +23,19 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from pype.base.data import DataCatalog
-from pype.base.deploy.inference import Inferencer
-from pype.base.evaluate.evaluator import Evaluator
-from pype.base.experiment.experiment import Experiment
-from pype.base.pipeline.pipe import Pipe
-from pype.base.pipeline.pipeline import Pipeline
-from pype.base.pipeline.type_checker import TypeCheckerPipe
-from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
-from pype.mlflow.logger.mlflow_logger import MlflowLogger
-from pype.sklearn.data.data_frame_source import DataFrameSource
-from pype.sklearn.model.logistic_regression_model import LogisticRegressionModel
-from pype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
-from pype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
+from mlpype.base.data import DataCatalog
+from mlpype.base.deploy.inference import Inferencer
+from mlpype.base.evaluate.evaluator import Evaluator
+from mlpype.base.experiment.experiment import Experiment
+from mlpype.base.pipeline.pipe import Pipe
+from mlpype.base.pipeline.pipeline import Pipeline
+from mlpype.base.pipeline.type_checker import TypeCheckerPipe
+from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
+from mlpype.mlflow.logger.mlflow_logger import MlflowLogger
+from mlpype.sklearn.data.data_frame_source import DataFrameSource
+from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
+from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
 # %% [markdown]
 # Try a run with sklearn

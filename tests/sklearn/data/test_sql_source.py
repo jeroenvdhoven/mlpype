@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from pype.sklearn.data import SqlSource
+from mlpype.sklearn.data import SqlSource
 
 
 class TestSqlSource:
@@ -10,7 +10,7 @@ class TestSqlSource:
         extra = [4, 5]
         source = SqlSource(query, conn, 1, 2, extra=extra)
 
-        with patch("pype.sklearn.data.sql_source.pd.read_sql") as mock_read_sql:
+        with patch("mlpype.sklearn.data.sql_source.pd.read_sql") as mock_read_sql:
             result = source.read()
 
         mock_read_sql.assert_called_once_with(1, 2, sql=query, con=conn, extra=extra)

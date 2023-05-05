@@ -9,8 +9,8 @@ from pyspark.ml.feature import MinMaxScaler, VectorAssembler
 from pyspark.sql import SparkSession
 from pytest import fixture
 
-from pype.base.data.dataset import DataSet
-from pype.spark.pipeline.spark_pipe import SparkPipe
+from mlpype.base.data.dataset import DataSet
+from mlpype.spark.pipeline.spark_pipe import SparkPipe
 from tests.spark.utils import spark_session
 from tests.utils import pytest_assert
 

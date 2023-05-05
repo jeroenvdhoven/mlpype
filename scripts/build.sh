@@ -11,7 +11,7 @@ done
 output_dir="${editable:-dist}"
 if [ -z $packages ]
 then
-    packages=($(ls pype))
+    packages=($(ls mlpype))
 fi
 
 python -m build . --outdir $output_dir
@@ -19,7 +19,7 @@ python -m build . --outdir $output_dir
 # Build all requested packages.
 for package in "${packages[@]}"
 do
-    package_path="pype/${package}"
+    package_path="mlpype/${package}"
     echo "Building: ${package_path}"
     # install_package $package_path $host $editable_string
     python -m build $package_path --outdir $output_dir

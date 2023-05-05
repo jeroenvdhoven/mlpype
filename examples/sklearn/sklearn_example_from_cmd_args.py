@@ -13,19 +13,19 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from pype.base.data import DataCatalog
-from pype.base.deploy.inference import Inferencer
-from pype.base.evaluate.evaluator import Evaluator
-from pype.base.experiment.experiment import Experiment
-from pype.base.logger.local_logger import LocalLogger
-from pype.base.pipeline.pipe import Pipe
-from pype.base.pipeline.pipeline import Pipeline
-from pype.base.pipeline.type_checker import TypeCheckerPipe
-from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
-from pype.sklearn.data.data_frame_source import DataFrameSource
-from pype.sklearn.model.logistic_regression_model import LogisticRegressionModel
-from pype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
-from pype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
+from mlpype.base.data import DataCatalog
+from mlpype.base.deploy.inference import Inferencer
+from mlpype.base.evaluate.evaluator import Evaluator
+from mlpype.base.experiment.experiment import Experiment
+from mlpype.base.logger.local_logger import LocalLogger
+from mlpype.base.pipeline.pipe import Pipe
+from mlpype.base.pipeline.pipeline import Pipeline
+from mlpype.base.pipeline.type_checker import TypeCheckerPipe
+from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
+from mlpype.sklearn.data.data_frame_source import DataFrameSource
+from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
+from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
 
 #  Try a run with sklearn and argument reading

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
-from pype.mlflow.deploy.load_experiment import (
+from mlpype.mlflow.deploy.load_experiment import (
     _download_and_load,
     load_experiment_from_mlflow,
 )
@@ -28,8 +28,8 @@ class Test_load_experiment_from_mlflow:
         url = "some_url"
         name = "some name"
         run_id = "jkldsf9032sd"
-        with patch("pype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
-            "pype.mlflow.deploy.load_experiment._download_and_load"
+        with patch("mlpype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
+            "mlpype.mlflow.deploy.load_experiment._download_and_load"
         ):
             # experiment not found
             mock_get_experiment_by_name.return_value = None
@@ -42,9 +42,9 @@ class Test_load_experiment_from_mlflow:
         name = "some name"
         run_id = "jkldsf9032sd"
         experiment_id = "238jlkdfala932la@@"
-        with patch("pype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
-            "pype.mlflow.deploy.load_experiment.list_run_infos"
-        ) as mock_list_run_infos, patch("pype.mlflow.deploy.load_experiment._download_and_load"):
+        with patch("mlpype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
+            "mlpype.mlflow.deploy.load_experiment.list_run_infos"
+        ) as mock_list_run_infos, patch("mlpype.mlflow.deploy.load_experiment._download_and_load"):
             # experiment not found
             mock_get_experiment_by_name.return_value = dummy_experiment(experiment_id)
             mock_list_run_infos.return_value = [dummy_run_info("others")]
@@ -58,12 +58,12 @@ class Test_load_experiment_from_mlflow:
         name = "some name"
         run_id = "jkldsf9032sd"
         experiment_id = "238jlkdfala932la@@"
-        with patch("pype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
-            "pype.mlflow.deploy.load_experiment.list_run_infos"
+        with patch("mlpype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
+            "mlpype.mlflow.deploy.load_experiment.list_run_infos"
         ) as mock_list_run_infos, patch(
-            "pype.mlflow.deploy.load_experiment.set_tracking_uri"
+            "mlpype.mlflow.deploy.load_experiment.set_tracking_uri"
         ) as mock_set_tracking_uri, patch(
-            "pype.mlflow.deploy.load_experiment._download_and_load"
+            "mlpype.mlflow.deploy.load_experiment._download_and_load"
         ) as mock_download:
             mock_get_experiment_by_name.return_value = dummy_experiment(experiment_id)
             mock_list_run_infos.return_value = [dummy_run_info(run_id), dummy_run_info("others")]
@@ -82,14 +82,14 @@ class Test_load_experiment_from_mlflow:
         name = "some name"
         run_id = "jkldsf9032sd"
         experiment_id = "238jlkdfala932la@@"
-        with patch("pype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
-            "pype.mlflow.deploy.load_experiment.list_run_infos"
+        with patch("mlpype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
+            "mlpype.mlflow.deploy.load_experiment.list_run_infos"
         ) as mock_list_run_infos, patch(
-            "pype.mlflow.deploy.load_experiment.set_tracking_uri"
+            "mlpype.mlflow.deploy.load_experiment.set_tracking_uri"
         ) as mock_set_tracking_uri, patch(
-            "pype.mlflow.deploy.load_experiment._download_and_load"
+            "mlpype.mlflow.deploy.load_experiment._download_and_load"
         ) as mock_download, patch(
-            "pype.mlflow.deploy.load_experiment.TemporaryDirectory"
+            "mlpype.mlflow.deploy.load_experiment.TemporaryDirectory"
         ) as mock_tmp_dir:
             tmp_path = "tmp_path"
             mock_tmp_dir.return_value.__enter__.return_value = tmp_path
@@ -112,8 +112,8 @@ class Test_load_experiment_from_mlflow:
 def test_download_and_load():
     run_id = "run_id"
     directory = Path("folder_with_model")
-    with patch("pype.mlflow.deploy.load_experiment.download_artifacts") as mock_download, patch(
-        "pype.mlflow.deploy.load_experiment.Inferencer.from_folder"
+    with patch("mlpype.mlflow.deploy.load_experiment.download_artifacts") as mock_download, patch(
+        "mlpype.mlflow.deploy.load_experiment.Inferencer.from_folder"
     ) as mock_load:
         result = _download_and_load(run_id=run_id, directory=directory)
 

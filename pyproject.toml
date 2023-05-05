@@ -1,5 +1,5 @@
 [project]
-name = "pype"
+name = "mlpype"
 authors = [
     {name = "Jeroen van den Hoven"},
 ]
@@ -48,7 +48,7 @@ exclude = '''
 '''
 
 [tool.mypy]
-mypy_path = "pype"
+mypy_path = "mlpype"
 ignore_missing_imports = true
 disallow_untyped_defs = true
 python_version = "3.8"

@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from pype.spark.data import SparkSqlSource
+from mlpype.spark.data import SparkSqlSource
 
 
 class Test_SparkSqlSource:
@@ -17,7 +17,7 @@ class Test_SparkSqlSource:
     def test_without_session(self):
         query = "select * from table"
 
-        with patch("pype.spark.data.spark_sql_source.SparkSession.getActiveSession") as mock_active_session:
+        with patch("mlpype.spark.data.spark_sql_source.SparkSession.getActiveSession") as mock_active_session:
             source = SparkSqlSource(query)
             result = source.read()
 

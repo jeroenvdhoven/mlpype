@@ -10,9 +10,9 @@ from keras.losses import MeanAbsoluteError
 from keras.optimizers import Adam
 from pytest import mark
 
-from pype.base.data import DataSet
-from pype.base.model import Model as PypeModel
-from pype.tensorflow.model import KerasPypeModel, MLPKeras
+from mlpype.base.data import DataSet
+from mlpype.base.model import Model as mlpypeModel
+from mlpype.tensorflow.model import KerasPypeModel, MLPKeras
 
 
 class DummyKerasModel(KerasPypeModel[MLPKeras]):
@@ -20,7 +20,7 @@ class DummyKerasModel(KerasPypeModel[MLPKeras]):
         return MLPKeras(10, 2, 2)
 
 
-class Test_keras_pype_model:
+class Test_keras_mlpype_model:
     # tested through MLPPypeModel since that can be instantiated.
     @mark.parametrize(
         ["model"],
@@ -32,7 +32,7 @@ class Test_keras_pype_model:
     def test_init(self, model):
         arguments = {"a": None}
         with patch.object(DummyKerasModel, "_init_model") as mock_init:
-            pype_model = DummyKerasModel(["x"], ["y"], MagicMock(), MagicMock(), model=model, **arguments)
+            mlpype_model = DummyKerasModel(["x"], ["y"], MagicMock(), MagicMock(), model=model, **arguments)
 
             if model is None:
                 mock_init.assert_called_once_with(arguments)
@@ -46,10 +46,10 @@ class Test_keras_pype_model:
 
     def test_set_seed(self):
         seed = 3
-        pype_model = DummyKerasModel(["x"], ["y"], MagicMock(), MagicMock(), seed=seed)
+        mlpype_model = DummyKerasModel(["x"], ["y"], MagicMock(), MagicMock(), seed=seed)
 
-        with patch("pype.tensorflow.model.keras_pype_model.set_seed") as mock_seed:
-            pype_model.set_seed()
+        with patch("mlpype.tensorflow.model.keras_pype_model.set_seed") as mock_seed:
+            mlpype_model.set_seed()
             mock_seed.assert_called_once_with(seed)
 
     def test_fit(self):
@@ -57,13 +57,13 @@ class Test_keras_pype_model:
         loss = MagicMock()
         optimizer_class = MagicMock()
         metrics = [MagicMock(), MagicMock()]
-        pype_model = DummyKerasModel(
+        mlpype_model = DummyKerasModel(
             ["x"], ["y"], loss=loss, optimizer_class=optimizer_class, model=model, metrics=metrics
         )
 
         x = MagicMock()
         y = MagicMock()
-        pype_model._fit(x, y)
+        mlpype_model._fit(x, y)
 
         model.compile.assert_called_once_with(optimizer=optimizer_class.return_value, loss=loss, metrics=metrics)
 
@@ -73,11 +73,11 @@ class Test_keras_pype_model:
         model = MagicMock()
         loss = MagicMock()
         optimizer_class = MagicMock()
-        pype_model = DummyKerasModel(["x"], ["y"], loss=loss, optimizer_class=optimizer_class, model=model)
+        mlpype_model = DummyKerasModel(["x"], ["y"], loss=loss, optimizer_class=optimizer_class, model=model)
 
         x = MagicMock()
         y = MagicMock()
-        pype_model._transform(x, y)
+        mlpype_model._transform(x, y)
 
         model.assert_called_once_with(x, y)
 
@@ -92,12 +92,12 @@ class Test_keras_pype_model:
 
         try:
             model = MLPKeras(layer_size=20, n_layers=3, output_size=1)
-            pype_model = DummyKerasModel(["x"], ["y"], loss, Adam, model=model)
+            mlpype_model = DummyKerasModel(["x"], ["y"], loss, Adam, model=model)
 
-            pype_model.fit(ds)
-            initial_result = pype_model.transform(ds)
+            mlpype_model.fit(ds)
+            initial_result = mlpype_model.transform(ds)
 
-            pype_model.save(folder)
+            mlpype_model.save(folder)
 
             loaded = DummyKerasModel.load(folder)
             loaded_result = loaded.transform(ds)
@@ -109,7 +109,7 @@ class Test_keras_pype_model:
     def test_get_parameters(self):
         parser = MagicMock()
 
-        with patch("pype.tensorflow.model.keras_pype_model.add_args_to_parser_for_class") as mock_args:
+        with patch("mlpype.tensorflow.model.keras_pype_model.add_args_to_parser_for_class") as mock_args:
             DummyKerasModel.get_parameters(parser)
 
             mock_args.assert_has_calls(
@@ -119,7 +119,7 @@ class Test_keras_pype_model:
                         parser,
                         DummyKerasModel,
                         "model",
-                        [PypeModel],
+                        [mlpypeModel],
                         excluded_args=["seed", "inputs", "outputs", "model", "loss", "optimizer_class"],
                     ),
                 ]
