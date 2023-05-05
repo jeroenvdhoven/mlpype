@@ -2,6 +2,9 @@
 dev-install:
 	./scripts/dev_install.sh -e 1
 
+local-install:
+	./scripts/dev_install.sh
+
 # To test if packages can be build
 build:
 	./scripts/build.sh

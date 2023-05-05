@@ -29,7 +29,7 @@ jobs:
           hadoop-version: '3.2'
 
       - name: Install dependencies
-        run: make dev-install
+        run: make local-install
 
       - name: Install pre-commit
         run: make pre-commit-install

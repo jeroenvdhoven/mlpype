@@ -17,7 +17,7 @@ jobs:
           python-version: 3.8
 
       - name: Install dependencies
-        run: make dev-install
+        run: make local-install
 
       - name: Build src
         run: make build
