@@ -26,9 +26,9 @@ function install_package () {
         echo "Installing ${package} from local machine"
         if [ $3 == 1 ];
         then
-            pip install -e "${package}[dev]"  --upgrade
+            pip install -e "${package}[dev,strict]"  --upgrade
         else
-            pip install "${package}[dev]"  --upgrade
+            pip install "${package}[dev,strict]"  --upgrade
         fi;        
     fi;
 }
