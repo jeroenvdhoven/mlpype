@@ -2,8 +2,8 @@ from unittest.mock import MagicMock
 
 from pytest import fixture
 
-from pype.base.data import DataSet
-from pype.base.evaluate.evaluator import Evaluator
+from mlpype.base.data import DataSet
+from mlpype.base.evaluate.evaluator import Evaluator
 
 
 class Test_Evaluator:

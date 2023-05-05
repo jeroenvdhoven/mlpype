@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, call, patch
 
 from pytest import mark
 
-from pype.base.experiment.argument_parsing import (
+from mlpype.base.experiment.argument_parsing import (
     _convert_bool,
     _get_conversion_function,
     _parse_docs_to_type_args,
@@ -16,8 +16,8 @@ from pype.base.experiment.argument_parsing import (
     add_args_to_parser_for_pipeline,
     add_argument,
 )
-from pype.base.pipeline.pipe import Pipe
-from pype.base.pipeline.pipeline import Pipeline
+from mlpype.base.pipeline.pipe import Pipe
+from mlpype.base.pipeline.pipeline import Pipeline
 from tests.utils import pytest_assert
 
 
@@ -173,7 +173,7 @@ class Test_add_argument:
         default = "some value"
         class_ = MagicMock
 
-        with patch("pype.base.experiment.argument_parsing.warnings.warn") as mock_warn:
+        with patch("mlpype.base.experiment.argument_parsing.warnings.warn") as mock_warn:
             add_argument(parser, name, prefix, class_, is_required=False, default=default)
         parser.add_argument.assert_not_called()
         mock_warn.assert_called_once_with(
@@ -423,7 +423,7 @@ class Test_add_args_to_parser_for_function:
         prefix = "prefix"
         exc = ["a different one"]
 
-        with patch("pype.base.experiment.argument_parsing.add_argument") as mock_add:
+        with patch("mlpype.base.experiment.argument_parsing.add_argument") as mock_add:
             add_args_to_parser_for_function(parser, self.func_1, prefix=prefix, excluded=exc)
 
             mock_add.assert_has_calls(
@@ -442,7 +442,7 @@ class Test_add_args_to_parser_for_function:
         exc = ["a different one"]
         cda = {"c": str, "d": int}
 
-        with patch("pype.base.experiment.argument_parsing.add_argument") as mock_add:
+        with patch("mlpype.base.experiment.argument_parsing.add_argument") as mock_add:
             add_args_to_parser_for_function(parser, self.func_1, prefix=prefix, excluded=exc, class_docstring_args=cda)
 
             mock_add.assert_has_calls(
@@ -473,9 +473,13 @@ class Test_add_args_to_parser_for_class:
         parser = MagicMock()
         prefix = "prefix"
 
-        with patch("pype.base.experiment.argument_parsing.add_args_to_parser_for_function") as mock_add_function, patch(
-            "pype.base.experiment.argument_parsing.add_args_to_parser_for_class"
-        ) as mock_add_class, patch("pype.base.experiment.argument_parsing._parse_docs_to_type_args") as mock_parse:
+        with patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_function"
+        ) as mock_add_function, patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_class"
+        ) as mock_add_class, patch(
+            "mlpype.base.experiment.argument_parsing._parse_docs_to_type_args"
+        ) as mock_parse:
             add_args_to_parser_for_class(parser, self.A, prefix=prefix, excluded_superclasses=[])
 
             mock_add_function.assert_called_once_with(
@@ -487,10 +491,10 @@ class Test_add_args_to_parser_for_class:
         parser = MagicMock()
         prefix = "prefix"
 
-        with patch("pype.base.experiment.argument_parsing.add_args_to_parser_for_function"), patch(
-            "pype.base.experiment.argument_parsing.add_args_to_parser_for_class"
+        with patch("mlpype.base.experiment.argument_parsing.add_args_to_parser_for_function"), patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_class"
         ), patch(
-            "pype.base.experiment.argument_parsing._parse_docs_to_type_args", return_value={"C": float}
+            "mlpype.base.experiment.argument_parsing._parse_docs_to_type_args", return_value={"C": float}
         ) as mock_parse:
             add_args_to_parser_for_class(parser, self.A, prefix=prefix, excluded_superclasses=[])
 
@@ -500,9 +504,9 @@ class Test_add_args_to_parser_for_class:
         parser = MagicMock()
         prefix = "prefix"
 
-        with patch("pype.base.experiment.argument_parsing.add_args_to_parser_for_function"), patch(
-            "pype.base.experiment.argument_parsing.add_args_to_parser_for_class"
-        ), patch("pype.base.experiment.argument_parsing._parse_docs_to_type_args", return_value={}) as mock_parse:
+        with patch("mlpype.base.experiment.argument_parsing.add_args_to_parser_for_function"), patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_class"
+        ), patch("mlpype.base.experiment.argument_parsing._parse_docs_to_type_args", return_value={}) as mock_parse:
             add_args_to_parser_for_class(parser, self.A, prefix=prefix, excluded_superclasses=[])
 
             mock_parse.assert_has_calls([call(self.A), call(self.A.__init__)])
@@ -511,9 +515,13 @@ class Test_add_args_to_parser_for_class:
         parser = MagicMock()
         prefix = "prefix"
 
-        with patch("pype.base.experiment.argument_parsing.add_args_to_parser_for_function") as mock_add_function, patch(
-            "pype.base.experiment.argument_parsing.add_args_to_parser_for_class"
-        ) as mock_add_class, patch("pype.base.experiment.argument_parsing._parse_docs_to_type_args") as mock_parse:
+        with patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_function"
+        ) as mock_add_function, patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_class"
+        ) as mock_add_class, patch(
+            "mlpype.base.experiment.argument_parsing._parse_docs_to_type_args"
+        ) as mock_parse:
             add_args_to_parser_for_class(parser, self.B, prefix=prefix, excluded_superclasses=[])
             mock_add_class.assert_not_called()
 
@@ -521,9 +529,13 @@ class Test_add_args_to_parser_for_class:
         parser = MagicMock()
         prefix = "prefix"
 
-        with patch("pype.base.experiment.argument_parsing.add_args_to_parser_for_function") as mock_add_function, patch(
-            "pype.base.experiment.argument_parsing.add_args_to_parser_for_class"
-        ) as mock_add_class, patch("pype.base.experiment.argument_parsing._parse_docs_to_type_args") as mock_parse:
+        with patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_function"
+        ) as mock_add_function, patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_class"
+        ) as mock_add_class, patch(
+            "mlpype.base.experiment.argument_parsing._parse_docs_to_type_args"
+        ) as mock_parse:
             add_args_to_parser_for_class(parser, self.C, prefix=prefix, excluded_superclasses=[self.A])
             mock_add_class.assert_not_called()
 
@@ -531,9 +543,13 @@ class Test_add_args_to_parser_for_class:
         parser = MagicMock()
         prefix = "prefix"
 
-        with patch("pype.base.experiment.argument_parsing.add_args_to_parser_for_function") as mock_add_function, patch(
-            "pype.base.experiment.argument_parsing.add_args_to_parser_for_class"
-        ) as mock_add_class, patch("pype.base.experiment.argument_parsing._parse_docs_to_type_args") as mock_parse:
+        with patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_function"
+        ) as mock_add_function, patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_class"
+        ) as mock_add_class, patch(
+            "mlpype.base.experiment.argument_parsing._parse_docs_to_type_args"
+        ) as mock_parse:
             add_args_to_parser_for_class(parser, self.C, prefix=prefix, excluded_superclasses=[])
             mock_add_class.assert_called_once_with(parser, self.A, prefix, [], None)
 
@@ -553,8 +569,10 @@ class Test_add_args_to_parser_for_pipeline:
             ]
         )
 
-        with patch("pype.base.experiment.argument_parsing.add_args_to_parser_for_pipeline") as mock_add_pipeline, patch(
-            "pype.base.experiment.argument_parsing.add_args_to_parser_for_class"
+        with patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_pipeline"
+        ) as mock_add_pipeline, patch(
+            "mlpype.base.experiment.argument_parsing.add_args_to_parser_for_class"
         ) as mock_add_class:
             add_args_to_parser_for_pipeline(parser, pipeline)
 

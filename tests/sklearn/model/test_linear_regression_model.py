@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 from sklearn.linear_model import LinearRegression
 
-from pype.sklearn.model.linear_regression_model import LinearRegressionModel
+from mlpype.sklearn.model.linear_regression_model import LinearRegressionModel
 
 
 class Test_LinearRegressionModel:

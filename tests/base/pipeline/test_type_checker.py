@@ -4,8 +4,8 @@ from unittest.mock import call, patch
 from pydantic import create_model
 from pytest import fixture
 
-from pype.base.data.dataset import DataSet
-from pype.base.pipeline.type_checker import (
+from mlpype.base.data.dataset import DataSet
+from mlpype.base.pipeline.type_checker import (
     DataModel,
     DataSetModel,
     DataSetTypeChecker,
@@ -107,7 +107,7 @@ class Test_DataSetTypeChecker:
         dummy_data = {"z": 1}
 
         with patch.object(DummyTypeChecker, "fit") as mock_fit, patch(
-            "pype.base.pipeline.type_checker.logging"
+            "mlpype.base.pipeline.type_checker.logging"
         ) as mock_logging:
             mock_logger = mock_logging.getLogger.return_value
 

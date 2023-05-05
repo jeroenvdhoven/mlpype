@@ -27,14 +27,14 @@ test-all:
 	python -m pytest
 
 coverage-unit:
-	python -m pytest -m "not spark and not wheel" --cov-report term-missing --cov pype -ra
+	python -m pytest -m "not spark and not wheel" --cov-report term-missing --cov mlpype -ra
 
 coverage-all:
-	python -m pytest --cov-report term-missing --cov pype -ra
+	python -m pytest --cov-report term-missing --cov mlpype -ra
 
 # Document code
 create-docs:
-	pdoc ./pype -o ./docs -d google
+	pdoc ./mlpype -o ./docs -d google
 
 # Pre-commit defaults
 pre-commit-install:

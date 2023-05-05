@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 from pytest import fixture
 
-from pype.base.data.dataset import DataSet
-from pype.base.model.model import Model
+from mlpype.base.data.dataset import DataSet
+from mlpype.base.model.model import Model
 
 
 class DummyModel(Model[int]):

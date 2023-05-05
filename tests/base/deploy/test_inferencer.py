@@ -3,11 +3,11 @@ from unittest.mock import MagicMock, call, mock_open, patch
 
 from pytest import fixture, mark
 
-from pype.base.constants import Constants
-from pype.base.data import DataCatalog, DataSet
-from pype.base.deploy.inference import Inferencer
-from pype.base.experiment import Experiment
-from pype.base.serialiser import JoblibSerialiser
+from mlpype.base.constants import Constants
+from mlpype.base.data import DataCatalog, DataSet
+from mlpype.base.deploy.inference import Inferencer
+from mlpype.base.experiment import Experiment
+from mlpype.base.serialiser import JoblibSerialiser
 from tests.shared_fixtures import dummy_experiment
 from tests.utils import get_dummy_data
 
@@ -34,10 +34,10 @@ class Test_Inferencer:
 
         read_data = '{"paths": ["1", "2"]}'
         m_open = mock_open(read_data=read_data)
-        with patch("pype.base.deploy.inference.Model.load") as mock_model_load, patch(
-            "pype.base.deploy.inference.JoblibSerialiser.deserialise", return_value=mocked_serialiser
-        ) as mock_deserialise, patch("pype.base.deploy.inference.switch_workspace") as mock_switch, patch(
-            "pype.base.deploy.inference.open", m_open
+        with patch("mlpype.base.deploy.inference.Model.load") as mock_model_load, patch(
+            "mlpype.base.deploy.inference.JoblibSerialiser.deserialise", return_value=mocked_serialiser
+        ) as mock_deserialise, patch("mlpype.base.deploy.inference.switch_workspace") as mock_switch, patch(
+            "mlpype.base.deploy.inference.open", m_open
         ):
             serialiser = mocked_serialiser if use_inferencer_directly else None
             result = Inferencer.from_folder(path, serialiser=serialiser)

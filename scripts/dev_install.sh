@@ -15,7 +15,7 @@ function install_package () {
         pip install -i $2 $1 --trusted-host $ip --upgrade
     else
         # make sure we use the right path for local installation
-        if [ $1 == "pype" ];
+        if [ $1 == "mlpype" ];
         then
             package="."
         else
@@ -49,8 +49,8 @@ echo "Editable state: $editable, host: $host"
 # Install priority packages first: base and sklearn. These are packages that others depend on.
 # Please note, that especially tensorflow may run into issues. On some Mac machines (M1 versions)
 # the installation may fail. It is recommended in those cases to first manually install
-# tensorflow, then install all pype packages.
-priority_packages=( "pype" "pype.base" "pype.sklearn" )
+# tensorflow, then install all mlpype packages.
+priority_packages=( "mlpype" "mlpype.base" "mlpype.sklearn" )
 for priority_package in "${priority_packages[@]}"
 do
     echo "Priority installing: ${priority_package}"
@@ -58,10 +58,10 @@ do
 done
 
 # Install all remaining packages.
-packages=($(ls pype))
+packages=($(ls mlpype))
 for package in "${packages[@]}"
 do
-    package_path="pype.${package}"
+    package_path="mlpype.${package}"
     if [[ ! " ${priority_packages[*]} " =~ " ${package_path} " ]]; then
         # only install if package wasn't priority package
         echo "Installing: ${package_path}"

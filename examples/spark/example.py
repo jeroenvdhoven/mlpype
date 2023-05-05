@@ -10,17 +10,17 @@ from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import StandardScaler, VectorAssembler
 from pyspark.sql import SparkSession
 
-from pype.base.data import DataCatalog
-from pype.base.deploy import Inferencer
-from pype.base.experiment import Experiment
-from pype.base.logger import LocalLogger
-from pype.base.pipeline import Pipeline
-from pype.spark.data.spark_data_frame_source import SparkDataFrameSource
-from pype.spark.evaluate.spark_evaluator import SparkEvaluator
-from pype.spark.model import LinearSparkModel
-from pype.spark.pipeline import SparkTypeChecker
-from pype.spark.pipeline.spark_pipe import SparkPipe
-from pype.spark.serialisation.spark_serialiser import SparkSerialiser
+from mlpype.base.data import DataCatalog
+from mlpype.base.deploy import Inferencer
+from mlpype.base.experiment import Experiment
+from mlpype.base.logger import LocalLogger
+from mlpype.base.pipeline import Pipeline
+from mlpype.spark.data.spark_data_frame_source import SparkDataFrameSource
+from mlpype.spark.evaluate.spark_evaluator import SparkEvaluator
+from mlpype.spark.model import LinearSparkModel
+from mlpype.spark.pipeline import SparkTypeChecker
+from mlpype.spark.pipeline.spark_pipe import SparkPipe
+from mlpype.spark.serialisation.spark_serialiser import SparkSerialiser
 
 ss = SparkSession.builder.getOrCreate()
 

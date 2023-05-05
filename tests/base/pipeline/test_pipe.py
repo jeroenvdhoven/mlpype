@@ -2,8 +2,8 @@ from unittest.mock import MagicMock
 
 from pytest import fixture
 
-from pype.base.data.dataset import DataSet
-from pype.base.pipeline.pipe import Pipe
+from mlpype.base.data.dataset import DataSet
+from mlpype.base.pipeline.pipe import Pipe
 from tests.utils import pytest_assert
 
 

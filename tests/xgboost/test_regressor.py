@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from pytest import fixture
 
-from pype.base.data.dataset import DataSet
-from pype.xgboost.model import XGBRegressorModel
+from mlpype.base.data.dataset import DataSet
+from mlpype.xgboost.model import XGBRegressorModel
 
 
 @fixture

@@ -2,15 +2,15 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, List, Optional, Tuple, Type, Union
 
-from pype.base.data.data_catalog import DataCatalog
-from pype.base.data.data_sink import DataSink
-from pype.base.data.data_source import DataSource
-from pype.base.evaluate.evaluator import Evaluator
-from pype.base.model import Model
-from pype.base.pipeline.operator import Operator
-from pype.base.pipeline.pipe import Pipe
-from pype.base.pipeline.pipeline import Pipeline
-from pype.base.pipeline.type_checker import (
+from mlpype.base.data.data_catalog import DataCatalog
+from mlpype.base.data.data_sink import DataSink
+from mlpype.base.data.data_source import DataSource
+from mlpype.base.evaluate.evaluator import Evaluator
+from mlpype.base.model import Model
+from mlpype.base.pipeline.operator import Operator
+from mlpype.base.pipeline.pipe import Pipe
+from mlpype.base.pipeline.pipeline import Pipeline
+from mlpype.base.pipeline.type_checker import (
     DataModel,
     DataSetModel,
     TypeChecker,

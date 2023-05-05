@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, call, patch
 from git import InvalidGitRepositoryError
 from pytest import fixture
 
-from pype.mlflow.logger.mlflow_logger import MlflowLogger
+from mlpype.mlflow.logger.mlflow_logger import MlflowLogger
 from tests.utils import pytest_assert
 
 
@@ -15,14 +15,14 @@ class Test_mlflow_logger:
 
     def test_enter(self, logger: MlflowLogger):
         assert logger.run is None
-        with patch("pype.mlflow.logger.mlflow_logger.set_tracking_uri") as mock_set_tracking_uri, patch(
-            "pype.mlflow.logger.mlflow_logger.get_experiment_by_name"
+        with patch("mlpype.mlflow.logger.mlflow_logger.set_tracking_uri") as mock_set_tracking_uri, patch(
+            "mlpype.mlflow.logger.mlflow_logger.get_experiment_by_name"
         ) as mock_get_experiment_by_name, patch(
-            "pype.mlflow.logger.mlflow_logger.create_experiment"
+            "mlpype.mlflow.logger.mlflow_logger.create_experiment"
         ) as mock_create_experiment, patch(
-            "pype.mlflow.logger.mlflow_logger.set_experiment"
+            "mlpype.mlflow.logger.mlflow_logger.set_experiment"
         ) as mock_set_experiment, patch(
-            "pype.mlflow.logger.mlflow_logger.start_run"
+            "mlpype.mlflow.logger.mlflow_logger.start_run"
         ) as mock_start_run, patch.object(
             logger, "log_branch"
         ) as mock_log_branch:
@@ -44,14 +44,14 @@ class Test_mlflow_logger:
 
     def test_enter_new_experiment(self, logger: MlflowLogger):
         assert logger.run is None
-        with patch("pype.mlflow.logger.mlflow_logger.set_tracking_uri") as mock_set_tracking_uri, patch(
-            "pype.mlflow.logger.mlflow_logger.get_experiment_by_name"
+        with patch("mlpype.mlflow.logger.mlflow_logger.set_tracking_uri") as mock_set_tracking_uri, patch(
+            "mlpype.mlflow.logger.mlflow_logger.get_experiment_by_name"
         ) as mock_get_experiment_by_name, patch(
-            "pype.mlflow.logger.mlflow_logger.create_experiment"
+            "mlpype.mlflow.logger.mlflow_logger.create_experiment"
         ) as mock_create_experiment, patch(
-            "pype.mlflow.logger.mlflow_logger.set_experiment"
+            "mlpype.mlflow.logger.mlflow_logger.set_experiment"
         ) as mock_set_experiment, patch(
-            "pype.mlflow.logger.mlflow_logger.start_run"
+            "mlpype.mlflow.logger.mlflow_logger.start_run"
         ) as mock_start_run, patch.object(
             logger, "log_branch"
         ) as mock_log_branch:
@@ -76,7 +76,7 @@ class Test_mlflow_logger:
         repo = MagicMock()
         repo.active_branch.name = branch_name
         with patch.object(logger, "_find_encapsulating_repo", return_value=repo) as mock_find, patch(
-            "pype.mlflow.logger.mlflow_logger.set_tag"
+            "mlpype.mlflow.logger.mlflow_logger.set_tag"
         ) as mock_set_tag:
             logger.run = MagicMock()
             logger.log_branch()
@@ -86,14 +86,14 @@ class Test_mlflow_logger:
 
     def test_log_branch_check_run(self, logger: MlflowLogger):
         with patch.object(logger, "_find_encapsulating_repo"), patch(
-            "pype.mlflow.logger.mlflow_logger.set_tag"
+            "mlpype.mlflow.logger.mlflow_logger.set_tag"
         ), pytest_assert(AssertionError, "Please start the experiment first"):
             logger.log_branch()
 
     def test_log_branch_no_repo_found(self, logger: MlflowLogger):
         repo = None
         with patch.object(logger, "_find_encapsulating_repo", return_value=repo) as mock_find, patch(
-            "pype.mlflow.logger.mlflow_logger.set_tag"
+            "mlpype.mlflow.logger.mlflow_logger.set_tag"
         ) as mock_set_tag:
             logger.run = MagicMock()
             logger.log_branch()
@@ -104,7 +104,7 @@ class Test_mlflow_logger:
     def test_find_encapsulating_repo(self, logger: MlflowLogger):
         repo = MagicMock()
         directory = Path("a_path") / "sub_dir"
-        with patch("pype.mlflow.logger.mlflow_logger.Repo", return_value=repo) as mock_repo_class:
+        with patch("mlpype.mlflow.logger.mlflow_logger.Repo", return_value=repo) as mock_repo_class:
             result = logger._find_encapsulating_repo(directory)
             mock_repo_class.assert_called_once_with(directory.absolute())
 
@@ -114,7 +114,7 @@ class Test_mlflow_logger:
         repo = MagicMock()
         directory = Path("a_path") / "sub_dir"
         with patch(
-            "pype.mlflow.logger.mlflow_logger.Repo", side_effect=[InvalidGitRepositoryError, repo]
+            "mlpype.mlflow.logger.mlflow_logger.Repo", side_effect=[InvalidGitRepositoryError, repo]
         ) as mock_repo_class:
             result = logger._find_encapsulating_repo(directory)
             mock_repo_class.assert_has_calls([call(directory.absolute()), call(directory.absolute().parent)])
@@ -124,7 +124,7 @@ class Test_mlflow_logger:
     def test_find_encapsulating_repo_find_no_repo(self, logger: MlflowLogger):
         directory = Path("/") / "1_dir" / "2_dir"
         with patch(
-            "pype.mlflow.logger.mlflow_logger.Repo", side_effect=[InvalidGitRepositoryError] * 2
+            "mlpype.mlflow.logger.mlflow_logger.Repo", side_effect=[InvalidGitRepositoryError] * 2
         ) as mock_repo_class:
             result = logger._find_encapsulating_repo(directory)
             mock_repo_class.assert_has_calls(
@@ -153,21 +153,21 @@ class Test_mlflow_logger:
             logger.__exit__(a, b, c)
 
     def test_log_metrics(self, logger: MlflowLogger):
-        with patch("pype.mlflow.logger.mlflow_logger.log_metrics") as mock_log_metrics:
+        with patch("mlpype.mlflow.logger.mlflow_logger.log_metrics") as mock_log_metrics:
             metrics = {"a": 1, "b": 3}
             logger._log_metrics(metrics)
 
             mock_log_metrics.assert_called_once_with(metrics)
 
     def test_log_parameters(self, logger: MlflowLogger):
-        with patch("pype.mlflow.logger.mlflow_logger.log_params") as mock_log_params:
+        with patch("mlpype.mlflow.logger.mlflow_logger.log_params") as mock_log_params:
             parameters = {"a": 1, "b": 3}
             logger.log_parameters(parameters)
 
             mock_log_params.assert_called_once_with(parameters)
 
     def test_log_file(self, logger: MlflowLogger):
-        with patch("pype.mlflow.logger.mlflow_logger.log_artifact") as mock_log_artifact:
+        with patch("mlpype.mlflow.logger.mlflow_logger.log_artifact") as mock_log_artifact:
             file = "some file"
             logger.log_file(file)
 

@@ -3,7 +3,7 @@ import pandas as pd
 from pydantic import ValidationError
 from pytest import mark
 
-from pype.sklearn.pipeline.numpy_type_checker import NumpyData, NumpyTypeChecker
+from mlpype.sklearn.pipeline.numpy_type_checker import NumpyData, NumpyTypeChecker
 from tests.utils import pytest_assert
 
 

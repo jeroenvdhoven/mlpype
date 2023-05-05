@@ -1,7 +1,7 @@
 from sklearn.preprocessing import StandardScaler
 
-from pype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
-from pype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
+from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
+from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
 tcc = [NumpyTypeChecker, PandasTypeChecker]
 
