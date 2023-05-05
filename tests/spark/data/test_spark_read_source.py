@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from pype.spark.data import SparkReadSource
+from mlpype.spark.data import SparkReadSource
 
 
 class Test_SparkReadSource:

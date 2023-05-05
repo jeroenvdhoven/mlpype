@@ -9,7 +9,7 @@ from pandas.testing import assert_frame_equal
 from pydantic import create_model
 from pytest import fixture, mark
 
-from pype.sklearn.pipeline.pandas_type_checker import PandasData, PandasTypeChecker
+from mlpype.sklearn.pipeline.pandas_type_checker import PandasData, PandasTypeChecker
 from tests.utils import pytest_assert
 
 

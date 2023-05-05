@@ -7,10 +7,10 @@ import pip
 from fastapi import FastAPI
 from pytest import fixture, mark
 
-from pype.base.constants import Constants
-from pype.base.deploy.wheel.builder import WheelBuilder
-from pype.base.experiment import Experiment
-from pype.fastapi.deploy import FastApiExtension
+from mlpype.base.constants import Constants
+from mlpype.base.deploy.wheel.builder import WheelBuilder
+from mlpype.base.experiment import Experiment
+from mlpype.fastapi.deploy import FastApiExtension
 from tests.shared_fixtures import dummy_experiment
 
 dummy_experiment
@@ -26,7 +26,7 @@ def run_experiment(dummy_experiment: Experiment):
 def test_fastapi_wheel_extension(run_experiment: Experiment):
     # this will install the trained model into your current environment.
     # an upgrade would be to use a new environment.
-    # however, this way you will use the same pype libraries as used for training.
+    # however, this way you will use the same mlpype libraries as used for training.
     # Make sure we print requirements as well for easy debugging
     req_file = run_experiment.output_folder / Constants.REQUIREMENTS_FILE
     with open(req_file, "r") as f:
@@ -50,11 +50,8 @@ def test_fastapi_wheel_extension(run_experiment: Experiment):
         result = output_folder / os.listdir(output_folder)[0]
 
         try:
-            # make sure the old package is uninstalled
-            pip.main(["uninstall", str(result), "-y"])
-
             # dependencies are already present, so this will help speed things up.
-            install_result = pip.main(["install", str(result), "--no-deps"])
+            install_result = pip.main(["install", str(result), "--no-deps", "--force-reinstall"])
             assert install_result == 0, f"Installation failed! {install_result}"
 
             imported_model = importlib.import_module(model_name)

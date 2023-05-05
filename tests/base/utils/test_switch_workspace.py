@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import MagicMock, call, patch
 
-from pype.base.utils.workspace import (
+from mlpype.base.utils.workspace import (
     _create_temporary_workspace,
     _find_all_py_files,
     _reset_workspace,
@@ -23,7 +23,7 @@ def test_reset_workspace():
     main_lib.__dict__ = {"var1": MagicMock(), "var2": MagicMock(), "var3": v3}
     main_to_remove = {"var1", "var2"}
 
-    with patch("pype.base.utils.workspace.os") as mock_os, patch("pype.base.utils.workspace.sys") as mock_sys:
+    with patch("mlpype.base.utils.workspace.os") as mock_os, patch("mlpype.base.utils.workspace.sys") as mock_sys:
         _reset_workspace(old_workspace, old_sys_path, main_lib, main_to_remove)
 
     mock_os.chdir.assert_called_once_with(old_workspace)
@@ -62,10 +62,10 @@ def test_create_temporary_workspace():
     }
     libs = [a_lib, example_b_lib]
 
-    with patch("pype.base.utils.workspace.os.chdir") as mock_chdir, patch(
-        "pype.base.utils.workspace._find_all_py_files", return_value=extra_files_expected
-    ) as mock_find_all_py, patch("pype.base.utils.workspace.sys") as mock_sys, patch(
-        "pype.base.utils.workspace.importlib.import_module", side_effect=libs
+    with patch("mlpype.base.utils.workspace.os.chdir") as mock_chdir, patch(
+        "mlpype.base.utils.workspace._find_all_py_files", return_value=extra_files_expected
+    ) as mock_find_all_py, patch("mlpype.base.utils.workspace.sys") as mock_sys, patch(
+        "mlpype.base.utils.workspace.importlib.import_module", side_effect=libs
     ) as mock_import:
         result = _create_temporary_workspace(target_workspace, extra_files, main_lib)
 
@@ -97,9 +97,9 @@ def test_switch_workspace():
     path = Path(".")
     extra_files = ["a.py"]
 
-    with patch("pype.base.utils.workspace._create_temporary_workspace") as mock_create, patch(
-        "pype.base.utils.workspace._reset_workspace"
-    ) as mock_reset, patch("pype.base.utils.workspace.importlib.import_module") as mock_importlib:
+    with patch("mlpype.base.utils.workspace._create_temporary_workspace") as mock_create, patch(
+        "mlpype.base.utils.workspace._reset_workspace"
+    ) as mock_reset, patch("mlpype.base.utils.workspace.importlib.import_module") as mock_importlib:
         cwd = os.getcwd()
         c_sys_path = sys.path.copy()
 

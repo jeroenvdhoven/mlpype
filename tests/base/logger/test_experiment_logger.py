@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
-from pype.base.logger.local_logger import LocalLogger
-from pype.base.serialiser.serialiser import Serialiser
+from mlpype.base.logger.local_logger import LocalLogger
+from mlpype.base.serialiser.serialiser import Serialiser
 
 
 class Test_experiment_logger:

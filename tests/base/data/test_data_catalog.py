@@ -4,9 +4,9 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 from pytest import mark
 
-from pype.base.data.data_catalog import DataCatalog
-from pype.base.data.data_source import DataSource
-from pype.base.data.dataset import DataSet
+from mlpype.base.data.data_catalog import DataCatalog
+from mlpype.base.data.data_source import DataSource
+from mlpype.base.data.dataset import DataSet
 from tests.utils import pytest_assert
 
 
@@ -58,19 +58,19 @@ class Test_DataCatalog:
         assert result == expectation
 
     def test_load_class(self):
-        path = "pype.base.data.DataSource"
+        path = "mlpype.base.data.DataSource"
         result = DataCatalog._load_class(path)
 
         assert result == DataSource
 
     def test_load_class_assert(self):
-        path = "pype.base.data.DataSource:read:failure"
+        path = "mlpype.base.data.DataSource:read:failure"
 
         with pytest_assert(AssertionError, "We do not accept paths with more than 1 `:`"):
             DataCatalog._load_class(path)
 
     def test_load_class_with_method(self):
-        path = "pype.base.data.DataSource:read"
+        path = "mlpype.base.data.DataSource:read"
         result = DataCatalog._load_class(path)
 
         assert result == DataSource.read

@@ -7,7 +7,7 @@ from pydantic import create_model
 from pyspark.sql import SparkSession
 from pytest import mark
 
-from pype.spark.pipeline.spark_type_checker import SparkData, SparkTypeChecker
+from mlpype.spark.pipeline.spark_type_checker import SparkData, SparkTypeChecker
 from tests.spark.utils import spark_session
 from tests.utils import pytest_assert
 

@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from pytest import fixture
 
-from pype.base.data.dataset import DataSet
-from pype.xgboost.model import XGBClassifierModel
+from mlpype.base.data.dataset import DataSet
+from mlpype.xgboost.model import XGBClassifierModel
 
 
 @fixture

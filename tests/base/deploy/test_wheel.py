@@ -7,10 +7,10 @@ from unittest.mock import patch
 import pip
 from pytest import fixture, mark
 
-from pype.base.constants import Constants
-from pype.base.deploy.wheel import WheelBuilder, WheelExtension
-from pype.base.deploy.wheel.builder import BaseExtension
-from pype.base.experiment.experiment import Experiment
+from mlpype.base.constants import Constants
+from mlpype.base.deploy.wheel import WheelBuilder, WheelExtension
+from mlpype.base.deploy.wheel.builder import BaseExtension
+from mlpype.base.experiment.experiment import Experiment
 from tests.shared_fixtures import dummy_experiment
 from tests.utils import pytest_assert
 
@@ -28,7 +28,7 @@ class Test_WheelBuilder:
     def test_integration(self, run_experiment: Experiment):
         # this will install the trained model into your current environment.
         # an upgrade would be to use a new environment.
-        # however, this way you will use the same pype libraries as used for training.
+        # however, this way you will use the same mlpype libraries as used for training.
         # Make sure we print requirements as well for easy debugging
         req_file = run_experiment.output_folder / Constants.REQUIREMENTS_FILE
         with open(req_file, "r") as f:
@@ -52,11 +52,8 @@ class Test_WheelBuilder:
             result = output_folder / os.listdir(output_folder)[0]
 
             try:
-                # make sure the old package is uninstalled
-                pip.main(["uninstall", str(result), "-y"])
-
                 # dependencies are already present, so this will help speed things up.
-                install_result = pip.main(["install", str(result), "--no-deps"])
+                install_result = pip.main(["install", str(result), "--no-deps", "--force-reinstall"])
                 assert install_result == 0, f"Installation failed! {install_result}"
 
                 imported_model = importlib.import_module(model_name)

@@ -6,8 +6,8 @@ from unittest.mock import MagicMock, call, mock_open, patch
 
 from pytest import fixture, mark
 
-from pype.base.constants import Constants
-from pype.base.experiment.experiment import Experiment
+from mlpype.base.constants import Constants
+from mlpype.base.experiment.experiment import Experiment
 from tests.shared_fixtures import dummy_experiment
 from tests.utils import get_dummy_data, pytest_assert
 
@@ -57,7 +57,7 @@ class Test_run:
         with patch.object(experiment, "_create_output_folders") as mock_create_folders, patch.object(
             experiment, "_log_extra_files"
         ) as mock_log_extra_files, patch.object(experiment, "_log_requirements") as mock_log_requirements, patch(
-            "pype.base.experiment.experiment.JoblibSerialiser"
+            "mlpype.base.experiment.experiment.JoblibSerialiser"
         ) as mock_joblib:
             result = experiment.run()
 
@@ -157,9 +157,9 @@ def test_log_extra_files():
     )
 
     m_open = mock_open()
-    with patch("pype.base.experiment.experiment.os.getcwd", return_value=cwd) as mock_getcwd, patch(
-        "pype.base.experiment.experiment.open", m_open
-    ), patch("pype.base.experiment.experiment.json.dump") as mock_dump:
+    with patch("mlpype.base.experiment.experiment.os.getcwd", return_value=cwd) as mock_getcwd, patch(
+        "mlpype.base.experiment.experiment.open", m_open
+    ), patch("mlpype.base.experiment.experiment.json.dump") as mock_dump:
         experiment._log_extra_files()
 
         mock_getcwd.assert_called_once_with()
@@ -219,9 +219,9 @@ def test_log_requirements(version_info: VersionInfo):
     f1 = MagicMock()
     f2 = MagicMock()
     req_text = b"pandas==0.1.0\nnumpy=1.0.1"
-    with patch("pype.base.experiment.experiment.open", side_effect=[f1, f2]) as mock_open, patch(
-        "pype.base.experiment.experiment.subprocess.check_output", return_value=req_text
-    ) as mock_check_output, patch("pype.base.experiment.experiment.json.dump") as mock_dump:
+    with patch("mlpype.base.experiment.experiment.open", side_effect=[f1, f2]) as mock_open, patch(
+        "mlpype.base.experiment.experiment.subprocess.check_output", return_value=req_text
+    ) as mock_check_output, patch("mlpype.base.experiment.experiment.json.dump") as mock_dump:
         experiment._log_requirements()
 
         mock_open.assert_has_calls(
@@ -300,7 +300,7 @@ class Test_init:
         output_folder = MagicMock()
         additional_files_to_store = MagicMock()
 
-        with patch("pype.base.experiment.experiment.getLogger") as mock_get_logger:
+        with patch("mlpype.base.experiment.experiment.getLogger") as mock_get_logger:
             Experiment(
                 data_sources=data_sources,
                 model=model,
@@ -481,8 +481,8 @@ def test_from_command_line(name, fixed_args, expected_dict_extras):
 
 
 def test_get_cmd_args():
-    with patch("pype.base.experiment.experiment.ArgumentParser") as mock_parser_class, patch(
-        "pype.base.experiment.experiment.add_args_to_parser_for_pipeline"
+    with patch("mlpype.base.experiment.experiment.ArgumentParser") as mock_parser_class, patch(
+        "mlpype.base.experiment.experiment.add_args_to_parser_for_pipeline"
     ) as mock_add_args:
         mock_parser = mock_parser_class.return_value
         mock_model_class = MagicMock()

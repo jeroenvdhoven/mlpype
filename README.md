@@ -1,9 +1,9 @@
-# Pype: standardise model training across libraries
+# MLpype: standardise model training across libraries
 
 ## Why yet another ML package?
 
 ## Usage and examples
-There are a couple of examples available of training scripts using pype and various subpackages in the `examples` folder.
+There are a couple of examples available of training scripts using MLpype and various subpackages in the `examples` folder.
 
 In general, you'll need the following components:
 - DataCatalog's: a collection of DataSource's, that can be read to produce a DataSet. This will specify which data is used by your
@@ -25,11 +25,11 @@ Optionally, you can specify the following:
 You can check the documentation for `Experiment` for more details.
 
 ## Advantages
-- Modular: `pype` is setup as a namespace package. This allows you to install parts of the library to suit your needs.
-    Development is done by default on a full installation of `pype`, so all packages *should* work together.
-- Standardised: Don't code the same old steps every single time, just re-use them. `pype` handles a lot of good standard
+- Modular: `MLpype` is setup as a namespace package. This allows you to install parts of the library to suit your needs.
+    Development is done by default on a full installation of `MLpype`, so all packages *should* work together.
+- Standardised: Don't code the same old steps every single time, just re-use them. `MLpype` handles a lot of good standard
     steps in ML training, like experiment logging and keeping track of artifacts.
-- Extensive: Currently `pype` has a couple of integrations with other popular packages like `sklearn` and `tensorflow`, but
+- Extensive: Currently `MLpype` has a couple of integrations with other popular packages like `sklearn` and `tensorflow`, but
     also `mlflow`. Ideally we'd like to expand this to other common ML libraries and also platforms. We'd like to see this
     become a simple, universal starting point for machine learning with proper standardisation
 - Flexibility: Bring your own models, data sources, and preprocessing steps. Bring your own loggers and serialisers. Just
@@ -48,7 +48,7 @@ The goal is to help standardise the following steps:
 We aim to do this by providing basic interfaces that should be easy to implement for other packages.
 This should help keep the base package lightweight but flexible, while allowing subpackages to implement
 specific functionality for other packages. You can also directly extend the base interfaces to work with
-`pype`.
+`MLpype`.
 
 ## Model loading
 With most steps standardised, it becomes a lot easier to standardise model deployment as well. Currently we offer:
@@ -59,28 +59,28 @@ With most steps standardised, it becomes a lot easier to standardise model deplo
     - It is possible to extend this wheel package with your own functions as well, such as the FastAPI server
 
 ## Subpackages
-Pype is setup in a modular way. The base package provides the interfaces (e.g. `Model`, `DataSource` classes) and interactions between them (e.g. `Experiment` class).
-Its dependency footprint is quite low to make sure no excess packages are installed when working with `pype` in different ways.
+MLpype is setup in a modular way. The base package provides the interfaces (e.g. `Model`, `DataSource` classes) and interactions between them (e.g. `Experiment` class).
+Its dependency footprint is quite low to make sure no excess packages are installed when working with `MLpype` in different ways.
 
-Subpackages like `pype.sklearn` provide implementations, such as sklearn, tensorflow, or mlflow integrations. Not all subpackages need to be installed,
+Subpackages like `MLpype.sklearn` provide implementations, such as sklearn, tensorflow, or mlflow integrations. Not all subpackages need to be installed,
 making deployments lighter and less prone to dependency problems. This also reduces dependencies between subpackages, reducing complicated internal dependency issues.
 
 
 Currently the following subpackages are available:
 
-- `pype.base`: The base package. Required for other packages. Provides basics of training Pype-compliant models.
+- `MLpype.base`: The base package. Required for other packages. Provides basics of training MLpype-compliant models.
     - Fetching data
     - Pipeline fitting
     - Model training
     - Serialisation
     - Logging
     - Deployment
-- `pype.mlflow`: MLflow integration package. Allows easy use of logging through mlflow and downloading/loading models trained through Pype and logged on MLflow.
-- `pype.sklearn`: Sklearn integration package. Simplifies training sklearn models on Pype.
-- `pype.xgboost`: Minor extension to the `pype.sklearn` package, including XGBoost models.
-- `pype.tensorflow`: Incorporates tensorflow/keras into Pype.
-- `pype.hyperopt`: Use hyperopt to do hyperparameter tuning in Pype.
-- `pype.spark`: In progress, will provide pyspark integrations for Pype.
+- `MLpype.mlflow`: MLflow integration package. Allows easy use of logging through mlflow and downloading/loading models trained through MLpype and logged on MLflow.
+- `MLpype.sklearn`: Sklearn integration package. Simplifies training sklearn models on MLpype.
+- `MLpype.xgboost`: Minor extension to the `MLpype.sklearn` package, including XGBoost models.
+- `MLpype.tensorflow`: Incorporates tensorflow/keras into MLpype.
+- `MLpype.hyperopt`: Use hyperopt to do hyperparameter tuning in MLpype.
+- `MLpype.spark`: In progress, will provide pyspark integrations for MLpype.
 
 # Contributing
 

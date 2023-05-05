@@ -4,8 +4,8 @@ from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.sql import SparkSession
 from pytest import fixture
 
-from pype.base.data.dataset import DataSet
-from pype.spark.evaluate.spark_evaluator import SparkEvaluator
+from mlpype.base.data.dataset import DataSet
+from mlpype.spark.evaluate.spark_evaluator import SparkEvaluator
 from tests.spark.utils import spark_session
 from tests.utils import pytest_assert
 

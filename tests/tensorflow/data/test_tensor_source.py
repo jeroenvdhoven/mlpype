@@ -1,7 +1,7 @@
 import tensorflow as tf
 from numpy.testing import assert_array_equal
 
-from pype.tensorflow.data.tensor_source import TensorSource
+from mlpype.tensorflow.data.tensor_source import TensorSource
 
 
 def test_TensorSource():

@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from pype.tensorflow.model.mlp_keras import MLPKeras
+from mlpype.tensorflow.model.mlp_keras import MLPKeras
 
 
 def test_mlp_keras():

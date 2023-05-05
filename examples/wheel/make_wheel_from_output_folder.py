@@ -10,7 +10,7 @@ Run this using python -m examples.wheel.make_wheel_from_output_folder
 
 from pathlib import Path
 
-from pype.base.deploy.wheel import WheelBuilder
+from mlpype.base.deploy.wheel import WheelBuilder
 
 folder = Path(".").absolute()
 model_folder = folder / "outputs"

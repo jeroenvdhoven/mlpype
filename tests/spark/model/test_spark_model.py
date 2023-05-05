@@ -12,8 +12,8 @@ from pyspark.ml.regression import LinearRegression
 from pyspark.sql import SparkSession
 from pytest import mark
 
-from pype.base.data import DataSet
-from pype.spark.model import LinearSparkModel
+from mlpype.base.data import DataSet
+from mlpype.spark.model import LinearSparkModel
 from tests.spark.utils import spark_session
 from tests.utils import pytest_assert
 
@@ -152,7 +152,7 @@ class Test_SparkModel:
     def test_save(self):
         predictor = MagicMock()
         model = MagicMock()
-        pype_model = LinearSparkModel(
+        mlpype_model = LinearSparkModel(
             inputs=["x"],
             outputs=["x"],
             predictor=predictor,
@@ -161,26 +161,26 @@ class Test_SparkModel:
         )
 
         with TemporaryDirectory() as tmp_dir, patch(
-            "pype.spark.model.spark_model.JoblibSerialiser.serialise"
+            "mlpype.spark.model.spark_model.JoblibSerialiser.serialise"
         ) as mock_serialise:
             tmp_dir = Path(tmp_dir)
-            pype_model._save(tmp_dir)
+            mlpype_model._save(tmp_dir)
 
-            with open(tmp_dir / pype_model.PYPE_MODEL_CONFIG, "r") as f:
+            with open(tmp_dir / mlpype_model.mlpype_MODEL_CONFIG, "r") as f:
                 config = json.load(f)
                 assert config == {"output_col": None}
 
-            model.save.assert_called_once_with(str(tmp_dir / pype_model.SPARK_MODEL_PATH))
-            predictor.save.assert_called_once_with(str(tmp_dir / pype_model.SPARK_PREDICTOR_PATH))
-            mock_serialise.assert_called_once_with(type(model), str(tmp_dir / pype_model.SPARK_MODEL_CLASS_PATH))
+            model.save.assert_called_once_with(str(tmp_dir / mlpype_model.SPARK_MODEL_PATH))
+            predictor.save.assert_called_once_with(str(tmp_dir / mlpype_model.SPARK_PREDICTOR_PATH))
+            mock_serialise.assert_called_once_with(type(model), str(tmp_dir / mlpype_model.SPARK_MODEL_CLASS_PATH))
 
     def test_load(self):
         with TemporaryDirectory() as tmp_dir, patch.object(
             LinearSparkModel, "_get_annotated_class"
-        ) as mock_annotate, patch("pype.spark.model.spark_model.JoblibSerialiser.deserialise") as mock_deserialise:
+        ) as mock_annotate, patch("mlpype.spark.model.spark_model.JoblibSerialiser.deserialise") as mock_deserialise:
             tmp_dir = Path(tmp_dir)
 
-            with open(tmp_dir / LinearSparkModel.PYPE_MODEL_CONFIG, "w") as f:
+            with open(tmp_dir / LinearSparkModel.mlpype_MODEL_CONFIG, "w") as f:
                 json.dump({"output_col": None}, f)
 
             result = LinearSparkModel._load(tmp_dir, ["x"], ["x"])
@@ -202,7 +202,7 @@ class Test_SparkModel:
     def test_get_parameters(self):
         parser = MagicMock()
 
-        with patch("pype.spark.model.spark_model.add_args_to_parser_for_class") as mock_add:
+        with patch("mlpype.spark.model.spark_model.add_args_to_parser_for_class") as mock_add:
             LinearSparkModel.get_parameters(parser)
 
         mock_add.assert_called_once_with(

@@ -8,12 +8,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pytest import fixture
 
-from pype.base.data.data_sink import DataSink
-from pype.base.data.dataset import DataSet
-from pype.base.deploy.inference import Inferencer
-from pype.base.experiment import Experiment
-from pype.base.pipeline.type_checker import DataSetModel
-from pype.fastapi.deploy.app import PypeApp, write_in_background
+from mlpype.base.data.data_sink import DataSink
+from mlpype.base.data.dataset import DataSet
+from mlpype.base.deploy.inference import Inferencer
+from mlpype.base.experiment import Experiment
+from mlpype.base.pipeline.type_checker import DataSetModel
+from mlpype.fastapi.deploy.app import mlpypeApp, write_in_background
 from tests.shared_fixtures import dummy_experiment
 from tests.utils import (
     AnyArg,
@@ -35,7 +35,7 @@ def experiment_path(dummy_experiment: Experiment):
 
 @fixture
 def app(experiment_path: Path):
-    return PypeApp("dummy-app", experiment_path)
+    return mlpypeApp("dummy-app", experiment_path)
 
 
 @fixture
@@ -48,24 +48,24 @@ def tracking():
 
 @fixture
 def app_with_tracking(experiment_path: Path, tracking: Dict[str, DataSink]):
-    return PypeApp("dummy-app", experiment_path, tracking_servers=tracking)
+    return mlpypeApp("dummy-app", experiment_path, tracking_servers=tracking)
 
 
 @fixture()
-def test_client(app: PypeApp) -> TestClient:
+def test_client(app: mlpypeApp) -> TestClient:
     return TestClient(app.create_app())
 
 
 @fixture()
-def test_client_with_tracking(app_with_tracking: PypeApp) -> TestClient:
+def test_client_with_tracking(app_with_tracking: mlpypeApp) -> TestClient:
     return TestClient(app_with_tracking.create_app())
 
 
 class Test_create_app:
-    def test_loading(self, app: PypeApp):
+    def test_loading(self, app: mlpypeApp):
         with patch.object(app, "_load_model") as mock_load, patch.object(
             app, "_verify_tracking_servers"
-        ) as mock_verify, patch("pype.fastapi.deploy.app.getLogger") as mock_get_logger:
+        ) as mock_verify, patch("mlpype.fastapi.deploy.app.getLogger") as mock_get_logger:
             mock_inferencer = mock_load.return_value
             mock_inferencer.input_type_checker.get_pydantic_types.return_value = DummyDataSet
             mock_inferencer.output_type_checker.get_pydantic_types.return_value = DummyDataSet
@@ -84,18 +84,18 @@ class Test_create_app:
 
 
 class Test_verify_tracking_servers:
-    def test_verify_tracking_servers_without_tracking(self, app: PypeApp):
+    def test_verify_tracking_servers_without_tracking(self, app: mlpypeApp):
         # This should just run, since nothing is checked.
         app._verify_tracking_servers(MagicMock(), MagicMock(), MagicMock())
 
-    def test_verify_tracking_servers_with_tracking(self, app_with_tracking: PypeApp):
+    def test_verify_tracking_servers_with_tracking(self, app_with_tracking: mlpypeApp):
         # This should just run, since nothing is checked.
         logger = MagicMock()
         app_with_tracking._verify_tracking_servers(DummyDataSet, DummyDataSet, logger)
 
         logger.warning.assert_not_called()
 
-    def test_verify_tracking_servers_with_tracking_raise_warning(self, app_with_tracking: PypeApp):
+    def test_verify_tracking_servers_with_tracking_raise_warning(self, app_with_tracking: mlpypeApp):
         # This should just run, since nothing is checked.
         class DummyDataSet(DataSetModel):
             x: DummyDataModel
@@ -110,13 +110,13 @@ class Test_verify_tracking_servers:
 
 
 class Test_handle_tracking:
-    def test_handle_tracking_without_tracking(self, app: PypeApp):
+    def test_handle_tracking_without_tracking(self, app: mlpypeApp):
         data = get_dummy_data(10, 2, 1)
 
         # should just run.
         app._handle_tracking(DataSet(x=data["x"]), DataSet(y=data["y"]), MagicMock(), MagicMock())
 
-    def test_handle_tracking_with_tracking(self, app_with_tracking: PypeApp, tracking: Dict[str, MagicMock]):
+    def test_handle_tracking_with_tracking(self, app_with_tracking: mlpypeApp, tracking: Dict[str, MagicMock]):
         data = get_dummy_data(10, 2, 1).read()
 
         background_tasks = MagicMock()
@@ -131,7 +131,7 @@ class Test_handle_tracking:
             any_order=True,
         )
 
-    def test_handle_tracking_handles_crashes(self, app_with_tracking: PypeApp, tracking: Dict[str, MagicMock]):
+    def test_handle_tracking_handles_crashes(self, app_with_tracking: mlpypeApp, tracking: Dict[str, MagicMock]):
         data = get_dummy_data(10, 2, 1).read()
 
         logger = MagicMock()
@@ -166,7 +166,7 @@ class Test_app:
         assert response.status_code == 200
 
         content = json.loads(response.content.decode())
-        assert content == "Welcome to the Pype FastAPI app for dummy-app"
+        assert content == "Welcome to the mlpype FastAPI app for dummy-app"
 
     def test_predict(self, test_client: TestClient, experiment_path: Path):
         x = [1, 2, 3, 4]
@@ -188,11 +188,11 @@ class Test_app:
 
         assert y_true == prediction
 
-    def test_predict_with_tracking(self, app_with_tracking: PypeApp):
+    def test_predict_with_tracking(self, app_with_tracking: mlpypeApp):
         x = [1.0, 2.0, 3.0, 4.0]
 
         with patch.object(app_with_tracking, "_handle_tracking") as mock_handle, patch(
-            "pype.fastapi.deploy.app.getLogger"
+            "mlpype.fastapi.deploy.app.getLogger"
         ) as mock_get_logger:
             app = app_with_tracking.create_app()
             test_client = TestClient(app)

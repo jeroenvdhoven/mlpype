@@ -4,9 +4,9 @@ from typing import Iterable
 
 from pytest import fixture
 
-from pype.base.experiment.experiment import Experiment
-from pype.base.logger.local_logger import LocalLogger
-from pype.base.serialiser.joblib_serialiser import JoblibSerialiser
+from mlpype.base.experiment.experiment import Experiment
+from mlpype.base.logger.local_logger import LocalLogger
+from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from tests.utils import (
     DummyModel,
     get_dummy_data,

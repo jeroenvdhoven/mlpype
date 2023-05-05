@@ -7,9 +7,9 @@ import pandas as pd
 from pytest import fixture
 from sklearn.linear_model import LinearRegression
 
-from pype.base.data.dataset import DataSet
-from pype.sklearn.model.linear_regression_model import LinearRegressionModel
-from pype.sklearn.model.sklearn_model import SklearnModel
+from mlpype.base.data.dataset import DataSet
+from mlpype.sklearn.model.linear_regression_model import LinearRegressionModel
+from mlpype.sklearn.model.sklearn_model import SklearnModel
 
 
 class Test_SklearnModel:
@@ -22,7 +22,7 @@ class Test_SklearnModel:
         return LinearRegressionModel(inputs=["x"], outputs=["y"], model=sklearn_model, seed=43)
 
     def test_set_seed(self, model: SklearnModel):
-        with patch("pype.sklearn.model.sklearn_model.np.random.seed") as mock_seed:
+        with patch("mlpype.sklearn.model.sklearn_model.np.random.seed") as mock_seed:
             model.set_seed()
         mock_seed.assert_called_once_with(43)
 
@@ -41,7 +41,7 @@ class Test_SklearnModel:
         sklearn_model.predict.assert_called_once_with(ds1, ds2)
 
     def test_save(self, model: SklearnModel, sklearn_model: MagicMock):
-        with patch("pype.sklearn.model.sklearn_model.JoblibSerialiser.serialise") as mock_serialise:
+        with patch("mlpype.sklearn.model.sklearn_model.JoblibSerialiser.serialise") as mock_serialise:
             folder = Path("folder")
             model._save(folder)
 
@@ -49,7 +49,7 @@ class Test_SklearnModel:
 
     def test_load(self, model: SklearnModel, sklearn_model: MagicMock):
         with patch(
-            "pype.sklearn.model.sklearn_model.JoblibSerialiser.deserialise", return_value=sklearn_model
+            "mlpype.sklearn.model.sklearn_model.JoblibSerialiser.deserialise", return_value=sklearn_model
         ) as mock_deserialise:
             folder = Path("folder")
             inputs = ["x"]
@@ -69,7 +69,7 @@ class Test_SklearnModel:
         parser = MagicMock()
         model = DummyModel(inputs=["x"], outputs=["y"])
 
-        with patch("pype.sklearn.model.sklearn_model.add_args_to_parser_for_class") as mock_add_args:
+        with patch("mlpype.sklearn.model.sklearn_model.add_args_to_parser_for_class") as mock_add_args:
             model.get_parameters(parser)
             mock_add_args.assert_called_once_with(
                 parser, LinearRegression, "model", [], excluded_args=["seed", "inputs", "outputs", "model"]
@@ -82,7 +82,7 @@ class Test_SklearnModel:
 
         parser = MagicMock()
 
-        with patch("pype.sklearn.model.sklearn_model.add_args_to_parser_for_class") as mock_add_args:
+        with patch("mlpype.sklearn.model.sklearn_model.add_args_to_parser_for_class") as mock_add_args:
             DummyModel.get_parameters(parser)
             mock_add_args.assert_called_once_with(
                 parser, LinearRegression, "model", [], excluded_args=["seed", "inputs", "outputs", "model"]

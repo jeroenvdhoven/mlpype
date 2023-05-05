@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from pype.spark.data import SparkDataFrameSource
+from mlpype.spark.data import SparkDataFrameSource
 
 
 class Test_SparkDataFrameSource:

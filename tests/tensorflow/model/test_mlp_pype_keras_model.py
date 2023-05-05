@@ -2,11 +2,11 @@ import tensorflow as tf
 from keras.losses import MeanAbsoluteError
 from keras.optimizers import Nadam
 
-from pype.base.data.dataset import DataSet
-from pype.tensorflow.model.mlp_pype_model import MLPPypeModel
+from mlpype.base.data.dataset import DataSet
+from mlpype.tensorflow.model.mlp_pype_model import MLPPypeModel
 
 
-def test_mlp_pype_keras_model():
+def test_mlp_mlpype_keras_model():
     n = 1000
     x = tf.random.normal((n, 4))
     y = x[:, 0] + x[:, 1] * -0.4 + x[:, 2] * 2 + x[:, 3] * -0.4

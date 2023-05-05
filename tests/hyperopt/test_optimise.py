@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, patch
 from hyperopt import Trials, hp
 from pytest import mark
 
-from pype.base.experiment import Experiment
-from pype.hyperopt.optimise import create_optimisation_function, optimise_experiment
+from mlpype.base.experiment import Experiment
+from mlpype.hyperopt.optimise import create_optimisation_function, optimise_experiment
 from tests.shared_fixtures import dummy_experiment
 from tests.utils import AnyArg, pytest_assert
 
@@ -64,10 +64,10 @@ class Test_optimise_experiment:
         }
         metric = ("test", "diff")
 
-        with patch("pype.hyperopt.optimise.create_optimisation_function") as mock_create, patch(
-            "pype.hyperopt.optimise.fmin"
-        ) as mock_fmin, patch("pype.hyperopt.optimise.space_eval") as mock_space, patch(
-            "pype.hyperopt.optimise.Trials.best_trial"
+        with patch("mlpype.hyperopt.optimise.create_optimisation_function") as mock_create, patch(
+            "mlpype.hyperopt.optimise.fmin"
+        ) as mock_fmin, patch("mlpype.hyperopt.optimise.space_eval") as mock_space, patch(
+            "mlpype.hyperopt.optimise.Trials.best_trial"
         ) as mock_best_trial:
             best_trial_id, performance, best_arguments, trials = optimise_experiment(
                 experiment_template=exp,
@@ -104,9 +104,9 @@ class Test_optimise_experiment:
         mongo_url = "mongo://db/jobs"
         exp_key = "experiment_key"
 
-        with patch("pype.hyperopt.optimise.create_optimisation_function"), patch("pype.hyperopt.optimise.fmin"), patch(
-            "pype.hyperopt.optimise.space_eval"
-        ), patch("pype.hyperopt.optimise.MongoTrials") as mock_trial:
+        with patch("mlpype.hyperopt.optimise.create_optimisation_function"), patch(
+            "mlpype.hyperopt.optimise.fmin"
+        ), patch("mlpype.hyperopt.optimise.space_eval"), patch("mlpype.hyperopt.optimise.MongoTrials") as mock_trial:
             optimise_experiment(
                 experiment_template=exp,
                 search_space=search_space,
@@ -140,9 +140,13 @@ class Test_optimise_experiment:
         mongo_url = "mongo://db/jobs"
         exp_key = "experiment_key"
 
-        with patch("pype.hyperopt.optimise.create_optimisation_function"), patch("pype.hyperopt.optimise.fmin"), patch(
-            "pype.hyperopt.optimise.space_eval"
-        ), patch("pype.hyperopt.optimise.MongoTrials") as mock_trial, pytest_assert(AssertionError, error):
+        with patch("mlpype.hyperopt.optimise.create_optimisation_function"), patch(
+            "mlpype.hyperopt.optimise.fmin"
+        ), patch("mlpype.hyperopt.optimise.space_eval"), patch(
+            "mlpype.hyperopt.optimise.MongoTrials"
+        ) as mock_trial, pytest_assert(
+            AssertionError, error
+        ):
             optimise_experiment(
                 experiment_template=exp,
                 search_space=search_space,
@@ -167,9 +171,9 @@ class Test_optimise_experiment:
         }
         metric = ("test", "diff")
 
-        with patch("pype.hyperopt.optimise.create_optimisation_function"), patch("pype.hyperopt.optimise.fmin"), patch(
-            "pype.hyperopt.optimise.space_eval"
-        ), patch("pype.hyperopt.optimise.Trials") as mock_trial:
+        with patch("mlpype.hyperopt.optimise.create_optimisation_function"), patch(
+            "mlpype.hyperopt.optimise.fmin"
+        ), patch("mlpype.hyperopt.optimise.space_eval"), patch("mlpype.hyperopt.optimise.Trials") as mock_trial:
             optimise_experiment(
                 experiment_template=exp,
                 search_space=search_space,
@@ -192,9 +196,9 @@ class Test_optimise_experiment:
         }
         metric = ("test", "diff")
 
-        with patch("pype.hyperopt.optimise.create_optimisation_function"), patch("pype.hyperopt.optimise.fmin"), patch(
-            "pype.hyperopt.optimise.space_eval"
-        ), pytest_assert(
+        with patch("mlpype.hyperopt.optimise.create_optimisation_function"), patch(
+            "mlpype.hyperopt.optimise.fmin"
+        ), patch("mlpype.hyperopt.optimise.space_eval"), pytest_assert(
             ValueError,
             "Spark trials have not been implemented yet with auto-setup."
             + "Provide a SparkTrials object to the trials argument instead.",
@@ -221,9 +225,9 @@ class Test_optimise_experiment:
         metric = ("test", "diff")
         trials = MagicMock()
 
-        with patch("pype.hyperopt.optimise.create_optimisation_function") as mock_create, patch(
-            "pype.hyperopt.optimise.fmin"
-        ) as mock_fmin, patch("pype.hyperopt.optimise.space_eval"):
+        with patch("mlpype.hyperopt.optimise.create_optimisation_function") as mock_create, patch(
+            "mlpype.hyperopt.optimise.fmin"
+        ) as mock_fmin, patch("mlpype.hyperopt.optimise.space_eval"):
             optimise_experiment(
                 experiment_template=exp,
                 search_space=search_space,

@@ -1,6 +1,6 @@
 from pytest import fixture
 
-from pype.base.data.dataset import DataSet
+from mlpype.base.data.dataset import DataSet
 
 
 class Test_DataSet:

@@ -1,4 +1,4 @@
-"""This example shows how to use the DataCatalog from pype.
+"""This example shows how to use the DataCatalog from mlpype.
 
 The catalog is located in `example_catalog.yml`
 
@@ -18,7 +18,7 @@ import pandas as pd
 # Generate data in pyspark for this example
 from pyspark.sql import SparkSession
 
-from pype.base.data import DataCatalog
+from mlpype.base.data import DataCatalog
 
 s = SparkSession.builder.getOrCreate()
 df = s.createDataFrame(pd.DataFrame({"column": [1, 2, 3, 4, 5]}))
