@@ -50,7 +50,11 @@ def test_fastapi_wheel_extension(run_experiment: Experiment):
         result = output_folder / os.listdir(output_folder)[0]
 
         try:
-            install_result = pip.main(["install", str(result), "--force-reinstall"])
+            # make sure the old package is uninstalled
+            pip.main(["uninstall", str(result), "-y"])
+
+            # dependencies are already present, so this will help speed things up.
+            install_result = pip.main(["install", str(result), "--no-deps"])
             assert install_result == 0, f"Installation failed! {install_result}"
 
             imported_model = importlib.import_module(model_name)
