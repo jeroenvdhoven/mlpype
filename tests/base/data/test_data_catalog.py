@@ -112,3 +112,30 @@ class Test_DataCatalog:
             }
         )
         assert_frame_equal(expected_df, catalog["dataframe"].read())
+
+    def test_from_yaml_with_jinja(self):
+        path = Path(__file__).parent / "config_with_jinja.yml"
+
+        params = {
+            "pandas_sql": {"sql": "select * from database.table", "con": "http://<your database url>"},
+            "dataframe": {"x": 4.0},
+        }
+        catalog = DataCatalog.from_yaml(path, parameters=params)
+
+        assert len(catalog) == 2
+        assert "dataframe" in catalog
+        assert "pandas_sql" in catalog
+
+        # pandas_sql
+        sql_source = catalog["pandas_sql"]
+        assert sql_source.sql == "select * from database.table"
+        assert sql_source.con == "http://<your database url>"
+
+        # dataframe
+        expected_df = pd.DataFrame(
+            {
+                "x": [1.0, 4.0],
+                "y": ["a", "b"],
+            }
+        )
+        assert_frame_equal(expected_df, catalog["dataframe"].read())
