@@ -3,7 +3,7 @@ from typing import List
 from setuptools import find_namespace_packages, setup
 
 if __name__ == "__main__":
-    version = "0.4.0"
+    version = "0.4.1"
     deps: List[str] = [f"mlpype-base=={version}", "hyperopt>=0.2.7"]
     strict_deps = [s.replace(">=", "==") for s in deps]
 
