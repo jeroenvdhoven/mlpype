@@ -112,7 +112,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             self.pipeline.fit(datasets["train"])
 
             self.logger.info("Transform data")
-            transformed = {name: self.pipeline.transform(data, is_inference=False) for name, data in datasets.items()}
+            transformed = {name: self.pipeline.transform(data, is_inference=True) for name, data in datasets.items()}
 
             self.logger.info("Fit model")
             self.model.fit(transformed["train"])
