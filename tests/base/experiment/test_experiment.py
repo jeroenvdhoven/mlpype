@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, call, mock_open, patch
 from pytest import fixture, mark
 
 from mlpype.base.constants import Constants
+from mlpype.base.data import DataCatalog
 from mlpype.base.experiment.experiment import Experiment
 from tests.shared_fixtures import dummy_experiment
 from tests.utils import get_dummy_data, pytest_assert
@@ -21,8 +22,9 @@ class Test_run:
 
         yield dummy_experiment, metrics
 
-    def test_unit(self):
-        data_sources = {"train": MagicMock(), "test": MagicMock()}
+    @mark.parametrize(["is_source", "train_source"], [[False, MagicMock()], [True, MagicMock(spec=DataCatalog)]])
+    def test_unit(self, is_source: bool, train_source: MagicMock):
+        data_sources = {"train": train_source, "test": MagicMock(spec=DataCatalog)}
         model = MagicMock()
         pipeline = MagicMock()
         evaluator = MagicMock()
@@ -65,11 +67,18 @@ class Test_run:
         logger.__exit__.assert_called_once()
 
         # getting data
-        data_sources["train"].read.assert_called_once_with()
+        if is_source:
+            data_sources["train"].read.assert_called_once_with()
+        else:
+            data_sources["train"].read.assert_not_called()
         data_sources["test"].read.assert_called_once_with()
 
         # input checker
-        dataset_train = data_sources["train"].read.return_value
+        if is_source:
+            dataset_train = data_sources["train"].read.return_value
+        else:
+            dataset_train = train_source
+
         dataset_test = data_sources["test"].read.return_value
         input_type_checker.fit.assert_called_once_with(dataset_train)
         input_type_checker.transform.assert_has_calls([call(dataset_train), call(dataset_test)])
