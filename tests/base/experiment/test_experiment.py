@@ -402,6 +402,38 @@ def test_copy(dummy_experiment: Experiment):
     assert result.serialiser == exp.serialiser
 
 
+def test_copy_with_predefined_parameters(dummy_experiment: Experiment):
+    extra_params = {"model__b": 9, "model__a": 1, "pipeline__minus 1__c": 3}
+    exp = dummy_experiment
+    exp.parameters = extra_params
+
+    params = {"model__a": 4}
+
+    assert exp.model.b != extra_params["model__b"]
+    assert exp.pipeline["minus 1"].operator.c != extra_params["pipeline__minus 1__c"]
+    result = exp.copy(params)
+
+    assert result.model.a != extra_params["model__a"]
+    assert result.model.a == params["model__a"]
+    assert result.model.b == extra_params["model__b"]
+    assert result.pipeline["minus 1"].operator.c == extra_params["pipeline__minus 1__c"]
+    assert result.model != exp.model
+    assert result.model.__class__ == exp.model.__class__
+
+    assert result.pipeline != exp.pipeline
+    assert len(result.pipeline) == len(exp.pipeline)
+    assert result.pipeline[0].name == exp.pipeline[0].name
+
+    assert result.data_sources == exp.data_sources
+    assert result.additional_files_to_store == exp.additional_files_to_store
+    assert result.evaluator == exp.evaluator
+    assert result.experiment_logger == exp.experiment_logger
+    assert result.input_type_checker == exp.input_type_checker
+    assert result.output_type_checker == exp.output_type_checker
+    assert result.output_folder == exp.output_folder
+    assert result.serialiser == exp.serialiser
+
+
 @mark.parametrize(
     ["name", "fixed_args", "expected_dict_extras"],
     [

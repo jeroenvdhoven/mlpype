@@ -204,20 +204,26 @@ run here for logging purposes. Consider using the `from_command_line` or
         The Model & Pipeline will be recreated, so any trained versions will be
         re-initialised.
 
+        Old parameters will be kept, but overwritten if new values are provided.
+        This makes it easier to make templates for hyperparameter tuning.
+
         Args:
             parameters (Dict[str, Any]): New parameters for the Model and Pipeline
                 to be re-initialised with.
             seed (int, optional): Training seed. Defaults to 1.
 
         Returns:
-            Experiment: _description_
+            Experiment: A copy of this experiment, intialised with the new set
+                of parameters.
         """
+        new_params = self.parameters.copy()
+        new_params.update(parameters)
         model_class = self.model.__class__
 
-        model_args = get_args_for_prefix("model__", parameters)
+        model_args = get_args_for_prefix("model__", new_params)
         model = model_class(seed=seed, inputs=self.model.inputs, outputs=self.model.outputs, **model_args)
 
-        pipeline_args = get_args_for_prefix("pipeline__", parameters)
+        pipeline_args = get_args_for_prefix("pipeline__", new_params)
         new_pipeline = self.pipeline.copy(pipeline_args)
 
         return Experiment(
