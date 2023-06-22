@@ -76,7 +76,7 @@ class SparkPipe(Pipe):
         Used by pickle to properly prepare the "fitted" and "operator" fields as None's.
 
         Args:
-            state (Dict[str, Any]): _description_
+            state (Dict[str, Any]): The set of parameters that this Pipe should be set to.
         """
         state["fitted"] = None
         state["operator"] = None
