@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, List, Optional, Union
 
 from mlpype.base.data import DataSet
@@ -9,12 +10,16 @@ class Pipeline:
     def __init__(self, pipes: List[Union[Pipe, "Pipeline"]]) -> None:
         """A pipeline of operations that can be re-applied to new, similar Data.
 
+        By default, we'll log at INFO level which step we're at in fit, transform,
+        and inverse_transform.
+
         Args:
             pipes (List[Union[Pipe, Pipeline]]): A list of either Pipes
                 or other Pipelines. These form the steps that should be applied.
         """
         self.pipes = pipes
         self._assert_all_names_different()
+        self.logger = logging.getLogger(__name__)
 
     def _assert_all_names_different(self, names: Optional[set] = None) -> None:
         if names is None:
@@ -37,6 +42,8 @@ class Pipeline:
             Pipeline: This object.
         """
         for pipe in self.pipes:
+            if isinstance(pipe, Pipe):
+                self.logger.info(f"\tFitting step: `{pipe.name}`")
             pipe.fit(data)
             data = pipe.transform(data, is_inference=False)
         return self
@@ -56,6 +63,8 @@ class Pipeline:
             DataSet: The Transformed Data.
         """
         for pipe in self.pipes:
+            if isinstance(pipe, Pipe):
+                self.logger.info(f"\tTransforming step: `{pipe.name}`")
             data = pipe.transform(data, is_inference=is_inference)
         return data
 
@@ -75,6 +84,8 @@ class Pipeline:
             DataSet: The inverse transformed DataSet
         """
         for pipe in reversed(self.pipes):
+            if isinstance(pipe, Pipe):
+                self.logger.info(f"\tInverse transforming step: `{pipe.name}`")
             data = pipe.inverse_transform(data, is_inference=is_inference)
         return data
 
