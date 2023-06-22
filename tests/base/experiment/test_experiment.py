@@ -442,6 +442,10 @@ def test_copy_with_predefined_parameters(dummy_experiment: Experiment):
     assert result.output_folder == exp.output_folder
     assert result.serialiser == exp.serialiser
 
+    expected_params = extra_params.copy()
+    expected_params.update(params)
+    assert result.parameters == expected_params
+
 
 @mark.parametrize(
     ["name", "fixed_args", "expected_dict_extras"],

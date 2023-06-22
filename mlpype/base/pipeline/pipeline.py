@@ -123,10 +123,9 @@ class Pipeline:
                 extra_pipeline = pipe.copy(args)
                 result += extra_pipeline
             else:
-                if args is None:
-                    pipe_args = {}
-                else:
-                    pipe_args = get_args_for_prefix(f"{pipe.name}__", args)
+                pipe_args = pipe.args.copy()
+                if args is not None:
+                    pipe_args.update(get_args_for_prefix(f"{pipe.name}__", args))
                 new_pipe = pipe.copy(pipe_args)
                 result += new_pipe
         return result

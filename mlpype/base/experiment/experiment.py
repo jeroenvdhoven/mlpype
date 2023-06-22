@@ -46,6 +46,8 @@ class Experiment:
                 DataCatalog or DataSets to use, in DataSource form. Should contain at least a 'train' DataSet.
                 DataCatalogs will be initialised (`read`) in the beginning of the run. It is recommended to use
                 DataCatalog in distributed cases, but for quick experimentation DataSets tend to be more useful.
+                Please note that the DataSet will be changed by the Pipeline and Model. If you want to use a
+                DataSet, you should make sure you don't modify the original data by reference or by key.
             model (Model): The Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
             evaluator (BaseEvaluator): The evaluator to test how good your Model performs.
@@ -243,7 +245,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             input_type_checker=self.input_type_checker,
             output_type_checker=self.output_type_checker,
             additional_files_to_store=self.additional_files_to_store,
-            parameters=parameters,
+            parameters=new_params,
         )
 
     @classmethod
