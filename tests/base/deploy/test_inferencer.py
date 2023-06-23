@@ -1,23 +1,42 @@
+import shutil
 from pathlib import Path
 from unittest.mock import MagicMock, call, mock_open, patch
 
-from pytest import fixture, mark
+from pytest import mark
 
 from mlpype.base.constants import Constants
 from mlpype.base.data import DataCatalog, DataSet
 from mlpype.base.deploy.inference import Inferencer
 from mlpype.base.experiment import Experiment
+from mlpype.base.logger import LocalLogger
 from mlpype.base.serialiser import JoblibSerialiser
-from tests.shared_fixtures import dummy_experiment
-from tests.utils import get_dummy_data
+from tests.utils import (
+    DummyModel,
+    get_dummy_data,
+    get_dummy_evaluator,
+    get_dummy_pipeline,
+    get_dummy_type_checkers,
+)
 
-dummy_experiment
 
+def create_experiment_in_folder(folder: Path) -> Experiment:
+    train = get_dummy_data(20, 1, 0)
+    test = get_dummy_data(5, 2, -1)
 
-@fixture(scope="module")
-def experiment_path(dummy_experiment: Experiment):
-    dummy_experiment.run()
-    yield dummy_experiment.output_folder
+    input_checker, output_checker = get_dummy_type_checkers()
+
+    return Experiment(
+        data_sources={"train": train, "test": test},
+        model=DummyModel(inputs=["x"], outputs=["y"]),
+        pipeline=get_dummy_pipeline(),
+        logger=LocalLogger(),
+        evaluator=get_dummy_evaluator(),
+        serialiser=JoblibSerialiser(),
+        output_folder=folder,
+        input_type_checker=input_checker,
+        output_type_checker=output_checker,
+        parameters={"param_1": 2},
+    )
 
 
 class Test_Inferencer:
@@ -122,16 +141,32 @@ class Test_Inferencer:
 
         assert result == model.transform.return_value
 
-    def test_integration(self, experiment_path: Path):
-        data = get_dummy_data(10, 1, 0)
-        y = data["y"].read()
-        inferencer = Inferencer.from_folder(experiment_path)
+    @mark.parametrize(
+        ["folder"],
+        [
+            [Path("/tmp/outputs")],
+            [Path("outputs__1")],
+            [Path("./outputs__2")],
+        ],
+    )
+    def test_integration(self, folder: Path):
+        assert not folder.is_dir(), "Folder should be empty to start"
+        try:
+            exp = create_experiment_in_folder(folder)
+            exp.run()
+            assert folder.is_dir(), "Folder should now exist"
+            data = get_dummy_data(10, 1, 0)
+            y = data["y"].read()
+            inferencer = Inferencer.from_folder(folder)
 
-        prediction = inferencer.predict(data)
-        assert isinstance(prediction, DataSet)
+            prediction = inferencer.predict(data)
+            assert isinstance(prediction, DataSet)
 
-        assert len(y) == len(prediction["y"])
-        assert type(y) == type(prediction["y"])
+            assert len(y) == len(prediction["y"])
+            assert type(y) == type(prediction["y"])
 
-        manual_pred = inferencer.model.transform(inferencer.pipeline.transform(data.read()))
-        assert manual_pred == prediction
+            manual_pred = inferencer.model.transform(inferencer.pipeline.transform(data.read()))
+            assert manual_pred == prediction
+        finally:
+            shutil.rmtree(str(folder))
+            assert not folder.is_dir(), "Folder should be empty at end"
