@@ -125,7 +125,6 @@ def _create_temporary_workspace(
     # change directory and path
     os.chdir(target_workspace)
     sys.path.append(str(target_workspace))
-    directory_name = target_workspace.name
 
     extra_files_walked = _find_all_py_files(extra_files)
     for file in extra_files_walked:
@@ -138,7 +137,7 @@ def _create_temporary_workspace(
         sys.path.append(relative_file_name)
 
         # import the file as a module.
-        module_name = f'{directory_name}.{file.replace("/", ".").replace(".py", "")}'
+        module_name = file.replace("/", ".").replace(".py", "")
         lib = importlib.import_module(module_name)
 
         # find all variables defined in this file, avoiding things like numpy/pandas imports.
