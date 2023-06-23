@@ -26,7 +26,7 @@ def load_experiment_from_mlflow(
             in. By default, a temporary directory is used.
 
     Returns:
-        Inferencer: _description_
+        Inferencer: The Inferencer loaded from the trained model.
     """
     set_tracking_uri(url)
 

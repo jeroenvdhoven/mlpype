@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, call, mock_open, patch
 from pytest import fixture, mark
 
 from mlpype.base.constants import Constants
+from mlpype.base.data import DataCatalog
 from mlpype.base.experiment.experiment import Experiment
 from tests.shared_fixtures import dummy_experiment
 from tests.utils import get_dummy_data, pytest_assert
@@ -21,8 +22,9 @@ class Test_run:
 
         yield dummy_experiment, metrics
 
-    def test_unit(self):
-        data_sources = {"train": MagicMock(), "test": MagicMock()}
+    @mark.parametrize(["is_source", "train_source"], [[False, MagicMock()], [True, MagicMock(spec=DataCatalog)]])
+    def test_unit(self, is_source: bool, train_source: MagicMock):
+        data_sources = {"train": train_source, "test": MagicMock(spec=DataCatalog)}
         model = MagicMock()
         pipeline = MagicMock()
         evaluator = MagicMock()
@@ -65,11 +67,18 @@ class Test_run:
         logger.__exit__.assert_called_once()
 
         # getting data
-        data_sources["train"].read.assert_called_once_with()
+        if is_source:
+            data_sources["train"].read.assert_called_once_with()
+        else:
+            data_sources["train"].read.assert_not_called()
         data_sources["test"].read.assert_called_once_with()
 
         # input checker
-        dataset_train = data_sources["train"].read.return_value
+        if is_source:
+            dataset_train = data_sources["train"].read.return_value
+        else:
+            dataset_train = train_source
+
         dataset_test = data_sources["test"].read.return_value
         input_type_checker.fit.assert_called_once_with(dataset_train)
         input_type_checker.transform.assert_has_calls([call(dataset_train), call(dataset_test)])
@@ -400,6 +409,42 @@ def test_copy(dummy_experiment: Experiment):
     assert result.output_type_checker == exp.output_type_checker
     assert result.output_folder == exp.output_folder
     assert result.serialiser == exp.serialiser
+
+
+def test_copy_with_predefined_parameters(dummy_experiment: Experiment):
+    extra_params = {"model__b": 9, "model__a": 1, "pipeline__minus 1__c": 3}
+    exp = dummy_experiment
+    exp.parameters = extra_params
+
+    params = {"model__a": 4}
+
+    assert exp.model.b != extra_params["model__b"]
+    assert exp.pipeline["minus 1"].operator.c != extra_params["pipeline__minus 1__c"]
+    result = exp.copy(params)
+
+    assert result.model.a != extra_params["model__a"]
+    assert result.model.a == params["model__a"]
+    assert result.model.b == extra_params["model__b"]
+    assert result.pipeline["minus 1"].operator.c == extra_params["pipeline__minus 1__c"]
+    assert result.model != exp.model
+    assert result.model.__class__ == exp.model.__class__
+
+    assert result.pipeline != exp.pipeline
+    assert len(result.pipeline) == len(exp.pipeline)
+    assert result.pipeline[0].name == exp.pipeline[0].name
+
+    assert result.data_sources == exp.data_sources
+    assert result.additional_files_to_store == exp.additional_files_to_store
+    assert result.evaluator == exp.evaluator
+    assert result.experiment_logger == exp.experiment_logger
+    assert result.input_type_checker == exp.input_type_checker
+    assert result.output_type_checker == exp.output_type_checker
+    assert result.output_folder == exp.output_folder
+    assert result.serialiser == exp.serialiser
+
+    expected_params = extra_params.copy()
+    expected_params.update(params)
+    assert result.parameters == expected_params
 
 
 @mark.parametrize(

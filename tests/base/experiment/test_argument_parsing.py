@@ -243,9 +243,9 @@ class Test_parse_docs_to_type_args:
         """example!
 
         Args:
-            I (int): _description_
-            F (float): _description_
-            S (str): _description_
+            I (int): int
+            F (float): float
+            S (str): string
             C (List[MagicMock, complex]): aaaa
         """
 

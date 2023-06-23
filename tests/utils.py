@@ -41,9 +41,10 @@ def pytest_assert(error_class, message: Optional[str] = None, exact: bool = True
 class DummyModel(Model[List[Union[int, float]]]):
     mean_file = "mean.txt"
 
-    def __init__(self, inputs: List[str], outputs: List[str], seed: int = 1, a: int = 3) -> None:
+    def __init__(self, inputs: List[str], outputs: List[str], seed: int = 1, a: int = 3, b: float = 5) -> None:
         super().__init__(inputs, outputs, seed)
         self.a = a
+        self.b = b
 
     def set_seed(self) -> None:
         pass
@@ -94,6 +95,10 @@ class DummyDataSink(DataSink[List[float]]):
 
 
 class DummyOperator(Operator[List[float]]):
+    def __init__(self, c: int = 0) -> None:
+        super().__init__()
+        self.c = c
+
     def fit(self, x: List[float]) -> "Operator":
         return self
 

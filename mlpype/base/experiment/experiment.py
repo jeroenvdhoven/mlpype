@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union
 
 from mlpype.base.constants import Constants
-from mlpype.base.data.data_catalog import DataCatalog
+from mlpype.base.data import DataCatalog, DataSet
 from mlpype.base.evaluate import BaseEvaluator
 from mlpype.base.experiment.argument_parsing import add_args_to_parser_for_pipeline
 from mlpype.base.logger import ExperimentLogger
@@ -22,7 +22,7 @@ from mlpype.base.utils.parsing import get_args_for_prefix
 class Experiment:
     def __init__(
         self,
-        data_sources: Dict[str, DataCatalog],
+        data_sources: Dict[str, Union[DataCatalog, DataSet]],
         model: Model,
         pipeline: Pipeline,
         evaluator: BaseEvaluator,
@@ -42,8 +42,12 @@ class Experiment:
                 - `pipeline__<pipe_name>__<arg> for pipeline parameters.
 
         Args:
-            data_sources (Dict[str, DataCatalog]): The DataSets to use, in DataSource form.
-                Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
+            data_sources (Dict[str, Dict[str, Union[DataCatalog, DataSet]]]): The
+                DataCatalog or DataSets to use, in DataSource form. Should contain at least a 'train' DataSet.
+                DataCatalogs will be initialised (`read`) in the beginning of the run. It is recommended to use
+                DataCatalog in distributed cases, but for quick experimentation DataSets tend to be more useful.
+                Please note that the DataSet will be changed by the Pipeline and Model. If you want to use a
+                DataSet, you should make sure you don't modify the original data by reference or by key.
             model (Model): The Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
             evaluator (BaseEvaluator): The evaluator to test how good your Model performs.
@@ -101,7 +105,10 @@ run here for logging purposes. Consider using the `from_command_line` or
         """
         with self.experiment_logger:
             self.logger.info("Load data")
-            datasets = {name: data_source_set.read() for name, data_source_set in self.data_sources.items()}
+            datasets = {
+                name: data_source_set.read() if isinstance(data_source_set, DataCatalog) else data_source_set
+                for name, data_source_set in self.data_sources.items()
+            }
 
             self.logger.info("Create input type checker")
             self.input_type_checker.fit(datasets["train"])
@@ -204,20 +211,26 @@ run here for logging purposes. Consider using the `from_command_line` or
         The Model & Pipeline will be recreated, so any trained versions will be
         re-initialised.
 
+        Old parameters will be kept, but overwritten if new values are provided.
+        This makes it easier to make templates for hyperparameter tuning.
+
         Args:
             parameters (Dict[str, Any]): New parameters for the Model and Pipeline
                 to be re-initialised with.
             seed (int, optional): Training seed. Defaults to 1.
 
         Returns:
-            Experiment: _description_
+            Experiment: A copy of this experiment, intialised with the new set
+                of parameters.
         """
+        new_params = self.parameters.copy()
+        new_params.update(parameters)
         model_class = self.model.__class__
 
-        model_args = get_args_for_prefix("model__", parameters)
+        model_args = get_args_for_prefix("model__", new_params)
         model = model_class(seed=seed, inputs=self.model.inputs, outputs=self.model.outputs, **model_args)
 
-        pipeline_args = get_args_for_prefix("pipeline__", parameters)
+        pipeline_args = get_args_for_prefix("pipeline__", new_params)
         new_pipeline = self.pipeline.copy(pipeline_args)
 
         return Experiment(
@@ -232,7 +245,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             input_type_checker=self.input_type_checker,
             output_type_checker=self.output_type_checker,
             additional_files_to_store=self.additional_files_to_store,
-            parameters=parameters,
+            parameters=new_params,
         )
 
     @classmethod
