@@ -51,14 +51,14 @@ def test_create_temporary_workspace():
 
     a_lib = MagicMock()
     a_lib.__dict__ = {
-        "var1": make_moduled_variable("directory.a"),  # will be ignored because of name
-        "var_new_1": make_moduled_variable("directory.other_module"),  # will be ignored because of module
-        "var_new_2": make_moduled_variable("directory.a"),  # will be added
+        "var1": make_moduled_variable("a"),  # will be ignored because of name
+        "var_new_1": make_moduled_variable("other_module"),  # will be ignored because of module
+        "var_new_2": make_moduled_variable("a"),  # will be added
     }
     example_b_lib = MagicMock()
     example_b_lib.__dict__ = {
-        "var_new_2": make_moduled_variable("directory.a"),  # will be ignored since a_lib has it
-        "var_new_3": make_moduled_variable("directory.example.b"),  # will be added
+        "var_new_2": make_moduled_variable("a"),  # will be ignored since a_lib has it
+        "var_new_3": make_moduled_variable("example.b"),  # will be added
     }
     libs = [a_lib, example_b_lib]
 
@@ -80,7 +80,7 @@ def test_create_temporary_workspace():
         )
 
         mock_find_all_py.assert_called_once_with(extra_files)
-        mock_import.assert_has_calls([call("directory.a"), call("directory.example.b")])
+        mock_import.assert_has_calls([call("a"), call("example.b")])
 
         assert main_lib.__dict__ == {
             "var1": v1,
