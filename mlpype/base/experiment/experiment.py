@@ -104,6 +104,9 @@ run here for logging purposes. Consider using the `from_command_line` or
             Dict[str, Union[str, float, int, bool]]: The performance metrics of this run.
         """
         with self.experiment_logger:
+            self.logger.info("Log parameters")
+            self.experiment_logger.log_parameters(self.parameters)
+
             self.logger.info("Load data")
             datasets = {
                 name: data_source_set.read() if isinstance(data_source_set, DataCatalog) else data_source_set
@@ -131,10 +134,9 @@ run here for logging purposes. Consider using the `from_command_line` or
             predicted_train = self.model.transform(transformed["train"])
             self.output_type_checker.fit(predicted_train)
 
-            self.logger.info("Log results: metrics, parameters")
+            self.logger.info("Log results: metrics")
             for dataset_name, metric_set in metrics.items():
                 self.experiment_logger.log_metrics(dataset_name, metric_set)
-            self.experiment_logger.log_parameters(self.parameters)
 
             self.logger.info("Log results: pipeline, model, serialiser")
             self._log_run()
