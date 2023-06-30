@@ -174,7 +174,18 @@ class TestPipe:
         assert pipe.operator == mock_class.return_value
         mock_class.assert_called_once_with(a=3, b=2)
 
-    def test_copy(self, pipe: Pipe, operator: MagicMock):
+    def test_copy(self):
+        operator = MagicMock()
+        pipe = Pipe(
+            name="name",
+            operator=operator,
+            inputs=["a", "b"],
+            outputs=["out", "out2"],
+            fit_inputs=["c"],
+            kw_args={"a": 1, "b": "satr"},
+            skip_on_inference=True,
+        )
+
         # instantiating the operator generates different objects
         operator.side_effect = [1, 2]
         result = pipe.copy()
@@ -185,6 +196,7 @@ class TestPipe:
         assert result.inputs == pipe.inputs
         assert result.outputs == pipe.outputs
         assert result.fit_inputs == pipe.fit_inputs
+        assert result.skip_on_inference == pipe.skip_on_inference
 
         # the object is not completely the same.
         assert result.operator != pipe.operator
