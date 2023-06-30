@@ -146,6 +146,7 @@ class Pipe:
             outputs=self.outputs,
             kw_args=args,
             fit_inputs=self.fit_inputs,
+            skip_on_inference=self.skip_on_inference,
         )
 
     def __str__(self) -> str:
