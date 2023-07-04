@@ -186,13 +186,28 @@ run here for logging purposes. Consider using the `from_command_line` or
         self.experiment_logger.log_file(requirements_file)
 
     def _log_extra_files(self) -> None:
-        """Logs the extra files for an experiment, as specified in the constructor."""
+        """Logs the extra files for an experiment, as specified in the constructor.
+
+        This also supports saving files outside of the current working directory.
+        These files are saved under the root name of the file / folder you select.
+        """
         paths_to_log = []
         self.logger.info("Log extra files")
         for extra_file in self.additional_files_to_store:
-            relative_path = Path(extra_file).relative_to(os.getcwd())
-            self.experiment_logger.log_local_file(relative_path, self.output_folder / relative_path)
-            paths_to_log.append(str(relative_path))
+            try:
+                # If the file to log is in the current work directory, use that to find
+                # the relative path to the CWD. This is to help imports.
+                source_path = Path(extra_file).relative_to(os.getcwd())
+                logged_path = str(source_path)
+            except ValueError:
+                # The file is not on our current working directory. It is assumed you
+                # added the file / folder to the system path in an alternative way.
+                # It will be added as such.
+                source_path = Path(extra_file).absolute()
+                logged_path = Path(extra_file).name
+            target_path = self.output_folder / logged_path
+            self.experiment_logger.log_local_file(source_path, target_path)
+            paths_to_log.append(logged_path)
 
         self.logger.info("Log `extra files`-file")
         extra_files_file = self.output_folder / Constants.EXTRA_FILES
