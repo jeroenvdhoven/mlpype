@@ -4,7 +4,7 @@ setup(
     name="mlpype",
     packages=find_namespace_packages(include=["mlpype.*"]),
     python_requires=">=3.8",
-    version="0.4.6",
+    version="0.4.7",
     license="MIT",
     author="Jeroen van den Hoven",
     url="https://github.com/jeroenvdhoven/mlpype",

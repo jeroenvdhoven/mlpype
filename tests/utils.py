@@ -10,12 +10,7 @@ from mlpype.base.model import Model
 from mlpype.base.pipeline.operator import Operator
 from mlpype.base.pipeline.pipe import Pipe
 from mlpype.base.pipeline.pipeline import Pipeline
-from mlpype.base.pipeline.type_checker import (
-    DataModel,
-    DataSetModel,
-    TypeChecker,
-    TypeCheckerPipe,
-)
+from mlpype.base.pipeline.type_checker import DataModel, DataSetModel, TypeChecker, TypeCheckerPipe
 from tests.utils_training_support import reverse
 
 

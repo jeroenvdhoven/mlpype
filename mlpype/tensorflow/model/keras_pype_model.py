@@ -2,18 +2,7 @@ import typing
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
 
 from keras import Model as KerasBaseModel
 from keras.losses import Loss

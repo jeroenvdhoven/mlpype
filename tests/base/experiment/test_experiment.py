@@ -1,7 +1,8 @@
+import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Tuple
+from typing import Iterable, List, Tuple
 from unittest.mock import MagicMock, call, mock_open, patch
 
 from pytest import fixture, mark
@@ -138,47 +139,108 @@ class Test_run:
         assert len(y) == len(predictions)
 
 
-def test_log_extra_files():
-    cwd = Path(__file__).parent
+class TestLogExtraFiles:
+    @fixture
+    def upper_file(self) -> List[Path]:
+        folder_path = Path(__file__).parent.parent.absolute() / "_tmp_dir_"
+        try:
+            assert not folder_path.is_dir()
+            folder_path.mkdir(parents=True, exist_ok=False)
+            file1_path = folder_path / "a.py"
+            with open(file1_path, "w") as f:
+                f.write("tmp_data")
+            file2_path = folder_path / "b" / "c.py"
+            file2_path.parent.mkdir(parents=False, exist_ok=False)
+            with open(file2_path, "w") as f:
+                f.write("tmp_data_2")
+            yield [folder_path, file1_path, file2_path]
+        finally:
+            shutil.rmtree(str(folder_path), ignore_errors=True)
 
-    data_sources = {"train": MagicMock(), "test": MagicMock()}
-    model = MagicMock()
-    pipeline = MagicMock()
-    evaluator = MagicMock()
-    logger = MagicMock()
-    serialiser = MagicMock()
-    input_type_checker = MagicMock()
-    output_type_checker = MagicMock()
-    output_folder = Path("tmp")
-    additional_files_to_store = [cwd / "a.py"]
+    def test_inside_cwd(self):
+        cwd = Path(__file__).parent
 
-    experiment = Experiment(
-        data_sources=data_sources,
-        model=model,
-        pipeline=pipeline,
-        evaluator=evaluator,
-        logger=logger,
-        serialiser=serialiser,
-        input_type_checker=input_type_checker,
-        output_type_checker=output_type_checker,
-        output_folder=output_folder,
-        additional_files_to_store=additional_files_to_store,
-    )
+        data_sources = {"train": MagicMock(), "test": MagicMock()}
+        model = MagicMock()
+        pipeline = MagicMock()
+        evaluator = MagicMock()
+        logger = MagicMock()
+        serialiser = MagicMock()
+        input_type_checker = MagicMock()
+        output_type_checker = MagicMock()
+        output_folder = Path("tmp")
+        additional_files_to_store = [cwd / "a.py"]
 
-    m_open = mock_open()
-    with patch("mlpype.base.experiment.experiment.os.getcwd", return_value=cwd) as mock_getcwd, patch(
-        "mlpype.base.experiment.experiment.open", m_open
-    ), patch("mlpype.base.experiment.experiment.json.dump") as mock_dump:
-        experiment._log_extra_files()
+        experiment = Experiment(
+            data_sources=data_sources,
+            model=model,
+            pipeline=pipeline,
+            evaluator=evaluator,
+            logger=logger,
+            serialiser=serialiser,
+            input_type_checker=input_type_checker,
+            output_type_checker=output_type_checker,
+            output_folder=output_folder,
+            additional_files_to_store=additional_files_to_store,
+        )
 
-        mock_getcwd.assert_called_once_with()
-        logger.log_local_file.assert_called_once_with(Path("a.py"), output_folder / "a.py")
-        logger.log_file.assert_called_once_with(output_folder / Constants.EXTRA_FILES)
+        m_open = mock_open()
+        with patch("mlpype.base.experiment.experiment.os.getcwd", return_value=cwd) as mock_getcwd, patch(
+            "mlpype.base.experiment.experiment.open", m_open
+        ), patch("mlpype.base.experiment.experiment.json.dump") as mock_dump:
+            experiment._log_extra_files()
 
-        m_open.assert_called_once_with(output_folder / Constants.EXTRA_FILES, "w")
-        opened_obj = m_open.return_value
+            mock_getcwd.assert_called_once_with()
+            logger.log_local_file.assert_called_once_with(Path("a.py"), output_folder / "a.py")
+            logger.log_file.assert_called_once_with(output_folder / Constants.EXTRA_FILES)
 
-        mock_dump.assert_called_once_with({"paths": ["a.py"]}, opened_obj)
+            m_open.assert_called_once_with(output_folder / Constants.EXTRA_FILES, "w")
+            opened_obj = m_open.return_value
+
+            mock_dump.assert_called_once_with({"paths": ["a.py"]}, opened_obj)
+
+    def test_outside_of_cwd(self, upper_file: List[Path]):
+        extra_folder = upper_file[0]
+        cwd = Path(__file__).parent
+
+        data_sources = {"train": MagicMock(), "test": MagicMock()}
+        model = MagicMock()
+        pipeline = MagicMock()
+        evaluator = MagicMock()
+        logger = MagicMock()
+        serialiser = MagicMock()
+        input_type_checker = MagicMock()
+        output_type_checker = MagicMock()
+        output_folder = Path("tmp")
+
+        experiment = Experiment(
+            data_sources=data_sources,
+            model=model,
+            pipeline=pipeline,
+            evaluator=evaluator,
+            logger=logger,
+            serialiser=serialiser,
+            input_type_checker=input_type_checker,
+            output_type_checker=output_type_checker,
+            output_folder=output_folder,
+            additional_files_to_store=[extra_folder],
+        )
+
+        m_open = mock_open()
+        with patch("mlpype.base.experiment.experiment.os.getcwd", return_value=cwd) as mock_getcwd, patch(
+            "mlpype.base.experiment.experiment.open", m_open
+        ), patch("mlpype.base.experiment.experiment.json.dump") as mock_dump:
+            experiment._log_extra_files()
+
+            mock_getcwd.assert_called_once_with()
+
+            logger.log_local_file.assert_called_once_with(extra_folder, output_folder / extra_folder.name)
+            logger.log_file.assert_called_once_with(output_folder / Constants.EXTRA_FILES)
+
+            m_open.assert_called_once_with(output_folder / Constants.EXTRA_FILES, "w")
+            opened_obj = m_open.return_value
+
+            mock_dump.assert_called_once_with({"paths": [str(extra_folder.name)]}, opened_obj)
 
 
 @dataclass

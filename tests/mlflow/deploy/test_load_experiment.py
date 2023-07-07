@@ -4,10 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from pytest import mark
 
-from mlpype.mlflow.deploy.load_experiment import (
-    _download_and_load,
-    load_experiment_from_mlflow,
-)
+from mlpype.mlflow.deploy.load_experiment import _download_and_load, load_experiment_from_mlflow
 from tests.utils import pytest_assert
 
 
