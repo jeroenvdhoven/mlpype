@@ -35,13 +35,13 @@ class DataSet(Dict[str, Data]):
         """
         return cls(**dct)
 
-    def set_all(self, keys: List[str], data: Iterable[Data]) -> None:
+    def set_all(self, keys: Iterable[str], data: Iterable[Data]) -> None:
         """Set all data to the given keys, in order.
 
         This assumes the keys and data set are of the same length.
 
         Args:
-            keys (List[str]): The keys of the given data.
+            keys (Iterable[str]): The keys of the given data.
             data (Iterable[Data]): The data to store.
         """
         for key, d in zip(keys, data):
