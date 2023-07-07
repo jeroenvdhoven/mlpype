@@ -5,12 +5,7 @@ from pydantic import create_model
 from pytest import fixture
 
 from mlpype.base.data.dataset import DataSet
-from mlpype.base.pipeline.type_checker import (
-    DataModel,
-    DataSetModel,
-    DataSetTypeChecker,
-    TypeCheckerPipe,
-)
+from mlpype.base.pipeline.type_checker import DataModel, DataSetModel, DataSetTypeChecker, TypeCheckerPipe
 from tests.utils import DummyDataModel, DummyTypeChecker, get_dummy_data, pytest_assert
 
 

@@ -15,13 +15,7 @@ from mlpype.base.experiment import Experiment
 from mlpype.base.pipeline.type_checker import DataSetModel
 from mlpype.fastapi.deploy.app import mlpypeApp, write_in_background
 from tests.shared_fixtures import dummy_experiment
-from tests.utils import (
-    AnyArg,
-    DummyDataModel,
-    DummyDataSet,
-    DummyDataSink,
-    get_dummy_data,
-)
+from tests.utils import AnyArg, DummyDataModel, DummyDataSet, DummyDataSink, get_dummy_data
 
 dummy_experiment
 
