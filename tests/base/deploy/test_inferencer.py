@@ -127,8 +127,32 @@ class Test_Inferencer:
         pipeline.transform.assert_called_once_with(dataset, is_inference=True)
         model.transform.assert_called_once_with(pipeline.transform.return_value)
         outputs.transform.assert_called_once_with(model.transform.return_value)
+        transformed_data = pipeline.transform.return_value
 
+        transformed_data.set_all.assert_not_called()
         assert result == model.transform.return_value
+
+    def test_predict_with_transformed_data(self):
+        model = MagicMock()
+        pipeline = MagicMock()
+        inputs = MagicMock()
+        outputs = MagicMock()
+        dataset = MagicMock()
+
+        inferencer = Inferencer(model, pipeline, inputs, outputs)
+        result = inferencer.predict(dataset, return_transformed_data=True)
+
+        inputs.transform.assert_called_once_with(dataset)
+        pipeline.transform.assert_called_once_with(dataset, is_inference=True)
+        transformed_data = pipeline.transform.return_value
+
+        model.transform.assert_called_once_with(transformed_data)
+        model_data = model.transform.return_value
+        outputs.transform.assert_called_once_with(model_data)
+
+        transformed_data.set_all.assert_called_once_with(model_data.keys.return_value, model_data.values.return_value)
+
+        assert result == transformed_data
 
     def test_predict_read_from_source(self):
         model = MagicMock()
