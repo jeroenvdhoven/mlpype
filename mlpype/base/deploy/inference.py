@@ -34,14 +34,18 @@ class Inferencer:
         self.input_type_checker = input_type_checker
         self.output_type_checker = output_type_checker
 
-    def predict(self, data: Union[DataSet, DataCatalog]) -> DataSet:
+    def predict(self, data: Union[DataSet, DataCatalog], return_transformed_data: bool = False) -> DataSet:
         """Predicts using the given data using the Pipeline and Model.
 
         Args:
             data (Union[DataSet, DataCatalog]): The data to predict for.
+            return_transformed_data (bool): Flag indicating if transformed data
+                also needs to be returned. If set to True, we still only return one
+                dataset, but we'll add the data after the pipeline has run to it.
 
         Returns:
-            DataSet: The predictions from Model.
+            DataSet: The predictions from Model, with transformed data from the Pipeline if
+                requested.
         """
         # TODO: inverse transformation after prediction
         if isinstance(data, DataCatalog):
@@ -50,6 +54,10 @@ class Inferencer:
         transformed = self.pipeline.transform(data, is_inference=True)
         predicted = self.model.transform(transformed)
         self.output_type_checker.transform(predicted)
+
+        if return_transformed_data:
+            transformed.set_all(predicted.keys(), predicted.values())
+            return transformed
         return predicted
 
     @classmethod
