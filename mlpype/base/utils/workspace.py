@@ -72,12 +72,18 @@ def switch_workspace(
 def _find_all_py_files(files: List[Union[str, Path]]) -> List[str]:
     """Finds all .py files in the given list of files/directories.
 
+    This will not walk directories and only look at directly provided .py
+    files. Directories should be importable through sys.path.
+
+    This is mainly done to be able to import objects defined in the training
+    script.
+
     Args:
         files (List[Union[str, Path]]): A list of files / directories for which
             we want to collect the python files.
 
     Returns:
-        List[str]: The list of python files in the given directories and files.
+        List[str]: The list of python files from the list.
     """
     result = []
     for file in files:
@@ -86,12 +92,6 @@ def _find_all_py_files(files: List[Union[str, Path]]) -> List[str]:
         if Path(file_p).is_file():
             if str(file).endswith(".py"):
                 result.append(str(file))
-        else:
-            # directory
-            for root, _, walked_files in os.walk(file):
-                for walked_file in walked_files:
-                    if walked_file.endswith(".py"):
-                        result.append(os.path.join(root, walked_file))
     return result
 
 

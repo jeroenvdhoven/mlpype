@@ -173,7 +173,7 @@ def test_find_all_py_files_directories():
 
         result = _find_all_py_files(files)
         result.sort()
-        expected = ["a.py", "b/b.py", "b/b-2.py"]
+        expected = ["a.py"]
         expected = [str(tmp_dir / f) for f in expected]
         expected.sort()
 

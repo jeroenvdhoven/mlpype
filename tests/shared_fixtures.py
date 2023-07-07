@@ -7,13 +7,7 @@ from pytest import fixture
 from mlpype.base.experiment.experiment import Experiment
 from mlpype.base.logger.local_logger import LocalLogger
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
-from tests.utils import (
-    DummyModel,
-    get_dummy_data,
-    get_dummy_evaluator,
-    get_dummy_pipeline,
-    get_dummy_type_checkers,
-)
+from tests.utils import DummyModel, get_dummy_data, get_dummy_evaluator, get_dummy_pipeline, get_dummy_type_checkers
 
 
 @fixture(scope="module")

@@ -3,10 +3,7 @@ import tensorflow as tf
 from pydantic import ValidationError
 from pytest import mark
 
-from mlpype.tensorflow.pipeline.tensor_checker import (
-    TensorflowData,
-    TensorflowTypeChecker,
-)
+from mlpype.tensorflow.pipeline.tensor_checker import TensorflowData, TensorflowTypeChecker
 from tests.utils import pytest_assert
 
 

@@ -1,22 +1,29 @@
+import os
 import shutil
+import subprocess
+import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, call, mock_open, patch
 
 from pytest import mark
 
 from mlpype.base.constants import Constants
-from mlpype.base.data import DataCatalog, DataSet
+from mlpype.base.data import DataCatalog, DataSet, DataSource
 from mlpype.base.deploy.inference import Inferencer
 from mlpype.base.experiment import Experiment
 from mlpype.base.logger import LocalLogger
 from mlpype.base.serialiser import JoblibSerialiser
-from tests.utils import (
-    DummyModel,
-    get_dummy_data,
-    get_dummy_evaluator,
-    get_dummy_pipeline,
-    get_dummy_type_checkers,
-)
+from tests.utils import DummyModel, get_dummy_data, get_dummy_evaluator, get_dummy_pipeline, get_dummy_type_checkers
+
+
+class DummySource(DataSource):
+    def __init__(self, x: Any) -> None:
+        super().__init__()
+        self.x = x
+
+    def read(self) -> Any:
+        return self.x
 
 
 def create_experiment_in_folder(folder: Path) -> Experiment:
@@ -170,3 +177,31 @@ class Test_Inferencer:
         finally:
             shutil.rmtree(str(folder))
             assert not folder.is_dir(), "Folder should be empty at end"
+
+    def test_integration_from_external_run(self):
+        try:
+            # TODO: reuse this format for example tests
+            # Make sure we use the python path to the experiment file.
+            # This mainly tests that switch_workspace does what it is supposed to do:
+            # load the proper files from the folder into memory.
+            path = str((Path(__file__).parent / "integration_experiment").absolute().relative_to(os.getcwd())).replace(
+                "/", "."
+            )
+            subprocess.run([sys.executable, "-m", path])
+
+            from .integration_experiment import _make_data, output_folder
+
+            inferencer = Inferencer.from_folder(output_folder)
+            _, test_x, _, test_y = _make_data()
+            ds = {
+                "test": DataCatalog(
+                    x=DummySource(test_x),
+                ),
+            }
+            result = inferencer.predict(ds["test"])
+            assert "y" in result
+            assert result["y"].shape[0] == test_y.shape[0]
+        finally:
+            from .integration_experiment import output_folder
+
+            shutil.rmtree(str(output_folder), ignore_errors=True)
