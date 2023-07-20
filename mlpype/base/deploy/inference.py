@@ -50,15 +50,15 @@ class Inferencer:
         # TODO: inverse transformation after prediction
         if isinstance(data, DataCatalog):
             data = data.read()
-        self.input_type_checker.transform(data)
-        transformed = self.pipeline.transform(data, is_inference=True)
+        checked_input = self.input_type_checker.transform(data)
+        transformed = self.pipeline.transform(checked_input, is_inference=True)
         predicted = self.model.transform(transformed)
-        self.output_type_checker.transform(predicted)
+        checked_output = self.output_type_checker.transform(predicted)
 
         if return_transformed_data:
-            transformed.set_all(predicted.keys(), predicted.values())
+            transformed.set_all(checked_output.keys(), checked_output.values())
             return transformed
-        return predicted
+        return checked_output
 
     @classmethod
     def from_folder(cls: Type["Inferencer"], folder: Path, serialiser: Optional[Serialiser] = None) -> "Inferencer":

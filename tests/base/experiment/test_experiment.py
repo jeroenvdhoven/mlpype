@@ -48,6 +48,9 @@ class Test_run:
             output_folder=output_folder,
             additional_files_to_store=additional_files_to_store,
         )
+        train_checked = MagicMock()
+        test_checked = MagicMock()
+        input_type_checker.transform.side_effect = [train_checked, test_checked]
 
         train_transform = MagicMock()
         test_transform = MagicMock()
@@ -85,9 +88,9 @@ class Test_run:
         input_type_checker.transform.assert_has_calls([call(dataset_train), call(dataset_test)])
 
         # pipeline fitting
-        pipeline.fit.assert_called_once_with(dataset_train)
+        pipeline.fit.assert_called_once_with(train_checked)
         pipeline.transform.assert_has_calls(
-            [call(dataset_train, is_inference=False), call(dataset_test, is_inference=False)]
+            [call(train_checked, is_inference=False), call(test_checked, is_inference=False)]
         )
 
         # model fitting

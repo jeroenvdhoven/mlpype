@@ -115,14 +115,15 @@ run here for logging purposes. Consider using the `from_command_line` or
 
             self.logger.info("Create input type checker")
             self.input_type_checker.fit(datasets["train"])
-            for ds in datasets.values():
-                self.input_type_checker.transform(ds)
+            input_checked = {name: self.input_type_checker.transform(ds) for name, ds in datasets.items()}
 
             self.logger.info("Fit pipeline")
-            self.pipeline.fit(datasets["train"])
+            self.pipeline.fit(input_checked["train"])
 
             self.logger.info("Transform data")
-            transformed = {name: self.pipeline.transform(data, is_inference=False) for name, data in datasets.items()}
+            transformed = {
+                name: self.pipeline.transform(data, is_inference=False) for name, data in input_checked.items()
+            }
 
             self.logger.info("Fit model")
             self.model.fit(transformed["train"])
