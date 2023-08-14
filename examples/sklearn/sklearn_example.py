@@ -22,7 +22,6 @@ from mlpype.base.experiment.experiment import Experiment
 from mlpype.base.logger.local_logger import LocalLogger
 from mlpype.base.pipeline.pipe import Pipe
 from mlpype.base.pipeline.pipeline import Pipeline
-from mlpype.base.pipeline.type_checker import TypeCheckerPipe
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from mlpype.sklearn.data.data_frame_source import DataFrameSource
 from mlpype.sklearn.model.linear_regression_model import LinearRegressionModel
@@ -84,18 +83,6 @@ evaluator = Evaluator(
 
 tcc = [NumpyTypeChecker, PandasTypeChecker]
 
-input_ds_type_checker = TypeCheckerPipe(
-    "type_checker-in",
-    input_names=["x"],
-    type_checker_classes=tcc,
-)
-
-output_ds_type_checker = TypeCheckerPipe(
-    "type_checker-out",
-    input_names=["y"],
-    type_checker_classes=tcc,
-)
-
 pipeline = Pipeline([Pipe("scale", StandardScaler, inputs=["x"], outputs=["x"])])
 of = Path("outputs")
 
@@ -105,8 +92,7 @@ experiment = Experiment(
     pipeline=pipeline,
     evaluator=evaluator,
     logger=LocalLogger(),
-    input_type_checker=input_ds_type_checker,
-    output_type_checker=output_ds_type_checker,
+    type_checker_classes=tcc,
     serialiser=JoblibSerialiser(),
     output_folder=of,
 )
