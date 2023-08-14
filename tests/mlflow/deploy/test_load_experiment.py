@@ -10,7 +10,7 @@ from tests.utils import pytest_assert
 
 def dummy_run_info(run_id: str) -> MagicMock:
     mock = MagicMock()
-    mock.run_id = run_id
+    mock.info.run_id = run_id
     return mock
 
 
@@ -40,11 +40,11 @@ class Test_load_experiment_from_mlflow:
         run_id = "jkldsf9032sd"
         experiment_id = "238jlkdfala932la@@"
         with patch("mlpype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
-            "mlpype.mlflow.deploy.load_experiment.list_run_infos"
-        ) as mock_list_run_infos, patch("mlpype.mlflow.deploy.load_experiment._download_and_load"):
+            "mlpype.mlflow.deploy.load_experiment.search_runs"
+        ) as mock_search_runs, patch("mlpype.mlflow.deploy.load_experiment._download_and_load"):
             # experiment not found
             mock_get_experiment_by_name.return_value = dummy_experiment(experiment_id)
-            mock_list_run_infos.return_value = [dummy_run_info("others")]
+            mock_search_runs.return_value = [dummy_run_info("others")]
 
             with pytest_assert(AssertionError, f"Run ID {run_id} is not present in the given experiment."):
                 load_experiment_from_mlflow(url, name, run_id)
@@ -56,20 +56,20 @@ class Test_load_experiment_from_mlflow:
         run_id = "jkldsf9032sd"
         experiment_id = "238jlkdfala932la@@"
         with patch("mlpype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
-            "mlpype.mlflow.deploy.load_experiment.list_run_infos"
-        ) as mock_list_run_infos, patch(
+            "mlpype.mlflow.deploy.load_experiment.search_runs"
+        ) as mock_search_runs, patch(
             "mlpype.mlflow.deploy.load_experiment.set_tracking_uri"
         ) as mock_set_tracking_uri, patch(
             "mlpype.mlflow.deploy.load_experiment._download_and_load"
         ) as mock_download:
             mock_get_experiment_by_name.return_value = dummy_experiment(experiment_id)
-            mock_list_run_infos.return_value = [dummy_run_info(run_id), dummy_run_info("others")]
+            mock_search_runs.return_value = [dummy_run_info(run_id), dummy_run_info("others")]
 
             result = load_experiment_from_mlflow(url, name, run_id, directory)
 
             mock_set_tracking_uri.assert_called_once_with(url)
             mock_get_experiment_by_name.assert_called_once_with(name)
-            mock_list_run_infos.assert_called_once_with(experiment_id)
+            mock_search_runs.assert_called_once_with(experiment_id, output_format="list")
 
             mock_download.assert_called_once_with(run_id, Path(directory))
             assert result == mock_download.return_value
@@ -80,8 +80,8 @@ class Test_load_experiment_from_mlflow:
         run_id = "jkldsf9032sd"
         experiment_id = "238jlkdfala932la@@"
         with patch("mlpype.mlflow.deploy.load_experiment.get_experiment_by_name") as mock_get_experiment_by_name, patch(
-            "mlpype.mlflow.deploy.load_experiment.list_run_infos"
-        ) as mock_list_run_infos, patch(
+            "mlpype.mlflow.deploy.load_experiment.search_runs"
+        ) as mock_search_runs, patch(
             "mlpype.mlflow.deploy.load_experiment.set_tracking_uri"
         ) as mock_set_tracking_uri, patch(
             "mlpype.mlflow.deploy.load_experiment._download_and_load"
@@ -92,13 +92,13 @@ class Test_load_experiment_from_mlflow:
             mock_tmp_dir.return_value.__enter__.return_value = tmp_path
 
             mock_get_experiment_by_name.return_value = dummy_experiment(experiment_id)
-            mock_list_run_infos.return_value = [dummy_run_info(run_id), dummy_run_info("others")]
+            mock_search_runs.return_value = [dummy_run_info(run_id), dummy_run_info("others")]
 
             result = load_experiment_from_mlflow(url, name, run_id)
 
             mock_set_tracking_uri.assert_called_once_with(url)
             mock_get_experiment_by_name.assert_called_once_with(name)
-            mock_list_run_infos.assert_called_once_with(experiment_id)
+            mock_search_runs.assert_called_once_with(experiment_id, output_format="list")
 
             mock_tmp_dir.assert_called_once_with(prefix="mlflow_model")
 
