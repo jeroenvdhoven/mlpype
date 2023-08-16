@@ -1,7 +1,7 @@
 from typing import List
 from unittest.mock import MagicMock, call, patch
 
-from pytest import fixture
+from pytest import fixture, mark
 
 from mlpype.base.data.dataset import DataSet
 from mlpype.base.pipeline.pipe import Pipe
@@ -319,3 +319,91 @@ class Test_Pipeline:
     def test_add_error_on_same_name(self, pipeline: Pipeline):
         with pytest_assert(AssertionError, "step0 is used multiple times."):
             pipeline + pipeline
+
+    def test_insert(self, pipeline: Pipeline):
+        L = len(pipeline)
+        pipe = MagicMock()
+
+        pipeline.insert(1, pipe)
+
+        assert len(pipeline) == L + 1
+        assert pipeline[1] == pipe
+
+    @mark.parametrize(
+        ["name", "dummy_pipeline", "add_fit", "expected"],
+        [
+            ["simple", Pipeline([Pipe("1", MagicMock, inputs=["a"], outputs=["b"])]), False, ["a"]],
+            [
+                "nested",
+                Pipeline(
+                    [
+                        Pipe("1", MagicMock, inputs=["a"], outputs=["b"]),
+                        Pipeline(
+                            [
+                                Pipe("2", MagicMock, inputs=["b"], outputs=["c"]),
+                                Pipe("3", MagicMock, inputs=["d"], outputs=["e"]),
+                            ]
+                        ),
+                    ]
+                ),
+                False,
+                ["a", "d"],
+            ],
+            [
+                "self-referential",
+                Pipeline(
+                    [
+                        Pipe("1", MagicMock, inputs=["a"], outputs=["a"]),
+                        Pipe("2", MagicMock, inputs=["a"], outputs=["a"]),
+                        Pipe("3", MagicMock, inputs=["a"], outputs=["a"]),
+                        Pipe("4", MagicMock, inputs=["a"], outputs=["a"]),
+                    ]
+                ),
+                False,
+                ["a"],
+            ],
+            [
+                "complex",
+                Pipeline(
+                    [
+                        Pipe("1", MagicMock, inputs=["a"], outputs=["b"]),
+                        Pipeline(
+                            [
+                                Pipe("2", MagicMock, inputs=["b"], outputs=["c"]),
+                                Pipe("3", MagicMock, inputs=["d"], outputs=["e"]),
+                                Pipe("4", MagicMock, inputs=["b", "d", "f"], outputs=["e", "g"]),
+                            ]
+                        ),
+                        Pipe("5", MagicMock, inputs=["e"], outputs=["a"]),
+                    ]
+                ),
+                False,
+                ["a", "d", "f"],
+            ],
+            [
+                "ignore-fit-nested",
+                Pipeline(
+                    [
+                        Pipe("1", MagicMock, inputs=["a"], outputs=["b"], fit_inputs=["b"]),
+                        Pipe("2", MagicMock, inputs=["b"], outputs=["c"], fit_inputs=["d"]),
+                    ]
+                ),
+                False,
+                ["a"],
+            ],
+            [
+                "add-fit-nested",
+                Pipeline(
+                    [
+                        Pipe("1", MagicMock, inputs=["a"], outputs=["b"], fit_inputs=["b"]),
+                        Pipe("2", MagicMock, inputs=["b"], outputs=["c"], fit_inputs=["d"]),
+                    ]
+                ),
+                True,
+                ["a", "b", "d"],
+            ],
+        ],
+    )
+    def test_get_input_datasets_names(self, name: str, dummy_pipeline: Pipeline, add_fit: bool, expected: List[str]):
+        result = dummy_pipeline.get_input_datasets_names(add_fit)
+        assert result == expected

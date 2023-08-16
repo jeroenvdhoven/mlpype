@@ -121,8 +121,8 @@ class Test_DataSetTypeChecker:
             mock_x_transform.assert_called_once_with(data["x"])
             mock_y_transform.assert_called_once_with(data["y"])
 
-            assert x == data["x"]
-            assert y == data["y"]
+            assert x == mock_x_transform.return_value
+            assert y == mock_y_transform.return_value
 
     def test_fit_transform_integration(self, type_checker: DataSetTypeChecker, data: DataSet):
         type_checker.fit(data["x"], data["y"])

@@ -188,15 +188,17 @@ class DataSetTypeChecker(Operator[Data]):
         """Checks if the given data fits the fitted Type Checkers.
 
         Returns:
-            Tuple[Data, ...]: data, if all data fits the Type Checkers.
+            Tuple[Data, ...]: returned result from each type_checker, if
+                all data fits the Type Checkers.
         """
+        data_result = []
         for ds_name, dataset in zip(self.input_names, data):
             assert ds_name in self.type_checkers, f"{ds_name} does not have a type checker"
 
             checker = self.type_checkers[ds_name]
-            checker.transform(dataset)
+            data_result.append(checker.transform(dataset))
 
-        return data
+        return tuple(data_result)
 
     def _get_type_checker(self, data: Data) -> Union[Type[TypeChecker], None]:
         for type_checker in self.type_checker_classes:

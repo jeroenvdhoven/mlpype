@@ -10,10 +10,12 @@ from pytest import fixture, mark
 from mlpype.base.constants import Constants
 from mlpype.base.data import DataCatalog
 from mlpype.base.experiment.experiment import Experiment
-from tests.shared_fixtures import dummy_experiment
+from mlpype.base.pipeline.type_checker import TypeCheckerPipe
+from tests.shared_fixtures import dummy_experiment, dummy_experiment_with_tcc
 from tests.utils import get_dummy_data, pytest_assert
 
 dummy_experiment
+dummy_experiment_with_tcc
 
 
 class Test_run:
@@ -22,6 +24,12 @@ class Test_run:
         metrics = dummy_experiment.run()
 
         yield dummy_experiment, metrics
+
+    @fixture(scope="class")
+    def run_experiment_with_tcc(self, dummy_experiment_with_tcc: Experiment) -> Iterable[Tuple[Experiment, dict]]:
+        metrics = dummy_experiment_with_tcc.run()
+
+        yield dummy_experiment_with_tcc, metrics
 
     @mark.parametrize(["is_source", "train_source"], [[False, MagicMock()], [True, MagicMock(spec=DataCatalog)]])
     def test_unit(self, is_source: bool, train_source: MagicMock):
@@ -48,6 +56,9 @@ class Test_run:
             output_folder=output_folder,
             additional_files_to_store=additional_files_to_store,
         )
+        train_checked = MagicMock()
+        test_checked = MagicMock()
+        input_type_checker.transform.side_effect = [train_checked, test_checked]
 
         train_transform = MagicMock()
         test_transform = MagicMock()
@@ -85,9 +96,9 @@ class Test_run:
         input_type_checker.transform.assert_has_calls([call(dataset_train), call(dataset_test)])
 
         # pipeline fitting
-        pipeline.fit.assert_called_once_with(dataset_train)
+        pipeline.fit.assert_called_once_with(train_checked)
         pipeline.transform.assert_has_calls(
-            [call(dataset_train, is_inference=False), call(dataset_test, is_inference=False)]
+            [call(train_checked, is_inference=False), call(test_checked, is_inference=False)]
         )
 
         # model fitting
@@ -128,6 +139,18 @@ class Test_run:
 
     def test_integration(self, run_experiment: Tuple[Experiment, dict]):
         experiment, metrics = run_experiment
+        for ds_name in ["train", "test"]:
+            assert ds_name in metrics
+            assert "diff" in metrics[ds_name]
+
+        test_data = get_dummy_data(10, 2, 3).read()
+        y = test_data["y"]
+        predictions = experiment.model.transform(experiment.pipeline.transform(test_data))["y"]
+
+        assert len(y) == len(predictions)
+
+    def test_integration_with_tcc_instantiation(self, run_experiment_with_tcc: Tuple[Experiment, dict]):
+        experiment, metrics = run_experiment_with_tcc
         for ds_name in ["train", "test"]:
             assert ds_name in metrics
             assert "diff" in metrics[ds_name]
@@ -330,6 +353,34 @@ def test_log_requirements(version_info: VersionInfo):
 
 
 class Test_init:
+    def test_assert_tcc(self):
+        data_sources = {"train": MagicMock()}
+        model = MagicMock()
+        pipeline = MagicMock()
+        evaluator = MagicMock()
+        logger = MagicMock()
+        serialiser = MagicMock()
+        output_folder = MagicMock()
+        additional_files_to_store = MagicMock()
+
+        args = {}
+
+        with pytest_assert(
+            ValueError,
+            "Either type_checker_classes needs to be set or input_type_checker AND output_type_checker have to be set.",
+        ):
+            Experiment(
+                data_sources=data_sources,
+                model=model,
+                pipeline=pipeline,
+                evaluator=evaluator,
+                logger=logger,
+                serialiser=serialiser,
+                output_folder=output_folder,
+                additional_files_to_store=additional_files_to_store,
+                parameters=args,
+            )
+
     def test_assert_train_name(self):
         data_sources = {"test": MagicMock()}
         model = MagicMock()
@@ -358,6 +409,36 @@ class Test_init:
                 additional_files_to_store=additional_files_to_store,
                 parameters=args,
             )
+
+    def test_instantiate_tcc(self):
+        data_sources = {"train": MagicMock()}
+        model = MagicMock()
+        pipeline = MagicMock()
+        evaluator = MagicMock()
+        logger = MagicMock()
+        serialiser = MagicMock()
+        output_folder = MagicMock()
+        tcc = [MagicMock(), MagicMock()]
+        additional_files_to_store = MagicMock()
+
+        exp = Experiment(
+            data_sources=data_sources,
+            model=model,
+            pipeline=pipeline,
+            evaluator=evaluator,
+            logger=logger,
+            serialiser=serialiser,
+            type_checker_classes=tcc,
+            output_folder=output_folder,
+            additional_files_to_store=additional_files_to_store,
+        )
+
+        assert isinstance(exp.input_type_checker, TypeCheckerPipe)
+        assert isinstance(exp.output_type_checker, TypeCheckerPipe)
+
+        pipeline.get_input_datasets_names.assert_called_once_with()
+        assert exp.input_type_checker.input_names == pipeline.get_input_datasets_names.return_value
+        assert exp.output_type_checker.input_names == model.outputs
 
     def test_warning_on_no_args(self):
         data_sources = {"train": MagicMock()}
@@ -407,6 +488,7 @@ def test_from_dictionary():
     model_inputs = MagicMock()
     model_outputs = MagicMock()
     output_folder = MagicMock()
+    type_checker_classes = MagicMock()
     additional_files_to_store = MagicMock()
     seed = 3
 
@@ -420,6 +502,7 @@ def test_from_dictionary():
             evaluator=evaluator,
             logger=logger,
             serialiser=serialiser,
+            type_checker_classes=type_checker_classes,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
             model_inputs=model_inputs,
@@ -442,6 +525,7 @@ def test_from_dictionary():
             logger=logger,
             serialiser=serialiser,
             output_folder=output_folder,
+            type_checker_classes=type_checker_classes,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
             additional_files_to_store=additional_files_to_store,
@@ -529,6 +613,7 @@ def test_from_command_line(name, fixed_args, expected_dict_extras):
     evaluator = MagicMock()
     logger = MagicMock()
     serialiser = MagicMock()
+    type_checker_classes = MagicMock()
     input_type_checker = MagicMock()
     output_type_checker = MagicMock()
     model_inputs = MagicMock()
@@ -557,6 +642,7 @@ def test_from_command_line(name, fixed_args, expected_dict_extras):
             serialiser=serialiser,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
+            type_checker_classes=type_checker_classes,
             model_inputs=model_inputs,
             model_outputs=model_outputs,
             output_folder=output_folder,
@@ -576,6 +662,7 @@ def test_from_command_line(name, fixed_args, expected_dict_extras):
             evaluator=evaluator,
             logger=logger,
             serialiser=serialiser,
+            type_checker_classes=type_checker_classes,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
             model_inputs=model_inputs,
