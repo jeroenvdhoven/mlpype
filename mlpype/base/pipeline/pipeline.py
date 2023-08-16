@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from mlpype.base.data import DataSet
 from mlpype.base.pipeline.pipe import Pipe
@@ -252,3 +252,41 @@ class Pipeline:
             else:
                 output.append(pipe.__str__(indents))
         return "\n".join(output)
+
+    def get_input_datasets_names(self, add_fit_inputs: bool = False) -> List[str]:
+        """Returns all datasets that are considered inputs.
+
+        Args:
+            add_fit_inputs (bool, optional): Flag indicating if fit inputs should be added. Defaults to False.
+
+        Returns:
+            List[str]: All input dataset names that used in this pipeline.
+        """
+        inputs, _ = self._get_input_datasets_names(add_fit_inputs=add_fit_inputs)
+        result = list(inputs)
+        result.sort()
+        return result
+
+    def _get_input_datasets_names(
+        self, add_fit_inputs: bool, seen_names: Optional[Set[str]] = None
+    ) -> Tuple[Set[str], Set[str]]:
+        result: Set[str] = set()
+        if seen_names is None:
+            seen_names = set()
+
+        for pipe in self.pipes:
+            if isinstance(pipe, Pipeline):
+                pl_result, pl_seen = pipe._get_input_datasets_names(add_fit_inputs, seen_names)
+                result = result | pl_result
+                seen_names = seen_names | pl_seen
+            else:
+                input_set = set(pipe.inputs)
+                output_set = set(pipe.outputs)
+                if add_fit_inputs:
+                    input_set = input_set | set(pipe.fit_inputs)
+                # all inputs that are not already part of the currently seen set of names
+                new_datasets = input_set - seen_names
+
+                result = result | new_datasets
+                seen_names = seen_names | input_set | output_set
+        return result, seen_names

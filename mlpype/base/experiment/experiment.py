@@ -14,7 +14,7 @@ from mlpype.base.experiment.argument_parsing import add_args_to_parser_for_pipel
 from mlpype.base.logger import ExperimentLogger
 from mlpype.base.model import Model
 from mlpype.base.pipeline import Pipeline
-from mlpype.base.pipeline.type_checker import TypeCheckerPipe
+from mlpype.base.pipeline.type_checker import TypeChecker, TypeCheckerPipe
 from mlpype.base.serialiser import JoblibSerialiser, Serialiser
 from mlpype.base.utils.parsing import get_args_for_prefix
 
@@ -27,8 +27,9 @@ class Experiment:
         pipeline: Pipeline,
         evaluator: BaseEvaluator,
         logger: ExperimentLogger,
-        input_type_checker: TypeCheckerPipe,
-        output_type_checker: TypeCheckerPipe,
+        type_checker_classes: Optional[List[Type[TypeChecker]]] = None,
+        input_type_checker: Optional[TypeCheckerPipe] = None,
+        output_type_checker: Optional[TypeCheckerPipe] = None,
         serialiser: Optional[Serialiser] = None,
         output_folder: Union[Path, str] = "outputs",
         additional_files_to_store: Optional[List[Union[str, Path]]] = None,
@@ -56,11 +57,15 @@ class Experiment:
             serialiser (Optional[Serialiser]): The serialiser to serialise any Python objects (expect the Model).
                 Defaults to a joblib serialiser.
             output_folder: (Union[Path, str]): The output folder to log artifacts to. Defaults to "outputs".
-            input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
-                data and standardise the order of data. Will be used later to help serialise/deserialise data. Only
-                select datasets required to do a run during inference.
-            output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
-                data and standardise the order of data. Will be used later to help serialise/deserialise data.
+            type_checker_classes (Optional[List[Type[TypeChecker]]]): A list of type checkers. Will be used to
+                instantiate TypeCheckerPipe's for input and output datasets.
+            input_type_checker: (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
+                incoming data and standardise the order of data. Will be used later to help serialise/deserialise data.
+                Only select datasets required to do a run during inference.
+                Not required if `type_checker_classes` is set.
+            output_type_checker: (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
+                outgoing data and standardise the order of data. Will be used later to help serialise/deserialise data.
+                Not required if `type_checker_classes` is set.
             additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
                 It is possible to select a directory as well, not just individual files.
                 Defaults to no extra files (None).
@@ -84,13 +89,30 @@ run here for logging purposes. Consider using the `from_command_line` or
         if isinstance(output_folder, str):
             output_folder = Path(output_folder)
 
+        if type_checker_classes is not None:
+            # create the type checkers manually
+            input_names = pipeline.get_input_datasets_names()
+            output_names = model.outputs
+            self.input_type_checker = TypeCheckerPipe(
+                "_input_type_checker_", input_names, type_checker_classes=type_checker_classes
+            )
+            self.output_type_checker = TypeCheckerPipe(
+                "_input_type_checker_", output_names, type_checker_classes=type_checker_classes
+            )
+        elif input_type_checker is not None and output_type_checker is not None:
+            # use the pre-provided type checkers.
+            self.input_type_checker = input_type_checker
+            self.output_type_checker = output_type_checker
+        else:
+            raise ValueError(
+                "Either type_checker_classes needs to be set or "
+                "input_type_checker AND output_type_checker have to be set."
+            )
+
         self.data_sources = data_sources
         self.model = model
         self.pipeline = pipeline
         self.evaluator = evaluator
-        self.input_type_checker = input_type_checker
-        self.output_type_checker = output_type_checker
-
         self.experiment_logger = logger
         self.parameters = parameters
         self.serialiser = serialiser
@@ -115,14 +137,15 @@ run here for logging purposes. Consider using the `from_command_line` or
 
             self.logger.info("Create input type checker")
             self.input_type_checker.fit(datasets["train"])
-            for ds in datasets.values():
-                self.input_type_checker.transform(ds)
+            input_checked = {name: self.input_type_checker.transform(ds) for name, ds in datasets.items()}
 
             self.logger.info("Fit pipeline")
-            self.pipeline.fit(datasets["train"])
+            self.pipeline.fit(input_checked["train"])
 
             self.logger.info("Transform data")
-            transformed = {name: self.pipeline.transform(data, is_inference=False) for name, data in datasets.items()}
+            transformed = {
+                name: self.pipeline.transform(data, is_inference=False) for name, data in input_checked.items()
+            }
 
             self.logger.info("Fit model")
             self.model.fit(transformed["train"])
@@ -274,11 +297,12 @@ run here for logging purposes. Consider using the `from_command_line` or
         evaluator: BaseEvaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
-        input_type_checker: TypeCheckerPipe,
-        output_type_checker: TypeCheckerPipe,
         model_inputs: List[str],
         model_outputs: List[str],
         parameters: Dict[str, Any],
+        type_checker_classes: Optional[List[Type[TypeChecker]]] = None,
+        input_type_checker: Optional[TypeCheckerPipe] = None,
+        output_type_checker: Optional[TypeCheckerPipe] = None,
         output_folder: Union[Path, str] = "outputs",
         seed: int = 1,
         additional_files_to_store: Optional[List[Union[str, Path]]] = None,
@@ -295,15 +319,20 @@ run here for logging purposes. Consider using the `from_command_line` or
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Union[Path, str]): The output folder to log artifacts to.
-            input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
-                data and standardise the order of data. Will be used later to help serialise/deserialise data.
-            output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
-                data and standardise the order of data. Will be used later to help serialise/deserialise data.
             model_inputs: (List[str]): Input dataset names to the model.
             model_outputs: (List[str]): Output dataset names to the model.
-            seed (int): The RNG seed to ensure reproducability.
             parameters (Optional[Dict[str, Any]]): Any parameters to log as part of this experiment.
                 Defaults to None.
+            type_checker_classes (Optional[List[Type[TypeChecker]]]): A list of type checkers. Will be used to
+                instantiate TypeCheckerPipe's for input and output datasets.
+            input_type_checker: (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
+                incoming data and standardise the order of data. Will be used later to help serialise/deserialise data.
+                Only select datasets required to do a run during inference.
+                Not required if `type_checker_classes` is set.
+            output_type_checker: (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
+                outgoing data and standardise the order of data. Will be used later to help serialise/deserialise data.
+                Not required if `type_checker_classes` is set.
+            seed (int): The RNG seed to ensure reproducability.
             additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
                 Defaults to no extra files (None).
 
@@ -324,6 +353,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger=logger,
             serialiser=serialiser,
             output_folder=output_folder,
+            type_checker_classes=type_checker_classes,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
             additional_files_to_store=additional_files_to_store,
@@ -339,10 +369,11 @@ run here for logging purposes. Consider using the `from_command_line` or
         evaluator: BaseEvaluator,
         logger: ExperimentLogger,
         serialiser: Serialiser,
-        input_type_checker: TypeCheckerPipe,
-        output_type_checker: TypeCheckerPipe,
         model_inputs: List[str],
         model_outputs: List[str],
+        type_checker_classes: Optional[List[Type[TypeChecker]]] = None,
+        input_type_checker: Optional[TypeCheckerPipe] = None,
+        output_type_checker: Optional[TypeCheckerPipe] = None,
         output_folder: Union[Path, str] = "outputs",
         seed: int = 1,
         additional_files_to_store: Optional[List[Union[str, Path]]] = None,
@@ -360,12 +391,17 @@ run here for logging purposes. Consider using the `from_command_line` or
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
             output_folder: (Union[Path, str]): The output folder to log artifacts to.
-            input_type_checker: (TypeCheckerPipe): A type checker for all input data. Will be used to verify incoming
-                data and standardise the order of data. Will be used later to help serialise/deserialise data.
-            output_type_checker: (TypeCheckerPipe): A type checker for all output data. Will be used to verify outgoing
-                data and standardise the order of data. Will be used later to help serialise/deserialise data.
             model_inputs: (List[str]): Input dataset names to the model.
             model_outputs: (List[str]): Output dataset names to the model.
+            type_checker_classes (Optional[List[Type[TypeChecker]]]): A list of type checkers. Will be used to
+                instantiate TypeCheckerPipe's for input and output datasets.
+            input_type_checker: (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
+                incoming data and standardise the order of data. Will be used later to help serialise/deserialise data.
+                Only select datasets required to do a run during inference.
+                Not required if `type_checker_classes` is set.
+            output_type_checker: (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
+                outgoing data and standardise the order of data. Will be used later to help serialise/deserialise data.
+                Not required if `type_checker_classes` is set.
             seed (int): The RNG seed to ensure reproducability.
             additional_files_to_store (Optional[List[Union[str, Path]]], optional): Extra files to store,
                 such as python files. Defaults to no extra files (None).
@@ -393,6 +429,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger=logger,
             serialiser=serialiser,
             output_folder=output_folder,
+            type_checker_classes=type_checker_classes,
             input_type_checker=input_type_checker,
             output_type_checker=output_type_checker,
             additional_files_to_store=additional_files_to_store,

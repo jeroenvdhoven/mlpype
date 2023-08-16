@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 from mlflow.artifacts import download_artifacts
 from mlflow.tracking import set_tracking_uri
-from mlflow.tracking.fluent import get_experiment_by_name, list_run_infos
+from mlflow.tracking.fluent import get_experiment_by_name, search_runs
 
 from mlpype.base.deploy import Inferencer
 
@@ -33,9 +33,9 @@ def load_experiment_from_mlflow(
     # verify the run ID provided is part of the given experiment.
     exp_id = get_experiment_by_name(experiment_name)
     assert exp_id is not None, f"Experiment {experiment_name} does not exist in {url}."
-    assert run_id in [
-        run.run_id for run in list_run_infos(exp_id.experiment_id)
-    ], f"Run ID {run_id} is not present in the given experiment."
+    runs = search_runs(exp_id.experiment_id, output_format="list")
+    assert isinstance(runs, list)
+    assert run_id in [run.info.run_id for run in runs], f"Run ID {run_id} is not present in the given experiment."
 
     if directory is None:
         with TemporaryDirectory(prefix="mlflow_model") as tmp_dir:
