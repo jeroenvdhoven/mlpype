@@ -392,11 +392,22 @@ class Test_Pipeline:
                 ["a"],
             ],
             [
+                "ignore-inference",
+                Pipeline(
+                    [
+                        Pipe("1", MagicMock, inputs=["a"], outputs=["b"], fit_inputs=["b"]),
+                        Pipe("2", MagicMock, inputs=["b"], outputs=["c"], fit_inputs=["d"], skip_on_inference=True),
+                    ]
+                ),
+                False,
+                ["a"],
+            ],
+            [
                 "add-fit-nested",
                 Pipeline(
                     [
                         Pipe("1", MagicMock, inputs=["a"], outputs=["b"], fit_inputs=["b"]),
-                        Pipe("2", MagicMock, inputs=["b"], outputs=["c"], fit_inputs=["d"]),
+                        Pipe("2", MagicMock, inputs=["b"], outputs=["c"], fit_inputs=["d"], skip_on_inference=True),
                     ]
                 ),
                 True,
