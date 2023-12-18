@@ -20,7 +20,7 @@ from mlpype.spark.evaluate.spark_evaluator import SparkEvaluator
 from mlpype.spark.model import LinearSparkModel
 from mlpype.spark.pipeline import SparkTypeChecker
 from mlpype.spark.pipeline.spark_pipe import SparkPipe
-from mlpype.spark.serialisation.spark_serialiser import SparkSerialiser
+from mlpype.spark.serialiser.spark_serialiser import SparkSerialiser
 
 ss = SparkSession.builder.getOrCreate()
 
