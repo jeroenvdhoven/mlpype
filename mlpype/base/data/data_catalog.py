@@ -158,7 +158,7 @@ class DataCatalog(Dict[str, DataSource[Data]]):
 
         Supported functionality includes:
         - Importing a class, e.g. pandas.DataFrame.
-        - Importing a static / class method, e.g. ds_range_allocation.data.catalog.DataCatalog:from_yaml
+        - Importing a static / class method, e.g. mlpype.base.data.catalog.DataCatalog:from_yaml
 
         Args:
             full_path (str): The path leading to the class or function to import.

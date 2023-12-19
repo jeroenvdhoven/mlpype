@@ -9,7 +9,7 @@ from pyspark.sql import SparkSession
 from mlpype.base.data import DataSet
 from mlpype.base.pipeline import Pipeline
 from mlpype.spark.pipeline import SparkPipe
-from mlpype.spark.serialisation import SparkSerialiser
+from mlpype.spark.serialiser import SparkSerialiser
 from tests.spark.utils import spark_session
 
 spark_session
