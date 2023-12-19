@@ -11,12 +11,12 @@ Data = TypeVar("Data")
 class Evaluator(BaseEvaluator[Data]):
     def __init__(
         self,
-        functions: Dict[str, Callable[[Union[Data, Data]], Union[float, int, str, bool]]],
+        functions: Dict[str, Callable[[Data, Data], Union[float, int, str, bool]]],
     ) -> None:
         """Evaluates a Model on the given Functions.
 
         Args:
-            functions (Dict[str, Callable[[Union[Data, Data]], Union[float, int, str, bool]]]):
+            functions (Dict[str, Callable[[Data, Data], Union[float, int, str, bool]]]):
                 A dict of metric names and metric functions. We expect each to return
                 a float, int, string, or boolean value. We provide the arguments as follows:
                     - first, all labeled data, e.g. y_true.
