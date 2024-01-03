@@ -65,7 +65,7 @@ class ExperimentLogger(ABC):
 
         Args:
             model (Model): The Model to be logged.
-            MODEL_FOLDER (Union[str, Path]): The file to log the Model to.
+            folder (Union[str, Path]): The file to log the Model to.
         """
         model.save(folder)
         self.log_file(folder)

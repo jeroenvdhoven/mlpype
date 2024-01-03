@@ -43,8 +43,8 @@ class Experiment:
                 - `pipeline__<pipe_name>__<arg> for pipeline parameters.
 
         Args:
-            data_sources (Dict[str, Dict[str, Union[DataCatalog, DataSet]]]): The
-                DataCatalog or DataSets to use, in DataSource form. Should contain at least a 'train' DataSet.
+            data_sources (Dict[str, Union[DataCatalog, DataSet]]): The DataCatalog or DataSets to use, in DataSource
+                form. Should contain at least a 'train' DataSet.
                 DataCatalogs will be initialised (`read`) in the beginning of the run. It is recommended to use
                 DataCatalog in distributed cases, but for quick experimentation DataSets tend to be more useful.
                 Please note that the DataSet will be changed by the Pipeline and Model. If you want to use a
@@ -54,18 +54,17 @@ class Experiment:
             evaluator (BaseEvaluator): The evaluator to test how good your Model performs.
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
-            serialiser (Optional[Serialiser]): The serialiser to serialise any Python objects (expect the Model).
-                Defaults to a joblib serialiser.
-            output_folder: (Union[Path, str]): The output folder to log artifacts to. Defaults to "outputs".
             type_checker_classes (Optional[List[Type[TypeChecker]]]): A list of type checkers. Will be used to
                 instantiate TypeCheckerPipe's for input and output datasets.
             input_type_checker: (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
                 incoming data and standardise the order of data. Will be used later to help serialise/deserialise data.
-                Only select datasets required to do a run during inference.
                 Not required if `type_checker_classes` is set.
             output_type_checker: (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
                 outgoing data and standardise the order of data. Will be used later to help serialise/deserialise data.
                 Not required if `type_checker_classes` is set.
+            serialiser (Optional[Serialiser]): The serialiser to serialise any Python objects (expect the Model).
+                Defaults to a joblib serialiser.
+            output_folder: (Union[Path, str]): The output folder to log artifacts to. Defaults to "outputs".
             additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
                 It is possible to select a directory as well, not just individual files.
                 Defaults to no extra files (None).
@@ -123,7 +122,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         """Execute the experiment.
 
         Returns:
-            Dict[str, Union[str, float, int, bool]]: The performance metrics of this run.
+            Dict[str, Dict[str, Union[str, float, int, bool]]]: The performance metrics of this run.
         """
         with self.experiment_logger:
             self.logger.info("Log parameters")
@@ -291,7 +290,7 @@ run here for logging purposes. Consider using the `from_command_line` or
     @classmethod
     def from_dictionary(
         cls,
-        data_sources: Dict[str, DataCatalog],
+        data_sources: Dict[str, Union[DataCatalog, DataSet]],
         model_class: Type[Model],
         pipeline: Pipeline,
         evaluator: BaseEvaluator,
@@ -310,7 +309,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         """Creates an Experiment from a dictionary with parameters.
 
         Args:
-            data_sources (Dict[str, DataCatalog]): The DataSets to use, in DataSource form.
+            data_sources (Dict[str, Union[DataCatalog, DataSet]]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
@@ -318,7 +317,6 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            output_folder: (Union[Path, str]): The output folder to log artifacts to.
             model_inputs: (List[str]): Input dataset names to the model.
             model_outputs: (List[str]): Output dataset names to the model.
             parameters (Optional[Dict[str, Any]]): Any parameters to log as part of this experiment.
@@ -332,6 +330,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             output_type_checker: (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
                 outgoing data and standardise the order of data. Will be used later to help serialise/deserialise data.
                 Not required if `type_checker_classes` is set.
+            output_folder: (Union[Path, str]): The output folder to log artifacts to.
             seed (int): The RNG seed to ensure reproducability.
             additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
                 Defaults to no extra files (None).
@@ -363,7 +362,7 @@ run here for logging purposes. Consider using the `from_command_line` or
     @classmethod
     def from_command_line(
         cls,
-        data_sources: Dict[str, DataCatalog],
+        data_sources: Dict[str, Union[DataCatalog, DataSet]],
         model_class: Type[Model],
         pipeline: Pipeline,
         evaluator: BaseEvaluator,
@@ -382,7 +381,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         """Automatically initialises an Experiment from command line arguments.
 
         Args:
-            data_sources (Dict[str, DataCatalog]): The DataSets to use, in DataSource form.
+            data_sources (Dict[str, Union[DataCatalog, DataSet]]): The DataSets to use, in DataSource form.
                 Should contain at least a 'train' DataSet. These will be initialised in the beginning of the run.
             model_class (Type[Model]): The class of the Model to fit.
             pipeline (Pipeline): The Pipeline to use to transform data before feeding it to the Model.
@@ -390,7 +389,6 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            output_folder: (Union[Path, str]): The output folder to log artifacts to.
             model_inputs: (List[str]): Input dataset names to the model.
             model_outputs: (List[str]): Output dataset names to the model.
             type_checker_classes (Optional[List[Type[TypeChecker]]]): A list of type checkers. Will be used to
@@ -402,6 +400,7 @@ run here for logging purposes. Consider using the `from_command_line` or
             output_type_checker: (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
                 outgoing data and standardise the order of data. Will be used later to help serialise/deserialise data.
                 Not required if `type_checker_classes` is set.
+            output_folder: (Union[Path, str]): The output folder to log artifacts to.
             seed (int): The RNG seed to ensure reproducability.
             additional_files_to_store (Optional[List[Union[str, Path]]], optional): Extra files to store,
                 such as python files. Defaults to no extra files (None).

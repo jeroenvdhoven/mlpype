@@ -42,6 +42,11 @@ repos:
       additional_dependencies:
         - flake8-docstrings
 
+- repo: https://github.com/jsh9/pydoclint
+  rev: '0.3.8'
+  hooks:
+    - id: pydoclint
+
 # - repo: https://github.com/milin/giticket
 #   # Add JIRA ticket from branch name to commit
 #   rev: 'v1.3'

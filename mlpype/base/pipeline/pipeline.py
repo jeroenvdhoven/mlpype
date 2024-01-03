@@ -55,7 +55,7 @@ class Pipeline:
 
         Args:
             data (DataSet): The DataSet to use in transforming.
-            is_inference (Optional[bool]): Flag indicating if we're in inference
+            is_inference (bool, optional): Flag indicating if we're in inference
                 mode for this transformation. We'll skip this step if
                 skip_on_inference was set to True.
 
@@ -76,7 +76,7 @@ class Pipeline:
 
         Args:
             data (DataSet): The DataSet to use in inverse transforming.
-            is_inference (Optional[bool]): Flag indicating if we're in inference
+            is_inference (bool, optional): Flag indicating if we're in inference
                 mode for this transformation. We'll skip this step if
                 skip_on_inference was set to True.
 
@@ -111,11 +111,14 @@ class Pipeline:
         """Create a copy of this Pipeline using the given dictionary.
 
         Args:
-            args (Dict[str, Any]): Dictionary containing new arguments.
+            args (Optional[Dict[str, Any]]): Dictionary containing new arguments.
                 The keys of the `args` dict should be of the form `<name>__<arg_name>`:
                 - name: the name of the Pipe.
                 - arg_name: the argument name to use.
                 The values will be used as argument parameters.
+
+        Returns:
+            Pipeline: A copy of this pipeline.
         """
         result = Pipeline([])
         for pipe in self.pipes:
@@ -157,6 +160,9 @@ class Pipeline:
 
     def __getitem__(self, pos: Union[int, str]) -> Union["Pipeline", Pipe]:
         """Gets the Pipe/Pipeline at the given position.
+
+        Args:
+            pos (Union[int, str]): the position to retrieve.
 
         Raises:
             KeyError: if `pos` does not exist in this object.

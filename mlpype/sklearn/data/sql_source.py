@@ -21,8 +21,8 @@ class SqlSource(DataSource[pd.DataFrame]):
         Args:
             sql (str): The sql and the `sql` argument to `Pandas read_sql`.
             con (str): The con string and `con` argument to `Pandas read_sql`.
-            args: Positional arguments to be passed to `Pandas read_sql`.
-            kwargs: Keyword arguments to be passed to `Pandas read_sql`.
+            *args (Any): Positional arguments to be passed to `Pandas read_sql`.
+            **kwargs (Any): Keyword arguments to be passed to `Pandas read_sql`.
         """
         self.sql = sql
         self.con = con

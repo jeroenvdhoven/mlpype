@@ -86,6 +86,9 @@ class Model(ABC, Generic[Data]):
 
         Args:
             folder (Union[str, Path]): The folder to load the model from.
+
+        Returns:
+            Model: self
         """
         if isinstance(folder, str):
             folder = Path(folder)
@@ -102,7 +105,14 @@ class Model(ABC, Generic[Data]):
         """Loads a model from file into this Model.
 
         Args:
-            folder (Union[str, Path]): The folder to load the model from.
+            folder (Path): The folder to load the model from.
+            inputs (List[str]): A list of names of input Data. This determines which Data is
+                used to fit the model.
+            outputs (List[str]): A list of names of output Data. This determines the names of
+                output variables.
+
+        Returns:
+            Model: self
         """
         raise NotImplementedError
 
@@ -113,6 +123,9 @@ class Model(ABC, Generic[Data]):
 
         Args:
             data (DataSet): The DataSet to fit this Model on.
+
+        Returns:
+            Model: self
         """
         self._fit(*data.get_all(self.inputs), *data.get_all(self.outputs))
         return self
