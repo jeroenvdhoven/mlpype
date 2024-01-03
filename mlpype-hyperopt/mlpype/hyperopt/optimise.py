@@ -109,10 +109,10 @@ def optimise_experiment(
             Useful if you want to continue an old optimisation run without losing information.
             By default a new Trials object will be created.
         training_seed (int): Seed used to initialise a new Experiment (and run).
-        **kwargs: Additional arguments to be provided to hyperopt's `fmin`.
+        **kwargs (Any): Additional arguments to be provided to hyperopt's `fmin`.
 
     Returns:
-        A tuple consisting of:
+        Tuple[Union[int, None], Union[float, None], Dict[str, Any], Trials]: A tuple consisting of:
             - The best trial index (or None if no good trial was found)
             - The performance of the best trial (or None if no good trial was found)
             - The arguments for the best trial.

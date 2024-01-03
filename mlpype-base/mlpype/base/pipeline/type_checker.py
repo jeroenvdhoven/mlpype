@@ -23,9 +23,13 @@ class DataModel(BaseModel, ABC):
     def to_model(cls, data: Any) -> "DataModel":
         """Convert the Model to actual data (e.g. numpy or pandas).
 
+        Args:
+            data (Any): Data to be converted to this DataModel.
+
         Returns:
-            Any: The converted data.
+            DataModel: The converted data.
         """
+        raise NotImplementedError
 
 
 class DataSetModel(BaseModel):
@@ -168,6 +172,9 @@ class DataSetTypeChecker(Operator[Data]):
     def fit(self, *data: Data) -> "Operator":
         """Fits all type checkers to the given data.
 
+        Args:
+            *data (Data): all Data to be used to fit type checkers.
+
         Returns:
             Operator: self.
         """
@@ -186,6 +193,9 @@ class DataSetTypeChecker(Operator[Data]):
 
     def transform(self, *data: Data) -> Tuple[Data, ...]:
         """Checks if the given data fits the fitted Type Checkers.
+
+        Args:
+            *data (Data): all Data to be type checked.
 
         Returns:
             Tuple[Data, ...]: returned result from each type_checker, if

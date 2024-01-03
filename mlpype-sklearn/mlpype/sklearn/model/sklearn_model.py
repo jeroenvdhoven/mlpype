@@ -42,8 +42,8 @@ class SklearnModel(Model[SklearnData], ABC, Generic[T]):
                 used to fit the model.
             outputs (List[str]): A list of names of output Data. This determines the names of
                 output variables.
-            model (Optional[SklearnModelBaseType]): An object that has fit() and predict() methods. If none,
-                we will use the model_args to instantiate a new model.
+            model (Optional[T]): An object that has fit() and predict() methods. If none,
+                we will use the model_args to instantiate a new model. Should be of type SklearnModelBaseType
             seed (int, optional): The RNG seed to ensure reproducability.. Defaults to 1.
             **model_args (Any): Optional keyword arguments passed to the model class to instantiate a new
                 model if `model` is None.

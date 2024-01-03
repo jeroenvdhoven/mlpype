@@ -50,7 +50,7 @@ class SparkPipe(Pipe):
 
         Args:
             data (DataSet): The DataSet to use in transforming.
-            is_inference (Optional[bool]): Flag indicating if we're in inference
+            is_inference (bool, optional): Flag indicating if we're in inference
                 mode for this transformation. We'll skip this step if
                 skip_on_inference was set to True.
 

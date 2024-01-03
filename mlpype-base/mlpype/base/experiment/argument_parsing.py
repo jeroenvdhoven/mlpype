@@ -93,7 +93,7 @@ def add_args_to_parser_for_function(
         prefix (str): A prefix that should be set on each argument name before adding it to
             the ArgumentParser.
         excluded (Optional[List[str]]): argument names to never include. By default 'self' and 'cls' are ignored.
-        class_docstring_args: (Optional[Dict[str, Union[type, None]]): docstring arguments obtained from the class.
+        class_docstring_args: (Optional[Dict[str, Union[type, None]]]): docstring arguments obtained from the class.
             Useful for init functions, since those can be documented in multiple places.
     """
     args = inspect.signature(function)
@@ -127,7 +127,7 @@ def _parse_docs_to_type_args(
 
     Args:
         func (Callable): The function whose docstring needs to be read.
-        extra_mappings (Dict[str, type], optional): Optional extra regex -> type mappings.
+        extra_mappings (Optional[Dict[str, type]], optional): Optional extra regex -> type mappings.
             Defaults to no extra mappings.
         include_none_args (bool, optional): Whether to include arguments in the output
             with no good type mappings. Defaults to False.
@@ -190,7 +190,7 @@ def add_argument(
         name (str): The name of the argument
         prefix (str): A prefix that should be set on each argument name before adding it to
             the ArgumentParser.
-        class_ (type): The class of the argument. Currently we support:
+        class_ (Union[type, None]): The class of the argument. Currently we support:
             - str, float, int, bool
             - lists / tuples / iterables of the above 4 arguments.
         is_required (bool): Whether the argument is required or optional.

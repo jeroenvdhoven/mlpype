@@ -17,6 +17,9 @@ class Operator(ABC, Generic[Data]):
     def fit(self, *data: Data) -> "Operator":
         """Fit the Operator to the given Data.
 
+        Args:
+            *data (Data): all Data to be used to fit this pipe.
+
         Returns:
             Operator: this object.
         """
@@ -29,8 +32,11 @@ class Operator(ABC, Generic[Data]):
         You do not need to return the same amount of Data as you
         used for input.
 
+        Args:
+            *data (Data): all Data to be used to transform using this pipe.
+
         Returns:
-            Tuple[Data]: A Tuple of Data elements, the transformed
+            Tuple[Data, ...]: A Tuple of Data elements, the transformed
                 Data.
         """
         raise NotImplementedError
@@ -38,8 +44,11 @@ class Operator(ABC, Generic[Data]):
     def inverse_transform(self, *data: Data) -> Tuple[Data, ...]:
         """Optionally, you can include an option to inverse transform the data.
 
+        Args:
+            *data (Data): all Data to be used to inverse transform using this pipe.
+
         Returns:
-            Tuple[Data]: An Tuple of Data elements, the inverse transformed
+            Tuple[Data, ...]: An Tuple of Data elements, the inverse transformed
                 Data.
         """
         return data

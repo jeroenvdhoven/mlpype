@@ -27,7 +27,7 @@ class Pipe:
             kw_args (Optional[Dict[str, Any]]): keyword arguments to initialise the Operator.
             fit_inputs: (Optional[List[str]]): optional additional arguments to fit().
                 Will not be used in transform().
-            skip_on_inference (Optional[bool]): Flag indicating if this step should be skipped
+            skip_on_inference (bool, optional): Flag indicating if this step should be skipped
                 at inference time. Useful to pre-process response variables in the pipeline.
         """
         assert "__" not in name, "Pipe names cannot contain the string `__`"
@@ -64,7 +64,7 @@ class Pipe:
 
         Args:
             data (DataSet): The DataSet to use in transforming.
-            is_inference (Optional[bool]): Flag indicating if we're in inference
+            is_inference (bool, optional): Flag indicating if we're in inference
                 mode for this transformation. We'll skip this step if
                 skip_on_inference was set to True.
 
@@ -95,7 +95,7 @@ class Pipe:
 
         Args:
             data (DataSet): The DataSet to use in inverse transforming.
-            is_inference (Optional[bool]): Flag indicating if we're in inference
+            is_inference (bool, optional): Flag indicating if we're in inference
                 mode for this inverse transformation. We'll skip this step if
                 skip_on_inference was set to True.
 
@@ -134,7 +134,7 @@ class Pipe:
                 If set to None, we'll use the same arguments as before.
 
         Returns:
-            A new copy of this Pipe, with a new Operator object.
+            Pipe: A new copy of this Pipe, with a new Operator object.
         """
         if args is None:
             args = self.args

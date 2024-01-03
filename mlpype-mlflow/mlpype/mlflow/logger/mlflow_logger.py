@@ -85,7 +85,7 @@ class MlflowLogger(ExperimentLogger):
                 to the current directory.
 
         Returns:
-            Repo or None: None if no repo is found, otherwise a GitPython Repo.
+            Union[Repo, None]: None if no repo is found, otherwise a GitPython Repo.
         """
         repo = None
         directory = directory.absolute()

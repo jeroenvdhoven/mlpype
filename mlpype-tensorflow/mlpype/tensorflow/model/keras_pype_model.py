@@ -51,8 +51,9 @@ class KerasPypeModel(Model[Tensor], ABC, Generic[T]):
             metrics (Optional[List[Union[Metric, Dict[str, Metric]]]]): Additional metrics to
                 use while training th emodel. Defaults to no metrics.
             model (Optional[T]): The Keras Model to train. By Default we'll use excess arguments
-                to initialise the default model.
+                to initialise the default model. Should be of type KerasBaseModel
             seed (int, optional): The seed to initialise tensorflow with. Defaults to 1.
+            **model_args (Any): any keywords arguments to be passed to _init_model.
         """
         super().__init__(inputs, outputs, seed)
         if metrics is None:

@@ -13,12 +13,15 @@ def switch_directory(directory: Union[str, Path]) -> Generator:
     """Allows you to temporarily switch Python over to a different directory.
 
     This changes the following:
-        - The current working directory will change to `target_workspace`
+        - The current working directory will change to `directory`
 
     These changes will be undone once the context manager ends.
 
     Args:
-        target_workspace (Union[str, Path]): The directory to switch to.
+        directory (Union[str, Path]): The directory to switch to.
+
+    Yields:
+        Generator: An empty generator.
     """
     # create backups of the workspace and path.
     target_directory = Path(directory)
@@ -51,6 +54,9 @@ def switch_workspace(
         target_workspace (Union[str, Path]): The directory to switch to.
         extra_files (Optional[List[Union[str, Path]]]): Any additional files whose contents should
             be added to the current python program. Defaults to no extra files.
+
+    Yields:
+        Generator: An empty generator.
     """
     if extra_files is None:
         extra_files = []

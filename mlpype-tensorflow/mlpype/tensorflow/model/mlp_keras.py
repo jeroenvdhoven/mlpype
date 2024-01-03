@@ -24,6 +24,8 @@ class MLPKeras(Model):
             layer_size (int): The dimensions of hidden layers.
             activation (str, optional): The activation function of hidden layers. Defaults to None.
             output_activation (str, optional): The output activation function. Defaults to None.
+            *args (Any): any positional arguments to be passed to Model.
+            **kwargs (Any): any keywords arguments to be passed to Model.
         """
         super().__init__(*args, **kwargs)
         assert n_layers >= 0, "Need at least 1 layer in the model."

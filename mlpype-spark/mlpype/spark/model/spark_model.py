@@ -44,7 +44,10 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
                 using `model_args`
             model (Optional[BaseSparkModel]): The Spark Model. Defaults to None. If set to None,
                 this model can't be serialised or used for inference.
+            predictor (Optional[T]): The Spark Predictor. If not set, we try to instantiate it
+                using `model_args`. Should be of Predictor type.
             seed (int, optional): Spark Seed. Currently ignored, unfortunately. Defaults to 1.
+            **model_args (Any): any keywords arguments to be passed to _init_model.
         """
         assert len(inputs) == 1, "SparkML only requires a single DataFrame as input and output, the same one."
         assert len(outputs) == 1, "SparkML only requires a single DataFrame as input and output, the same one."
@@ -78,6 +81,9 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
 
         Args:
             data (DataSet): The DataSet to fit this Model on.
+
+        Returns:
+            Model: self
         """
         self._fit(*data.get_all(self.inputs))
         return self

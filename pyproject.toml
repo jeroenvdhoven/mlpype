@@ -54,3 +54,9 @@ disallow_untyped_defs = true
 python_version = "3.8"
 implicit_reexport = true
 
+[tool.pydoclint]
+style = 'google'
+exclude = 'tests|examples'
+skip-checking-short-docstrings = true
+skip-checking-raises = true
+allow-init-docstring = true
