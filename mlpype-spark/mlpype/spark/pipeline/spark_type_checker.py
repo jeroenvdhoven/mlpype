@@ -27,7 +27,7 @@ class SparkData(DataModel):
 
         spark_session = SparkSession.builder.getOrCreate()
 
-        return spark_session.createDataFrame(list_format)
+        return spark_session.createDataFrame(list_format)  # type: ignore
 
     @classmethod
     def to_model(cls, data: SparkDataFrame) -> "SparkData":
