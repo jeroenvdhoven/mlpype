@@ -51,7 +51,7 @@ class SparkEvaluator(BaseEvaluator):
 
         result = {}
         for metric in self.metrics:
-            value = self.evaluator.setMetricName(metric).evaluate(predictions[0])
+            value = self.evaluator.setMetricName(metric).evaluate(predictions[0])  # type: ignore
             result[metric] = value
         return result
 
