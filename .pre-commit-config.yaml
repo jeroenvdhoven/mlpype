@@ -30,7 +30,7 @@ repos:
   hooks:
   -   id: mypy
       # This setting is not that strict: see https://mypy.readthedocs.io/en/stable/config_file.html for more config options.
-      exclude: ^(tests)|(docs)/
+      exclude: (setup)|(tests)|(docs)
       additional_dependencies:
         - "types-PyYAML"
 
