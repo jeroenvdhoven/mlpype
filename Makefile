@@ -6,7 +6,7 @@ local-install:
 	./scripts/dev_install.sh
 
 # To test if packages can be build
-build:
+build-packages:
 	./scripts/build.sh
 
 clean:
@@ -17,7 +17,7 @@ host-pypi-local:
 	pypi-server run -p 8080 packages -a . -P . --overwrite &
 	twine upload --repository-url http://0.0.0.0:8080 dist/* -u '' -p ''
 
-build-and-host-local: clean build host-pypi-local
+build-and-host-local: clean build-packages host-pypi-local
 
 # Test and coverage commands
 test-unit:
