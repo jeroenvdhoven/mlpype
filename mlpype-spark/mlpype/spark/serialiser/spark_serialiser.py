@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import Any, List, Type, Union
 
 import joblib
-from pyspark.ml import Transformer
 
 from mlpype.base.pipeline import Pipe, Pipeline
 from mlpype.base.serialiser import Serialiser
+from mlpype.spark.model.types import SerialisableTransformer
 from mlpype.spark.pipeline.spark_pipe import SparkPipe
 
 
@@ -71,7 +71,7 @@ class SparkSerialiser(Serialiser):
                 self._serialise_joblib(step, pipe_path / self.BASE_PIPE_FILE)
 
                 # store the class for re-importing
-                transformer: Transformer = step.fitted
+                transformer: SerialisableTransformer = step.fitted
                 self._serialise_joblib(type(transformer), pipe_path / self.SPARK_TRANSFORMER_CLASS_FILE)
                 transformer.save(str(pipe_path / self.SPARK_TRANSFORMER_FILE))
             elif isinstance(step, Pipe):
@@ -113,7 +113,7 @@ class SparkSerialiser(Serialiser):
                     pipes.append(self._deserialise_pipeline(step_path))
                 else:
                     pipe: SparkPipe = self._deserialise_joblib(step_path / self.BASE_PIPE_FILE)
-                    fitted_class: Type[Transformer] = self._deserialise_joblib(
+                    fitted_class: Type[SerialisableTransformer] = self._deserialise_joblib(
                         step_path / self.SPARK_TRANSFORMER_CLASS_FILE
                     )
                     pipe.fitted = fitted_class.load(str(step_path / self.SPARK_TRANSFORMER_FILE))

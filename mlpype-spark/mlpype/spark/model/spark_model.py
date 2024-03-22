@@ -5,7 +5,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Any, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
 
-from pyspark.ml import Model as BaseSparkModel
 from pyspark.ml import Predictor
 from pyspark.sql import DataFrame as SparkDataFrame
 
@@ -13,8 +12,9 @@ from mlpype.base.data import DataSet
 from mlpype.base.experiment.argument_parsing import add_args_to_parser_for_class
 from mlpype.base.model import Model
 from mlpype.base.serialiser import JoblibSerialiser
+from mlpype.spark.model.types import SerialisablePredictor, SerialisableSparkModel
 
-T = TypeVar("T", bound=Predictor)
+T = TypeVar("T", bound=SerialisablePredictor)
 
 
 class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
@@ -28,7 +28,7 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         inputs: List[str],
         outputs: List[str],
         output_col: Optional[str] = None,
-        model: Optional[BaseSparkModel] = None,
+        model: Optional[SerialisableSparkModel] = None,
         predictor: Optional[T] = None,
         seed: int = 1,
         **model_args: Any,
@@ -54,7 +54,7 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         if predictor is None:
             predictor = self._init_model(model_args)
 
-        self.model = model
+        self.model: Optional[SerialisableSparkModel] = model
         self.predictor = predictor
         self.output_col = output_col
 
@@ -138,10 +138,10 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         output_col = config["output_col"]
 
         predictor_class: Type[Predictor] = cls._get_annotated_class()
-        model_class: Type[BaseSparkModel] = serialiser.deserialise(str(folder / cls.SPARK_MODEL_CLASS_PATH))
+        model_class: Type[SerialisableSparkModel] = serialiser.deserialise(str(folder / cls.SPARK_MODEL_CLASS_PATH))
 
         predictor: Predictor = predictor_class.load(str(folder / cls.SPARK_PREDICTOR_PATH))
-        model: BaseSparkModel = model_class.load(str(folder / cls.SPARK_MODEL_PATH))
+        model: SerialisableSparkModel = model_class.load(str(folder / cls.SPARK_MODEL_PATH))
 
         return cls(inputs=inputs, outputs=outputs, predictor=predictor, model=model, output_col=output_col, seed=1)
 
