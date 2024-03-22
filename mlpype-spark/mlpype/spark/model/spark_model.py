@@ -5,7 +5,6 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Any, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
 
-from pyspark.ml import Predictor
 from pyspark.sql import DataFrame as SparkDataFrame
 
 from mlpype.base.data import DataSet
@@ -41,7 +40,7 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
             output_col (Optional[str]): The name of the column where the model will put the output.
                 Defaults to None, which means we won't select any columns and instead return the full output
                 of the model.
-            predictor (Optional[Predictor]): The Spark Predictor. If not set, we try to instantiate it
+            predictor (Optional[SerialisablePredictor]): The Spark Predictor. If not set, we try to instantiate it
                 using `model_args`
             model (Optional[BaseSparkModel]): The Spark Model. Defaults to None. If set to None,
                 this model can't be serialised or used for inference.
@@ -137,10 +136,10 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
             config = json.load(f)
         output_col = config["output_col"]
 
-        predictor_class: Type[Predictor] = cls._get_annotated_class()
+        predictor_class: Type[SerialisablePredictor] = cls._get_annotated_class()
         model_class: Type[SerialisableSparkModel] = serialiser.deserialise(str(folder / cls.SPARK_MODEL_CLASS_PATH))
 
-        predictor: Predictor = predictor_class.load(str(folder / cls.SPARK_PREDICTOR_PATH))
+        predictor: SerialisablePredictor = predictor_class.load(str(folder / cls.SPARK_PREDICTOR_PATH))
         model: SerialisableSparkModel = model_class.load(str(folder / cls.SPARK_MODEL_PATH))
 
         return cls(inputs=inputs, outputs=outputs, predictor=predictor, model=model, output_col=output_col, seed=1)
