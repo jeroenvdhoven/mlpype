@@ -20,7 +20,7 @@ class SparkPipe(Pipe):
     ) -> None:
         """Same init as Pipe."""
         super().__init__(name, operator, inputs, outputs, kw_args, fit_inputs, skip_on_inference)
-        self.fitted = None
+        self.fitted: Union[None, Transformer, Estimator] = None
 
     def fit(self, data: DataSet) -> "SparkPipe":
         """Fits the SparkPipe to the given DataSet.
