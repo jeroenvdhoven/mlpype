@@ -103,7 +103,7 @@ jobs:
         run: make local-install
 
       - name: Build src
-        run: make build
+        run: make build-packages
 
       - name: Push
         run: twine upload dist/* -u ${{ secrets.TWINE_USER }} -p ${{ secrets.TWINE_PW }}
