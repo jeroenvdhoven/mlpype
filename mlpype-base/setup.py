@@ -10,7 +10,7 @@ if __name__ == "__main__":
         "pydantic>=1.9.1",
         "joblib>=1.1.0",
         "PyYAML==6.0",
-        "jinja2==3.1.2",
+        "jinja2==3.1.3",
     ]
     strict_deps = [s.replace(">=", "==") for s in deps]
 
