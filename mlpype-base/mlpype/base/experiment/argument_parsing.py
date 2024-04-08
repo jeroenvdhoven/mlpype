@@ -83,7 +83,7 @@ def add_args_to_parser_for_function(
     function: Callable,
     prefix: str,
     excluded: Optional[List[str]] = None,
-    class_docstring_args: Optional[Dict[str, Union[type, None]]] = None,
+    class_docstring_args: Optional[Dict[str, Union[Type, None]]] = None,
 ) -> None:
     """Add arguments for a given function to the given parser.
 
@@ -93,7 +93,7 @@ def add_args_to_parser_for_function(
         prefix (str): A prefix that should be set on each argument name before adding it to
             the ArgumentParser.
         excluded (Optional[List[str]]): argument names to never include. By default 'self' and 'cls' are ignored.
-        class_docstring_args: (Optional[Dict[str, Union[type, None]]]): docstring arguments obtained from the class.
+        class_docstring_args (Optional[Dict[str, Union[Type, None]]]): docstring arguments obtained from the class.
             Useful for init functions, since those can be documented in multiple places.
     """
     args = inspect.signature(function)

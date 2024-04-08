@@ -56,15 +56,15 @@ class Experiment:
                 and log any artifacts such as the trained model.
             type_checker_classes (Optional[List[Type[TypeChecker]]]): A list of type checkers. Will be used to
                 instantiate TypeCheckerPipe's for input and output datasets.
-            input_type_checker: (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
+            input_type_checker (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
                 incoming data and standardise the order of data. Will be used later to help serialise/deserialise data.
                 Not required if `type_checker_classes` is set.
-            output_type_checker: (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
+            output_type_checker (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
                 outgoing data and standardise the order of data. Will be used later to help serialise/deserialise data.
                 Not required if `type_checker_classes` is set.
             serialiser (Optional[Serialiser]): The serialiser to serialise any Python objects (expect the Model).
                 Defaults to a joblib serialiser.
-            output_folder: (Union[Path, str]): The output folder to log artifacts to. Defaults to "outputs".
+            output_folder (Union[Path, str]): The output folder to log artifacts to. Defaults to "outputs".
             additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
                 It is possible to select a directory as well, not just individual files.
                 Defaults to no extra files (None).
@@ -317,20 +317,20 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            model_inputs: (List[str]): Input dataset names to the model.
-            model_outputs: (List[str]): Output dataset names to the model.
-            parameters (Optional[Dict[str, Any]]): Any parameters to log as part of this experiment.
+            model_inputs (List[str]): Input dataset names to the model.
+            model_outputs (List[str]): Output dataset names to the model.
+            parameters (Dict[str, Any]): Any parameters to log as part of this experiment.
                 Defaults to None.
             type_checker_classes (Optional[List[Type[TypeChecker]]]): A list of type checkers. Will be used to
                 instantiate TypeCheckerPipe's for input and output datasets.
-            input_type_checker: (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
+            input_type_checker (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
                 incoming data and standardise the order of data. Will be used later to help serialise/deserialise data.
                 Only select datasets required to do a run during inference.
                 Not required if `type_checker_classes` is set.
-            output_type_checker: (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
+            output_type_checker (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
                 outgoing data and standardise the order of data. Will be used later to help serialise/deserialise data.
                 Not required if `type_checker_classes` is set.
-            output_folder: (Union[Path, str]): The output folder to log artifacts to.
+            output_folder (Union[Path, str]): The output folder to log artifacts to.
             seed (int): The RNG seed to ensure reproducability.
             additional_files_to_store (Optional[List[Union[str, Path]]]): Extra files to store, such as python files.
                 Defaults to no extra files (None).
@@ -389,18 +389,18 @@ run here for logging purposes. Consider using the `from_command_line` or
             logger (ExperimentLogger): The experiment logger to make sure you record how well your experiment worked,
                 and log any artifacts such as the trained model.
             serialiser (Serialiser): The serialiser to serialise any Python objects (expect the Model).
-            model_inputs: (List[str]): Input dataset names to the model.
-            model_outputs: (List[str]): Output dataset names to the model.
+            model_inputs (List[str]): Input dataset names to the model.
+            model_outputs (List[str]): Output dataset names to the model.
             type_checker_classes (Optional[List[Type[TypeChecker]]]): A list of type checkers. Will be used to
                 instantiate TypeCheckerPipe's for input and output datasets.
-            input_type_checker: (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
+            input_type_checker (Optional[TypeCheckerPipe]): A type checker for all input data. Will be used to verify
                 incoming data and standardise the order of data. Will be used later to help serialise/deserialise data.
                 Only select datasets required to do a run during inference.
                 Not required if `type_checker_classes` is set.
-            output_type_checker: (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
+            output_type_checker (Optional[TypeCheckerPipe]): A type checker for all output data. Will be used to verify
                 outgoing data and standardise the order of data. Will be used later to help serialise/deserialise data.
                 Not required if `type_checker_classes` is set.
-            output_folder: (Union[Path, str]): The output folder to log artifacts to.
+            output_folder (Union[Path, str]): The output folder to log artifacts to.
             seed (int): The RNG seed to ensure reproducability.
             additional_files_to_store (Optional[List[Union[str, Path]]], optional): Extra files to store,
                 such as python files. Defaults to no extra files (None).

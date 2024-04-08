@@ -25,7 +25,7 @@ class Pipe:
             inputs (List[str]): A list of input dataset names used by this Pipe.
             outputs (List[str]): A list of output dataset names used by this Pipe.
             kw_args (Optional[Dict[str, Any]]): keyword arguments to initialise the Operator.
-            fit_inputs: (Optional[List[str]]): optional additional arguments to fit().
+            fit_inputs (Optional[List[str]]): optional additional arguments to fit().
                 Will not be used in transform().
             skip_on_inference (bool, optional): Flag indicating if this step should be skipped
                 at inference time. Useful to pre-process response variables in the pipeline.

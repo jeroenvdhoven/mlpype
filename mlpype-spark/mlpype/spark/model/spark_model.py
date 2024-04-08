@@ -27,7 +27,7 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         inputs: List[str],
         outputs: List[str],
         output_col: Optional[str] = None,
-        model: Optional[SerialisableSparkModel] = None,
+        model: Optional[T] = None,
         predictor: Optional[T] = None,
         seed: int = 1,
         **model_args: Any,
@@ -40,12 +40,10 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
             output_col (Optional[str]): The name of the column where the model will put the output.
                 Defaults to None, which means we won't select any columns and instead return the full output
                 of the model.
-            predictor (Optional[SerialisablePredictor]): The Spark Predictor. If not set, we try to instantiate it
-                using `model_args`
-            model (Optional[BaseSparkModel]): The Spark Model. Defaults to None. If set to None,
+            model (Optional[T]): The Spark Model. Defaults to None. If set to None,
                 this model can't be serialised or used for inference.
             predictor (Optional[T]): The Spark Predictor. If not set, we try to instantiate it
-                using `model_args`. Should be of Predictor type.
+                using `model_args`
             seed (int, optional): Spark Seed. Currently ignored, unfortunately. Defaults to 1.
             **model_args (Any): any keywords arguments to be passed to _init_model.
         """
