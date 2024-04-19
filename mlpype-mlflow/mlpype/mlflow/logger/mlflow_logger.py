@@ -10,15 +10,21 @@ from mlflow import get_experiment_by_name  # type: ignore
 from mlflow import log_artifact  # type: ignore
 from mlflow import log_metrics  # type: ignore
 from mlflow import log_params  # type: ignore
+from mlflow import register_model  # type: ignore
 from mlflow import set_experiment  # type: ignore
 from mlflow import set_tag  # type: ignore
 from mlflow import set_tracking_uri  # type: ignore
 from mlflow import start_run  # type: ignore
+from mlflow.pyfunc import log_model as mlflow_log_model  # type: ignore
 
 from mlpype.base.logger import ExperimentLogger
+from mlpype.base.model.model import Model
+from mlpype.mlflow.model.model import PypeMLFlowModel
 
 
 class MlflowLogger(ExperimentLogger):
+    ARTIFACT_FOLDER = "artifact_folder"
+
     def __init__(self, name: str, uri: str, artifact_location: Optional[str] = None) -> None:
         """A logger using mlflow for mlpype.
 
@@ -124,6 +130,29 @@ class MlflowLogger(ExperimentLogger):
         """
         log_params(parameters)
 
+    def log_model(self, model: Model, folder: Union[str, Path]) -> None:
+        """Logs a Model for a given experiment.
+
+        This function will write the model to the given location as well.
+        This specific version for MLflow also uses their logging format.
+
+        Please note that if you want to register this model in MLflow, you
+        can use "runs:/{run_id}/{MlflowLogger.ARTIFACT_FOLDER}" to refer to the MLflow model.
+
+        Args:
+            model (Model): The Model to be logged.
+            folder (Union[str, Path]): The file to log the Model to.
+        """
+        model.save(folder)
+        super().log_model(model, folder)
+        mlflow_log_model(
+            artifact_path=self.ARTIFACT_FOLDER,
+            # PypeMLFlowModel is a near-dummy class. It knows how to load a model
+            # from a MLpype training result.
+            python_model=PypeMLFlowModel(),
+            artifacts={"folder": str(folder)},
+        )
+
     def log_file(self, file: Union[str, Path]) -> None:
         """Logs a given file as part of an experiment.
 
@@ -136,3 +165,15 @@ class MlflowLogger(ExperimentLogger):
             file (Union[str, Path]): The file to log.
         """
         log_artifact(str(file))
+
+    def register_mlpype_model(self, run_id: str, model_name: str) -> None:
+        """Applies the register_model function of mlflow to MLpype-trained models.
+
+        Specifically, this registers the artifact folder that we created
+        in the log_model function.
+
+        Args:
+            run_id (str): The run id of the model.
+            model_name (str): The name to register the model under (using register_model)
+        """
+        register_model(f"runs:/{run_id}/{self.ARTIFACT_FOLDER}", model_name)
