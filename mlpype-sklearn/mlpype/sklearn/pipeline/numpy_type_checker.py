@@ -1,4 +1,4 @@
-from typing import Any, List, Type, Union
+from typing import Any, List, Tuple, Type, Union
 
 import numpy as np
 from pydantic import create_model
@@ -33,14 +33,8 @@ class NumpyData(DataModel):
 
 
 class NumpyTypeChecker(TypeChecker[np.ndarray]):
-    def __init__(self) -> None:
-        """Type checker for numpy.
-
-        Checks if the incoming data is of the correct non-first dimensions and dtype.
-        """
-        super().__init__()
-        self.dims: tuple = tuple()
-        self.dtype: Union[type, None] = None
+    dims: Tuple[int, ...]
+    dtype: Union[type, None]
 
     def fit(self, data: np.ndarray) -> "NumpyTypeChecker":
         """Fit this Numpy TypeChecker to the given data.
@@ -94,7 +88,7 @@ class NumpyTypeChecker(TypeChecker[np.ndarray]):
         for _ in range(len(self.dims)):
             base_iter = List[base_iter]  # type: ignore
 
-        model = create_model("NumpyData", data=(base_iter, ...), __base__=NumpyData)
+        model = create_model(f"NumpyData[{self.name}]", data=(base_iter, ...), __base__=NumpyData)
 
         return model
 

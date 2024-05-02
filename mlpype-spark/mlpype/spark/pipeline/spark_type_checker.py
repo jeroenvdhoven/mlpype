@@ -117,7 +117,7 @@ class SparkTypeChecker(TypeChecker[SparkDataFrame]):
             for name, (_, dtype) in self.raw_types.items()
         }
 
-        model = create_model("SparkData", **data_type, __base__=SparkData)
+        model = create_model(f"SparkData[{self.name}]", **data_type, __base__=SparkData)
 
         return model
 

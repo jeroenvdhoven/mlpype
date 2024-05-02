@@ -82,11 +82,13 @@ class Test_TensorflowTypeChecker:
         assert result == expected
 
     def test_get_pydantic_types(self):
-        type_checker = TensorflowTypeChecker()
+        name = "tf_data"
+        type_checker = TensorflowTypeChecker(name)
         array = tf.convert_to_tensor([[1, 2, 3], [7, 6, 5]])
         type_checker.fit(array)
 
         TensorflowSpecificType = type_checker.get_pydantic_type()
+        assert TensorflowSpecificType.__name__ == f"TensorflowData[{name}]"
 
         # succeed
         TensorflowSpecificType(data=[[1, 2, 3], [9, 0, 3]])

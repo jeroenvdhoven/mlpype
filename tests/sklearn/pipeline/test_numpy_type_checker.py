@@ -96,11 +96,13 @@ class Test_NumpyTypeChecker:
         np.testing.assert_array_equal(np.array(data), result)
 
     def test_get_pydantic_types_strict_on_bool(self):
-        type_checker = NumpyTypeChecker()
+        name = "dataset_na,e"
+        type_checker = NumpyTypeChecker(name)
         array = np.array([[True, False]])
         type_checker.fit(array)
 
         NumpySpecificType = type_checker.get_pydantic_type()
+        assert NumpySpecificType.__name__ == f"NumpyData[{name}]"
 
         # succeed
         NumpySpecificType(data=[[False, False]])

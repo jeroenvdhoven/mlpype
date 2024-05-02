@@ -1,4 +1,4 @@
-from typing import Any, List, Type, Union
+from typing import Any, List, Tuple, Type, Union
 
 import tensorflow as tf
 from pydantic import create_model
@@ -34,14 +34,8 @@ class TensorflowData(DataModel):
 
 
 class TensorflowTypeChecker(TypeChecker[Tensor]):
-    def __init__(self) -> None:
-        """Type checker for Tensorflow.
-
-        Checks if the incoming data is of the correct non-first dimensions and dtype.
-        """
-        super().__init__()
-        self.dims: tuple = tuple()
-        self.dtype: Union[type, None] = None
+    dims: Tuple[int, ...]
+    dtype: Union[type, None]
 
     def fit(self, data: Tensor) -> "TensorflowTypeChecker":
         """Fit this Tensorflow TypeChecker to the given data.
@@ -97,7 +91,7 @@ class TensorflowTypeChecker(TypeChecker[Tensor]):
         for _ in range(len(self.dims)):
             base_iter = List[base_iter]  # type: ignore
 
-        model = create_model("TensorflowData", data=(base_iter, ...), __base__=TensorflowData)
+        model = create_model(f"TensorflowData[{self.name}]", data=(base_iter, ...), __base__=TensorflowData)
 
         return model
 

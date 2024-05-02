@@ -61,9 +61,14 @@ class DataSetModel(BaseModel):
 
 
 class TypeChecker(Operator[Data], ABC):
-    def __init__(self) -> None:
-        """Defines a type checker class that can be used to check the format of new data."""
+    def __init__(self, name: str = "no name") -> None:
+        """Defines a type checker class that can be used to check the format of new data.
+
+        Args:
+            name (str, optional): Name of the dataset. Used to create named DataModels. Defaults to "no name".
+        """
         super().__init__()
+        self.name = name
 
     @abstractmethod
     def fit(self, data: Data) -> "Operator":
@@ -186,7 +191,7 @@ class DataSetTypeChecker(Operator[Data]):
                 logger = logging.getLogger(__name__)
                 logger.warning(f"{ds_name} has no supported type checker!")
             else:
-                checker = type_checker_class()
+                checker = type_checker_class(ds_name)
                 checker.fit(dataset)
                 self.type_checkers[ds_name] = checker
         return self
@@ -233,7 +238,8 @@ class DataSetTypeChecker(Operator[Data]):
         pydantic_types = {
             name: (checker.get_pydantic_type(), ...) for name, checker in self.type_checkers.items() if name in names
         }
-        return create_model("DataSetModel", **pydantic_types, __base__=DataSetModel)
+        name_extension = ", ".join(names)
+        return create_model(f"DataSetModel[{name_extension}]", **pydantic_types, __base__=DataSetModel)
 
 
 # class TypeCheckerOptions:

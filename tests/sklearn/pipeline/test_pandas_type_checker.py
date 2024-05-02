@@ -142,7 +142,8 @@ class Test_PandasTypeChecker:
         assert result == expected
 
     def test_get_pydantic_types(self):
-        type_checker = PandasTypeChecker()
+        name = "df"
+        type_checker = PandasTypeChecker(name)
         df = pd.DataFrame(
             {
                 "x": [1, 2, 3, 4],
@@ -152,6 +153,7 @@ class Test_PandasTypeChecker:
         type_checker.fit(df.copy())
 
         PandasSpecificType = type_checker.get_pydantic_type()
+        assert PandasSpecificType.__name__ == f"PandasData[{name}]"
 
         # succeed
         result = PandasSpecificType(x=[1, 2, 3, 4], y=["a", "b", "c", "e"]).convert()

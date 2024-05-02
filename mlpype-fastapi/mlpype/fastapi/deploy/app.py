@@ -42,7 +42,7 @@ class mlpypeApp:
             logger.info("Homepage request")
             return f"Welcome to the mlpype FastAPI app for {self.name}"
 
-        @app.post("/predict")
+        @app.post("/predict", response_model=OutputType)
         async def predict(inputs: InputType, background: BackgroundTasks) -> OutputType:  # type: ignore
             logger.info("Prediction request")
             converted: DataSet = inputs.convert()  # type: ignore

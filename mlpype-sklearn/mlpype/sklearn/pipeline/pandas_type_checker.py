@@ -99,7 +99,7 @@ class PandasTypeChecker(TypeChecker[pd.DataFrame]):
             for name, (dtype, _) in self.raw_types.items()
         }
 
-        model = create_model("PandasData", **data_type, __base__=PandasData)
+        model = create_model(f"PandasData[{self.name}]", **data_type, __base__=PandasData)
 
         return model
 

@@ -141,10 +141,12 @@ class Test_SparkTypeChecker:
         df = pd.DataFrame({"a": [1, 2, 3], "b": ["a", "2", "f"]})
         spark_df = spark_session.createDataFrame(df)
 
-        checker = SparkTypeChecker()
+        name = "spark_data"
+        checker = SparkTypeChecker(name)
         checker.fit(spark_df)
 
         Model = checker.get_pydantic_type()
+        assert Model.__name__ == f"SparkData[{name}]"
 
         converted = Model.to_model(spark_df)
         assert converted.a == df["a"].to_list()
