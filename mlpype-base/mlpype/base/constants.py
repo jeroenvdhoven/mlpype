@@ -10,3 +10,7 @@ class Constants:
 
     PYTHON_VERSION_FILE: str = "python_version.json"
     REQUIREMENTS_FILE: str = "requirements.txt"
+
+    PLOT_FOLDER: str = "plots"
+
+    PREDICTION_SUFFIX: str = "__prediction"

@@ -2,6 +2,7 @@ import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Iterable, List, Tuple
 from unittest.mock import MagicMock, call, mock_open, patch
 
@@ -9,6 +10,8 @@ from pytest import fixture, mark
 
 from mlpype.base.constants import Constants
 from mlpype.base.data import DataCatalog
+from mlpype.base.data.dataset import DataSet
+from mlpype.base.evaluate.plot import BasePlotter
 from mlpype.base.experiment.experiment import Experiment
 from mlpype.base.pipeline.type_checker import TypeCheckerPipe
 from tests.shared_fixtures import dummy_experiment, dummy_experiment_with_tcc
@@ -72,7 +75,9 @@ class Test_run:
             experiment, "_log_extra_files"
         ) as mock_log_extra_files, patch.object(experiment, "_log_requirements") as mock_log_requirements, patch(
             "mlpype.base.experiment.experiment.JoblibSerialiser"
-        ) as mock_joblib:
+        ) as mock_joblib, patch.object(
+            experiment, "_log_plots"
+        ) as mock_log_plots:
             result = experiment.run()
 
         logger.__enter__.assert_called_once()
@@ -132,6 +137,7 @@ class Test_run:
             ]
         )
         logger.log_parameters.assert_called_once_with({})
+        mock_log_plots.assert_called_once_with({"train": train_transform, "test": test_transform})
 
         # extra files
         mock_log_extra_files.assert_called_once_with()
@@ -264,6 +270,78 @@ class TestLogExtraFiles:
             opened_obj = m_open.return_value
 
             mock_dump.assert_called_once_with({"paths": [str(extra_folder.name)]}, opened_obj)
+
+
+def test_log_plots():
+    model = MagicMock()
+
+    data = {
+        "train": DataSet(
+            x=MagicMock(),
+            y=MagicMock(),
+        ),
+        "test": DataSet(
+            x=MagicMock(),
+            y=MagicMock(),
+        ),
+    }
+    predictions = [
+        DataSet(
+            y=MagicMock(),
+        ),
+        DataSet(
+            y=MagicMock(),
+        ),
+    ]
+    logger = MagicMock()
+    model.transform.side_effect = predictions
+    plotters = [MagicMock(spec=BasePlotter), MagicMock(spec=BasePlotter), MagicMock(spec=BasePlotter)]
+    for i, p in enumerate(plotters):
+        p.plot.side_effect = [f"train{i}", f"test{i}"]
+
+    with TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+        experiment = Experiment(
+            data_sources={"train": MagicMock(), "test": MagicMock()},
+            model=model,
+            pipeline=MagicMock(),
+            evaluator=MagicMock(),
+            logger=logger,
+            serialiser=MagicMock(),
+            input_type_checker=MagicMock(),
+            output_type_checker=MagicMock(),
+            output_folder=tmp_dir,
+            additional_files_to_store=[],
+            plots=plotters,
+        )
+        experiment._log_plots(data)
+
+    model.transform.assert_has_calls([call(data["train"]), call(data["test"])])
+    expected_datasets = {
+        "train": DataSet(
+            **{
+                "x": data["train"]["x"],
+                "y": data["train"]["y"],
+                f"y{Constants.PREDICTION_SUFFIX}": predictions[0]["y"],
+            }
+        ),
+        "test": DataSet(
+            **{
+                "x": data["test"]["x"],
+                "y": data["test"]["y"],
+                f"y{Constants.PREDICTION_SUFFIX}": predictions[1]["y"],
+            }
+        ),
+    }
+    for plotter in plotters:
+        plotter.plot.assert_has_calls(
+            [call(tmp_dir / Constants.PLOT_FOLDER / name, expected_datasets[name]) for name in ["train", "test"]],
+            any_order=True,
+        )
+
+    logger.log_file.assert_has_calls(
+        [call(f"{name}{i}") for name in ["train", "test"] for i, _ in enumerate(plotters)], any_order=True
+    )
 
 
 @dataclass

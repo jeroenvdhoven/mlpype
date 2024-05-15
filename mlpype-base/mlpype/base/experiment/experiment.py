@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 from mlpype.base.constants import Constants
 from mlpype.base.data import DataCatalog, DataSet
 from mlpype.base.evaluate import BaseEvaluator
+from mlpype.base.evaluate.plot import BasePlotter
 from mlpype.base.experiment.argument_parsing import add_args_to_parser_for_pipeline
 from mlpype.base.logger import ExperimentLogger
 from mlpype.base.model import Model
@@ -34,6 +35,7 @@ class Experiment:
         output_folder: Union[Path, str] = "outputs",
         additional_files_to_store: Optional[List[Union[str, Path]]] = None,
         parameters: Optional[Dict[str, Any]] = None,
+        plots: Optional[List[BasePlotter]] = None,
     ):
         """The core of the mlpype library: run a standardised ML experiment with the given parameters.
 
@@ -70,11 +72,16 @@ class Experiment:
                 Defaults to no extra files (None).
             parameters (Optional[Dict[str, Any]]): Any parameters to log as part of this experiment.
                 Defaults to None.
+            plots (Optional[List[BasePlotter]]): A list of plots to generate. Defaults to None, resulting in no plots.
+                All plots will be written to the outputs folder.
         """
         assert "train" in data_sources, "Must provide a 'train' entry in the data_sources dictionary."
         self.logger = getLogger(__name__)
         if serialiser is None:
             serialiser = JoblibSerialiser()
+
+        if plots is None:
+            plots = []
 
         if additional_files_to_store is None:
             additional_files_to_store = []
@@ -117,6 +124,7 @@ run here for logging purposes. Consider using the `from_command_line` or
         self.serialiser = serialiser
         self.output_folder = output_folder
         self.additional_files_to_store = additional_files_to_store
+        self.plots = plots
 
     def run(self) -> Dict[str, Dict[str, Union[str, float, int, bool]]]:
         """Execute the experiment.
@@ -161,6 +169,7 @@ run here for logging purposes. Consider using the `from_command_line` or
                 self.experiment_logger.log_metrics(dataset_name, metric_set)
 
             self.logger.info("Log results: pipeline, model, serialiser")
+            self._log_plots(transformed)
             self._log_run()
         return metrics
 
@@ -238,6 +247,28 @@ run here for logging purposes. Consider using the `from_command_line` or
             json.dump(data, f)
         # Make sure the file path is closed before logging anything, to make sure all writes have flushed.
         self.experiment_logger.log_file(extra_files_file)
+
+    def _log_plots(self, datasets: Dict[str, DataSet]) -> None:
+        predicted = {name: self.model.transform(data) for name, data in datasets.items()}
+
+        full_datasets = {}
+        for dataset_name, dataset in predicted.items():
+            assert dataset_name in datasets
+            transformed_set = datasets[dataset_name]
+            for data_name, data in dataset.items():
+                new_name = f"{data_name}{Constants.PREDICTION_SUFFIX}"
+                assert new_name not in transformed_set
+                transformed_set[new_name] = data
+
+            full_datasets[dataset_name] = transformed_set
+
+        for plotter in self.plots:
+            for name, data in full_datasets.items():
+                plot_folder = self.output_folder / Constants.PLOT_FOLDER / name
+                plot_folder.mkdir(parents=True, exist_ok=True)
+                plot_file = plotter.plot(plot_folder, data)
+
+                self.experiment_logger.log_file(plot_file)
 
     def _create_output_folders(self) -> None:
         of = self.output_folder
