@@ -46,7 +46,7 @@ from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 # Make a logger using Mlflow. Ensure it starts with 'http://', or you will get connection issues.
 # Make sure you start mlflow before running this!
 experiment_name = "jeroen-example-experiment"
-logger = MlflowLogger(experiment_name, "http://localhost:5000", artifact_location="mlruns")
+logger = MlflowLogger(experiment_name, "http://127.0.0.1:5000", artifact_location="mlruns")
 
 # for on-databricks logging. This will also log artifacts.
 # experiment_name = "/Users/<user name>/<experiment name>"

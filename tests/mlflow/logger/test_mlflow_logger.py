@@ -168,7 +168,14 @@ class Test_mlflow_logger:
 
     def test_log_file(self, logger: MlflowLogger):
         with patch("mlpype.mlflow.logger.mlflow_logger.log_artifact") as mock_log_artifact:
-            file = "some file"
+            file = "outputs/file.txt"
             logger.log_file(file)
 
             mock_log_artifact.assert_called_once_with(file)
+
+    def test_nested_log_file(self, logger: MlflowLogger):
+        with patch("mlpype.mlflow.logger.mlflow_logger.log_artifact") as mock_log_artifact:
+            file = Path("outputs", "dummy", "file.txt")
+            logger.log_file(file)
+
+            mock_log_artifact.assert_called_once_with(str(file), "dummy")

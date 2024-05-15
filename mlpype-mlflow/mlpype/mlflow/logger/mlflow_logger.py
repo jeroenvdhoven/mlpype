@@ -164,7 +164,14 @@ class MlflowLogger(ExperimentLogger):
         Args:
             file (Union[str, Path]): The file to log.
         """
-        log_artifact(str(file))
+        file = Path(file)
+        # Remove the output folder from the path. Unfortunately, this is due to legacy coding.
+        # Ideally, we do not remove the outputs folder and keep a clean structure.
+        artifact_path = Path(*file.parts[1:-1])
+        if str(artifact_path) == ".":
+            log_artifact(str(file))
+        else:
+            log_artifact(str(file), str(artifact_path))
 
     def register_mlpype_model(self, run_id: str, model_name: str) -> None:
         """Applies the register_model function of mlflow to MLpype-trained models.

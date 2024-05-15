@@ -27,6 +27,7 @@ outputs/
 
 # mlflow
 mlruns*/
+mydb.sqlite
 
 # build artifacts
 dist/
