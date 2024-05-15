@@ -31,6 +31,7 @@ from mlpype.base.experiment.experiment import Experiment
 from mlpype.base.pipeline.pipe import Pipe
 from mlpype.base.pipeline.pipeline import Pipeline
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
+from mlpype.matplotlib.evaluate.plot import MatplotlibPlotter
 from mlpype.mlflow.logger.mlflow_logger import MlflowLogger
 from mlpype.sklearn.data.data_frame_source import DataFrameSource
 from mlpype.sklearn.model.linear_regression_model import LinearRegressionModel
@@ -45,13 +46,10 @@ logger = MlflowLogger(experiment_name, "http://127.0.0.1:5000")
 
 
 def plot_predictions(
-    path: Path,
     y: np.ndarray,
 ) -> None:
     """Plots histogram of predictions."""
     plt.hist(y, bins=50)
-    plt.savefig(path)
-    plt.close()
 
 
 def preds_vs_true(
@@ -132,7 +130,7 @@ experiment = Experiment(
     serialiser=JoblibSerialiser(),
     output_folder=of,
     plots=[
-        Plotter(plot_predictions, "predictions.png", [f"y{pred_ds_name}"]),
+        MatplotlibPlotter(plot_predictions, "predictions.png", [f"y{pred_ds_name}"]),
         Plotter(preds_vs_true, "predictions_vs_true.png", ["y", f"y{pred_ds_name}"]),
     ],
 )

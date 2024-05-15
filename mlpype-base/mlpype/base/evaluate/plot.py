@@ -44,8 +44,8 @@ class Plotter(BasePlotter):
         """Selects the correct data from the DataSet, creates a plot, and writes it to `plot_folder / self.file_name`.
 
         Args:
-            plot_folder (Path): The folder to write the plot to. You still need to set your
-                file name.
+            plot_folder (Path): The folder to write the plot to. The final plot will be written to
+                `plot_folder / self.file_name`.
             data (DataSet): A DataSet containing all the data you need to make your plots.
                 In an Experiment, this will contain the last DataSet from the Pipeline with the
                 predictions added as "{output_name}{Constants.PREDICTION_POSTFIX}"
