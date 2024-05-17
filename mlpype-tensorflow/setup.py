@@ -7,7 +7,7 @@ if __name__ == "__main__":
         f"mlpype-base=={version}",
         # on mac, it is recommended to use conda/mamba or source to install tensorflow
         "tensorflow>=2.12.1",
-        "numpy>=1.23.0",
+        "numpy>=1.23.2",
         "protobuf>=3.20.3",
     ]
     strict_deps = [s.replace(">=", "==") for s in deps]
