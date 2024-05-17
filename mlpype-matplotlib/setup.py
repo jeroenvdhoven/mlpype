@@ -4,7 +4,7 @@ from setuptools import find_namespace_packages, setup
 
 if __name__ == "__main__":
     version = "0.5.2"
-    deps: List[str] = [f"mlpype-base=={version}", "matplotlib>=3.8.4"]
+    deps: List[str] = [f"mlpype-base=={version}", "matplotlib>=3.7.5"]
     dev_deps = []
     strict_deps = [s.replace(">=", "==") for s in deps]
 
