@@ -5,9 +5,9 @@ if __name__ == "__main__":
 
     deps = [
         f"mlpype-base=={version}",
-        "numpy>=1.23.0",
-        "scikit-learn>=1.1.1",
-        "pandas>=1.4.3",
+        "numpy>=1.23.2",
+        "scikit-learn>=1.2.2",
+        "pandas>=1.5.3",
     ]
     strict_deps = [s.replace(">=", "==") for s in deps]
 
