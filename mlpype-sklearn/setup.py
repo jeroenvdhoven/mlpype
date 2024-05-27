@@ -5,7 +5,7 @@ if __name__ == "__main__":
 
     deps = [
         f"mlpype-base=={version}",
-        "numpy>=1.23.2",
+        "numpy>=1.23.5",
         "scikit-learn>=1.2.2",
         "pandas>=1.5.3",
     ]
