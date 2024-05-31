@@ -9,11 +9,6 @@ requires-python = ">=3.9"
 version = "0.5.2"
 dynamic = ["license"]
 
-[tool.kedro]
-package_name = "data_cube_pipeline"
-project_name = "Data Cube Pipeline"
-project_version = "0.17.0"
-
 [tool.isort]
 multi_line_output = 3
 include_trailing_comma = true
