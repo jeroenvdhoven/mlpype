@@ -1,6 +1,9 @@
 # For local development setup
-PYTHON_VERSION=3.10
+PYTHON_VERSION=3.11
 PYENV_NAME=mlpype
+
+pyenv-delete:
+	pyenv virtualenv-delete ${PYENV_NAME} -f
 
 pyenv:
 	pyenv install -s ${PYTHON_VERSION}
