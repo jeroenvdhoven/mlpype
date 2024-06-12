@@ -6,8 +6,8 @@ if __name__ == "__main__":
     deps = [
         f"mlpype-base=={version}",
         # We will provide absolute no guarantees that our integration will work with
-        # EVERY version of pyspark. This has been developed under pyspark==3.2.1.
-        "pyspark>=3.2.1",
+        # EVERY version of pyspark. This has been developed under pyspark==3.4.0.
+        "pyspark>=3.4.0",
     ]
     strict_deps = [s.replace(">=", "==") for s in deps]
     test_deps = ["pandas"]
