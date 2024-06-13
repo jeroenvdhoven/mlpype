@@ -4,6 +4,7 @@ from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql import SparkSession
 
 from mlpype.base.data.data_source import DataSource
+from mlpype.spark.utils import guarantee_spark
 
 
 class SparkSqlSource(DataSource[SparkDataFrame]):
@@ -20,9 +21,7 @@ class SparkSqlSource(DataSource[SparkDataFrame]):
         """
         super().__init__()
         self.query = query
-        if spark_session is None:
-            spark_session = SparkSession.getActiveSession()
-        self.spark_session = spark_session
+        self.spark_session = guarantee_spark(spark_session)
 
     def read(self) -> SparkDataFrame:
         """Execute the query stored in this object.
