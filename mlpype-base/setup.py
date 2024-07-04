@@ -3,7 +3,14 @@ from setuptools import find_namespace_packages, setup
 if __name__ == "__main__":
     version = "0.5.2"
 
-    dev_deps = ["pre-commit", "build==0.8.0", "pypiserver==1.5.1", "twine==4.0.1", "pdoc==13.1.0"]
+    dev_deps = [
+        "pre-commit",
+        "build==0.8.0",
+        "pypiserver==1.5.1",
+        "twine==4.0.1",
+        "pdoc==13.1.0",
+        "importlib-metadata<8.0.0",
+    ]
     test_deps = ["pytest", "pytest-cov"]
     deps = [
         "docstring_parser>=0.14.1",
