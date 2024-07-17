@@ -33,6 +33,7 @@ mydb.sqlite
 dist/
 packages/
 build/
+docs/_build
 
 # personal todo list
 todo.txt
