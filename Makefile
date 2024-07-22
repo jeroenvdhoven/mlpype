@@ -49,7 +49,7 @@ coverage-all:
 
 # Document code
 create-docs:
-	pdoc ./mlpype -o ./docs -d google
+	cd docs && sphinx-build -b html . _build
 
 # Pre-commit defaults
 pre-commit-install:
