@@ -1,3 +1,4 @@
+"""Evaluates a Model on the given Functions."""
 from typing import Callable, Dict, Optional, TypeVar, Union
 
 from mlpype.base.data import DataSet
@@ -9,6 +10,8 @@ Data = TypeVar("Data")
 
 
 class Evaluator(BaseEvaluator[Data]):
+    """Evaluates a Model on the given Functions."""
+
     def __init__(
         self,
         functions: Dict[str, Callable[[Data, Data], Union[float, int, str, bool]]],

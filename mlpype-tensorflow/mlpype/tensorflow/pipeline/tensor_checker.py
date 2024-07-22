@@ -1,3 +1,4 @@
+"""Classes for type checking Tensorflow tensors and serialising/deserialising them."""
 from typing import Any, List, Tuple, Type, Union
 
 import tensorflow as tf
@@ -8,6 +9,8 @@ from mlpype.base.pipeline.type_checker import DataModel, TypeChecker
 
 
 class TensorflowData(DataModel):
+    """A serialisable version of a Tensorflow tensor."""
+
     data: list
 
     """An object that can be converted to a Tensorflow tensor."""
@@ -34,6 +37,8 @@ class TensorflowData(DataModel):
 
 
 class TensorflowTypeChecker(TypeChecker[Tensor]):
+    """A TypeChecker for Tensorflow tensors."""
+
     dims: Tuple[int, ...]
     dtype: Union[type, None]
 

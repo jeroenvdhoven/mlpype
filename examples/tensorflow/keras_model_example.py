@@ -34,6 +34,8 @@ from mlpype.tensorflow.pipeline.tensor_checker import TensorflowTypeChecker
 
 
 class NumpyToTensor(Operator):
+    """Convert the numpy array into a Tensor."""
+
     def fit(self, *_: np.ndarray) -> "Operator":
         """Skipped."""
         return self

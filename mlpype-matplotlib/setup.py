@@ -1,3 +1,4 @@
+"""Main setup script for MLpype - Matplotlib."""
 from typing import List
 
 from setuptools import find_namespace_packages, setup

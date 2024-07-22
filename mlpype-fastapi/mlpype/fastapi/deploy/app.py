@@ -1,3 +1,4 @@
+"""Provides a FastAPI app for an Inferencer."""
 from dataclasses import dataclass
 from logging import Logger, getLogger
 from pathlib import Path
@@ -14,6 +15,8 @@ from mlpype.base.pipeline.type_checker import DataModel, DataSetModel
 
 @dataclass
 class mlpypeApp:
+    """Creates a FastAPI app for an Inferencer."""
+
     name: str
     folder: Union[str, Path]
     tracking_servers: Optional[Dict[str, DataSink]] = None

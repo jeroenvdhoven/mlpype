@@ -1,3 +1,4 @@
+"""Provides a standard way of inferencing with mlpype models."""
 import json
 from pathlib import Path
 from typing import Optional, Type, Union
@@ -14,6 +15,8 @@ from mlpype.base.utils.workspace import switch_workspace
 
 
 class Inferencer:
+    """Provides a standard way of inferencing with mlpype models."""
+
     def __init__(
         self,
         model: Model,

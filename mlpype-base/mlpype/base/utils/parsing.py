@@ -1,3 +1,4 @@
+"""Get all keys starting with `prefix` and remove the prefix."""
 from typing import Any, Dict
 
 

@@ -1,9 +1,12 @@
+"""Provides a base class for Serialisers, used to log extra files in Experiments."""
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Union
 
 
 class Serialiser(ABC):
+    """A base class for Serialisers, used to log extra files in Experiments."""
+
     def __init__(self) -> None:
         """A base class for Serialisers, used to log extra files in Experiments.
 

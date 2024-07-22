@@ -1,3 +1,4 @@
+"""A mlpype implementation of lightgbm using the Sklearn interface."""
 from typing import Any, Dict
 
 from lightgbm import LGBMModel

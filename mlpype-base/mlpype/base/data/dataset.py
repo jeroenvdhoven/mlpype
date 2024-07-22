@@ -1,3 +1,12 @@
+"""
+Once you read all the data from a data source, it creates a DataSet.
+
+This is a dictionary with a few extra options, useful to push data
+between different steps in the Experiment. Since the recommended way
+to use the Experiment class is to use a DataCatalog, the DataSet
+will most likely not be used directly during training, but can be used
+at inference time.
+"""
 from typing import Dict, Iterable, List, TypeVar
 
 Data = TypeVar("Data")

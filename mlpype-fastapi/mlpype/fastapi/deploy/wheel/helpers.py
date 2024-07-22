@@ -1,3 +1,4 @@
+"""In-wheel helpers for mlpype-fastapi."""
 from pathlib import Path
 
 from fastapi.applications import FastAPI

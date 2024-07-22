@@ -1,3 +1,4 @@
+"""Creates a default spark session."""
 from pyspark.sql import SparkSession
 
 

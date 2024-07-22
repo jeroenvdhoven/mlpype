@@ -1,9 +1,12 @@
+"""Provides a DataSource based around a created DataFrame."""
 import pandas as pd
 
 from mlpype.base.data.data_source import DataSource
 
 
 class DataFrameSource(DataSource[pd.DataFrame]):
+    """A DataSource based around a created DataFrame."""
+
     def __init__(self, df: pd.DataFrame) -> None:
         """A DataSource based around a created DataFrame.
 

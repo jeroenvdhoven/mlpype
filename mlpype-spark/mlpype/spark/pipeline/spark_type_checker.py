@@ -1,3 +1,4 @@
+"""Provides tools for type checking Spark DataFrames and serialising/deserialising them."""
 from typing import Any, Dict, List, Tuple, Type, Union
 
 from pydantic import create_model
@@ -8,6 +9,8 @@ from mlpype.base.pipeline.type_checker import DataModel, TypeChecker
 
 
 class SparkData(DataModel):
+    """A serialisable version of a Spark DataFrame."""
+
     def convert(self) -> SparkDataFrame:
         """Converts this object to a spark DataFrame.
 
@@ -52,6 +55,8 @@ class SparkData(DataModel):
 
 
 class SparkTypeChecker(TypeChecker[SparkDataFrame]):
+    """SparkTypeChecker is a TypeChecker for Spark DataFrames."""
+
     def fit(self, data: SparkDataFrame) -> "SparkTypeChecker":
         """Fit this SparkTypeChecker to the given data.
 

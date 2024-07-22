@@ -1,3 +1,4 @@
+"""An interface for reading data."""
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
@@ -5,6 +6,8 @@ Data = TypeVar("Data")
 
 
 class DataSource(ABC, Generic[Data]):
+    """An interface for reading data."""
+
     @abstractmethod
     def read(self) -> Data:
         """Read data from a given source.

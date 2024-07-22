@@ -1,9 +1,15 @@
+"""Provides tools for using Spark DataFrames as an input data source.
+
+This should only be used for testing/debugging purposes.
+"""
 from pyspark.sql import DataFrame as SparkDataFrame
 
 from mlpype.base.data.data_source import DataSource
 
 
 class SparkDataFrameSource(DataSource[SparkDataFrame]):
+    """Returns a fixed spark dataframe reference."""
+
     # should only be used for testing purposes!
     def __init__(
         self,

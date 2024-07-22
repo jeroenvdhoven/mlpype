@@ -1,3 +1,4 @@
+"""Provides tools to evaluate Spark models in mlpype."""
 from typing import Dict, List, Optional, Union
 
 from pyspark.ml.evaluation import JavaEvaluator
@@ -9,6 +10,8 @@ from mlpype.spark.model import SparkModel
 
 
 class SparkEvaluator(BaseEvaluator):
+    """Used to evaluate Spark models in mlpype."""
+
     def __init__(
         self,
         evaluator: JavaEvaluator,

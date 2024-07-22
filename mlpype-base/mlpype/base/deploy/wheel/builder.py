@@ -1,3 +1,4 @@
+"""Class to help turn an output folder from an Experiment into a wheel file."""
 import subprocess
 import sys
 from dataclasses import dataclass

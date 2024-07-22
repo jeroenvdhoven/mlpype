@@ -1,3 +1,4 @@
+"""Provides a logger using mlflow for mlpype."""
 import logging
 from pathlib import Path
 from types import TracebackType
@@ -23,6 +24,8 @@ from mlpype.mlflow.model.model import PypeMLFlowModel
 
 
 class MlflowLogger(ExperimentLogger):
+    """A logger using mlflow for mlpype."""
+
     ARTIFACT_FOLDER = "artifact_folder"
 
     def __init__(self, name: str, uri: str, artifact_location: Optional[str] = None) -> None:

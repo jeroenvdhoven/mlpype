@@ -1,3 +1,4 @@
+"""Provides tools for creating Spark Pipes, components of a Spark Pipeline."""
 from typing import Any, Dict, List, Optional, Type, Union
 
 from pyspark.ml import Estimator, Transformer
@@ -8,6 +9,8 @@ from mlpype.base.pipeline.pipe import Pipe
 
 
 class SparkPipe(Pipe):
+    """A single step in a Spark Pipeline."""
+
     def __init__(
         self,
         name: str,

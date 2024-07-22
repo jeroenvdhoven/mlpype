@@ -1,3 +1,4 @@
+"""Provides tools for optimising hyperparameters using Hyperopt in MLpype."""
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from hyperopt.base import Trials

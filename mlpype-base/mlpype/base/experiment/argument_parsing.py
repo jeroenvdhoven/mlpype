@@ -1,3 +1,4 @@
+"""Provides tools for parsing arguments from docstrings and type hints into command line hints."""
 import inspect
 import re
 import typing

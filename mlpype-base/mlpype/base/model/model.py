@@ -1,3 +1,4 @@
+"""Provides the core Model class, which is the base class for all mlpype-compliant models."""
 import json
 from abc import ABC, abstractclassmethod, abstractmethod
 from argparse import ArgumentParser
@@ -12,6 +13,11 @@ Data = TypeVar("Data")
 
 
 class Model(ABC, Generic[Data]):
+    """An abstraction of a ML model.
+
+    This class is the core for any Models to integrate with the mlpype framework.
+    """
+
     def __init__(self, inputs: List[str], outputs: List[str], seed: int = 1) -> None:
         """An abstraction of a ML model.
 

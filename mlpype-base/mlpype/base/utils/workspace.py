@@ -1,3 +1,4 @@
+"""Provides tools for temporarily switching Python over to a different directory."""
 import importlib
 import logging
 import os

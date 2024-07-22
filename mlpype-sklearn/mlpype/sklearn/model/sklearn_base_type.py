@@ -1,3 +1,4 @@
+"""Provides a generic class for sklearn-like Models."""
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Union
 
@@ -5,6 +6,8 @@ from mlpype.sklearn.data.sklearn_data import SklearnData
 
 
 class SklearnModelBaseType(ABC):
+    """Base class for sklearn-like models."""
+
     @abstractmethod
     def fit(self, *x: SklearnData) -> Any:
         """Fit a model to the given data."""

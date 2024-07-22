@@ -1,3 +1,4 @@
+"""Provides tools to check the types of data in a pipeline."""
 import logging
 from abc import ABC, abstractclassmethod, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
@@ -11,6 +12,8 @@ from mlpype.base.pipeline.pipe import Pipe
 
 
 class DataModel(BaseModel, ABC):
+    """Defines a base type checker class that can be used to check the format of a new Data."""
+
     @abstractmethod
     def convert(self) -> Any:
         """Convert the Model to actual data (e.g. numpy or pandas).
@@ -33,6 +36,8 @@ class DataModel(BaseModel, ABC):
 
 
 class DataSetModel(BaseModel):
+    """Defines a type checker class that can be used to check the format of a new DataSet."""
+
     def convert(self) -> DataSet:
         """Converts this DataSetModel to a DataSet, converting all data at the same time.
 
@@ -61,6 +66,8 @@ class DataSetModel(BaseModel):
 
 
 class TypeChecker(Operator[Data], ABC):
+    """Defines a type checker class that can be used to check the format of new data."""
+
     def __init__(self, name: str = "no name") -> None:
         """Defines a type checker class that can be used to check the format of new data.
 
@@ -114,6 +121,8 @@ class TypeChecker(Operator[Data], ABC):
 
 
 class TypeCheckerPipe(Pipe):
+    """A pipe that fully checks an incoming DataSet for type consistency."""
+
     def __init__(self, name: str, input_names: List[str], type_checker_classes: List[Type[TypeChecker]]) -> None:
         """A pipe that fully checks an incoming DataSet for type consistency.
 
@@ -157,6 +166,8 @@ class TypeCheckerPipe(Pipe):
 
 
 class DataSetTypeChecker(Operator[Data]):
+    """A TypeChecker that conforms to the Operator class."""
+
     def __init__(self, input_names: List[str], type_checker_classes: List[Type[TypeChecker]]) -> None:
         """A TypeChecker that conforms to the Operator class.
 

@@ -1,3 +1,4 @@
+"""A Model to integrate Keras models with the mlpype framework."""
 import typing
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
@@ -21,6 +22,8 @@ T = TypeVar("T", bound=KerasBaseModel)
 
 
 class KerasPypeModel(Model[Tensor], ABC, Generic[T]):
+    """A Model to integrate Keras models with the mlpype framework."""
+
     KERAS_MODEL_FILE = "keras_model"
     LOSS_FILE = "loss_func.pkl"
 

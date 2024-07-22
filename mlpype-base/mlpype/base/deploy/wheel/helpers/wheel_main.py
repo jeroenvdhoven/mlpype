@@ -1,3 +1,7 @@
+"""Provides an importable wrapper for the Inferencer in the wheel package.
+
+This is not meant to be accessed directly from outside of a generated wheel package.
+"""
 from pathlib import Path
 
 from mlpype.base.deploy import Inferencer
