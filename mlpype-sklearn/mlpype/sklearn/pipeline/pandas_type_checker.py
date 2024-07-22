@@ -1,3 +1,4 @@
+"""Provides a TypeChecker for pandas DataFrames and tools for serialising/deserialising them."""
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
@@ -17,6 +18,8 @@ from mlpype.base.pipeline.type_checker import DataModel, TypeChecker
 
 
 class PandasData(DataModel):
+    """A serialisable version of a pandas DataFrame."""
+
     def convert(self) -> pd.DataFrame:
         """Converts this object to a pandas DataFrame.
 
@@ -39,6 +42,8 @@ class PandasData(DataModel):
 
 
 class PandasTypeChecker(TypeChecker[pd.DataFrame]):
+    """A TypeChecker for pandas DataFrames."""
+
     def fit(self, data: pd.DataFrame) -> "PandasTypeChecker":
         """Fit this PandasTypeChecker to the given data.
 

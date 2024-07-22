@@ -1,3 +1,4 @@
+"""Provides an implementation of the XGBoost Regressor model for mlpype."""
 from pathlib import Path
 from typing import Any, Dict, List, Type
 
@@ -7,6 +8,8 @@ from mlpype.sklearn.model import SklearnModel
 
 
 class XGBRegressorModel(SklearnModel[XGBRegressor]):
+    """Provides an implementation of the XGBoost Regressor model for mlpype."""
+
     XGB_MODEL_FILE = "model.txt"
 
     def _init_model(self, args: Dict[str, Any]) -> XGBRegressor:

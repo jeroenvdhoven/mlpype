@@ -1,3 +1,4 @@
+"""An interface for logging experiments."""
 import shutil
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -9,6 +10,8 @@ from mlpype.base.serialiser import Serialiser
 
 
 class ExperimentLogger(ABC):
+    """An interface for logging experiments."""
+
     @abstractmethod
     def __enter__(self) -> None:
         """Start the experiment."""

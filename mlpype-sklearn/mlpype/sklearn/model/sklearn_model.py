@@ -1,3 +1,4 @@
+"""Provides a generic class for sklearn-like Models."""
 import typing
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
@@ -16,6 +17,8 @@ T = TypeVar("T", bound=SklearnModelBaseType)
 
 
 class SklearnModel(Model[SklearnData], ABC, Generic[T]):
+    """A generic class for sklearn-like Models."""
+
     SKLEARN_MODEL_FILE = "model.pkl"
 
     def __init__(

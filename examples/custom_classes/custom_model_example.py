@@ -29,7 +29,7 @@ from .model.custom_processer import CustomStandardScaler, tcc
 
 # classes / functions defined in the core file can be imported
 class CustomModel(LogisticRegressionModel):
-    pass
+    """An extension of the base Logistic Regression model."""
 
 
 if __name__ == "__main__":

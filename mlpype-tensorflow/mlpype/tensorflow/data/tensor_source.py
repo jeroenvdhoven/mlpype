@@ -1,9 +1,12 @@
+"""A DataSource based around a created tensorflow Tensor."""
 from tensorflow import Tensor  # type: ignore
 
 from mlpype.base.data.data_source import DataSource
 
 
 class TensorSource(DataSource[Tensor]):
+    """A DataSource based around a created tensorflow Tensor."""
+
     def __init__(self, tensor: Tensor) -> None:
         """A DataSource based around a created tensorflow Tensor.
 

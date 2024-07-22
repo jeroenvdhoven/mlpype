@@ -1,3 +1,4 @@
+"""Multi layer perceptron model integration for mlpype."""
 from typing import Any, Dict
 
 from .keras_pype_model import KerasPypeModel

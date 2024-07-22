@@ -1,3 +1,4 @@
+"""Provides tools for using files as an input data source in Spark."""
 from typing import Any, Dict, Optional
 
 from pyspark.sql import DataFrame as SparkDataFrame
@@ -8,6 +9,8 @@ from mlpype.spark.utils.guarantee import guarantee_spark
 
 
 class SparkReadSource(DataSource[SparkDataFrame]):
+    """Read a file through Spark."""
+
     def __init__(
         self,
         file: str,

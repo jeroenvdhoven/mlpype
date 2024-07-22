@@ -1,3 +1,4 @@
+"""Provides a Serialiser to integrate Joblib with mlpype."""
 from pathlib import Path
 from typing import Any, Union
 
@@ -7,6 +8,8 @@ from mlpype.base.serialiser.serialiser import Serialiser
 
 
 class JoblibSerialiser(Serialiser):
+    """A Serialiser to integrate Joblib with mlpype."""
+
     def serialise(self, object: Any, file: Union[str, Path]) -> None:
         """Serialise the given object to the given file.
 

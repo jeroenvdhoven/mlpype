@@ -1,3 +1,4 @@
+"""Provides tools to simplify plotting using matplotlib in mlpype."""
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Protocol, Union
@@ -9,6 +10,8 @@ from mlpype.base.evaluate.plot import BasePlotter
 
 
 class MatplotFunction(Protocol):
+    """Protocol for creating plots using matplotlib."""
+
     def __call__(self, *data: Any) -> None:
         """Creates a plot from the given data.
 
@@ -21,6 +24,8 @@ class MatplotFunction(Protocol):
 
 @dataclass
 class MatplotlibPlotter(BasePlotter):
+    """Creates plots using matplotlib."""
+
     plot_function: MatplotFunction
     file_name: Union[Path, str]
     dataset_names: List[str]

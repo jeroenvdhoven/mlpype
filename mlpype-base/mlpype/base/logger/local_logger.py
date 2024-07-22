@@ -1,3 +1,4 @@
+"""A basic logger which only saves local copies of the data and prints results."""
 from pathlib import Path
 from types import TracebackType
 from typing import Any, Dict, Optional, Type, Union
@@ -6,6 +7,8 @@ from .experiment_logger import ExperimentLogger
 
 
 class LocalLogger(ExperimentLogger):
+    """A basic logger which only saves local copies of the data and prints results."""
+
     def __enter__(self) -> None:
         """Start the experiment."""
 

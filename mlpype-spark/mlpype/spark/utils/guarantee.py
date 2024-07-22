@@ -1,3 +1,4 @@
+"""Provides tools for guaranteeing that SparkSession is active."""
 from typing import Optional
 
 from pyspark.sql import SparkSession

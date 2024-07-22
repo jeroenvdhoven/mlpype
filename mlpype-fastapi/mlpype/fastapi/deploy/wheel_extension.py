@@ -1,3 +1,4 @@
+"""Provides an importable extension to inject an FastAPI app into your wheel file for MLpype models."""
 from pathlib import Path
 
 from mlpype.base.deploy.wheel import WheelExtension

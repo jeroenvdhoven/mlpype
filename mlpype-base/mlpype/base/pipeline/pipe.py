@@ -1,3 +1,4 @@
+"""Provides the Pipe class, a single step in a Pipeline."""
 from typing import Any, Dict, List, Optional, Type
 
 from mlpype.base.data import DataSet
@@ -5,6 +6,8 @@ from mlpype.base.pipeline import Operator
 
 
 class Pipe:
+    """A single step in a Pipeline."""
+
     def __init__(
         self,
         name: str,

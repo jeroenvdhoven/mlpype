@@ -1,3 +1,4 @@
+"""Provides a TypeChecker for numpy arrays and tools for serialising/deserialising them."""
 from typing import Any, List, Tuple, Type, Union
 
 import numpy as np
@@ -7,6 +8,8 @@ from mlpype.base.pipeline.type_checker import DataModel, TypeChecker
 
 
 class NumpyData(DataModel):
+    """Provides a Pydantic model for serialising numpy arrays."""
+
     data: list
 
     """An object that can be converted to a numpy array."""
@@ -33,6 +36,8 @@ class NumpyData(DataModel):
 
 
 class NumpyTypeChecker(TypeChecker[np.ndarray]):
+    """Provides a TypeChecker for numpy arrays."""
+
     dims: Tuple[int, ...]
     dtype: Union[type, None]
 

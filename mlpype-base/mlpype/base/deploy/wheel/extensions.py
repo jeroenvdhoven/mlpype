@@ -1,3 +1,4 @@
+"""An extension to mlpypes deployment process in wheel files."""
 import re
 from dataclasses import dataclass
 from pathlib import Path

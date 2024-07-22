@@ -1,3 +1,4 @@
+"""A mlpype-compliant framework for using Spark Models."""
 import json
 import typing
 from abc import ABC, abstractmethod
@@ -17,6 +18,8 @@ T = TypeVar("T", bound=SerialisablePredictor)
 
 
 class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
+    """A mlpype-compliant framework for using Spark Models."""
+
     mlpype_MODEL_CONFIG = "config.json"
     SPARK_PREDICTOR_PATH = "predictor"
     SPARK_MODEL_PATH = "spark_model"

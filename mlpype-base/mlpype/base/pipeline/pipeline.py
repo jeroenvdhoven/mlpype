@@ -1,3 +1,10 @@
+"""Provides the Pipeline class.
+
+This class provides a pipeline of operations that can be re-applied to new, similar Data.
+
+This custom pipeline class has been made to account for dictionary inputs, giving you
+flexibility in how you build your pipeline and input data.
+"""
 import logging
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
@@ -7,6 +14,8 @@ from mlpype.base.utils.parsing import get_args_for_prefix
 
 
 class Pipeline:
+    """A pipeline of operations that can be re-applied to new, similar Data."""
+
     def __init__(self, pipes: List[Union[Pipe, "Pipeline"]]) -> None:
         """A pipeline of operations that can be re-applied to new, similar Data.
 

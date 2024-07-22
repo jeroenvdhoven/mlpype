@@ -1,3 +1,4 @@
+"""Provides tools for using Spark SQL as an input data source."""
 from typing import Optional
 
 from pyspark.sql import DataFrame as SparkDataFrame
@@ -8,6 +9,8 @@ from mlpype.spark.utils import guarantee_spark
 
 
 class SparkSqlSource(DataSource[SparkDataFrame]):
+    """Use Spark SQL as an input data source."""
+
     def __init__(
         self,
         query: str,

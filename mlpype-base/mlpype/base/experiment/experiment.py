@@ -1,3 +1,4 @@
+"""The core of the mlpype library: run a standardised ML experiment with the given parameters."""
 import json
 import os
 import subprocess
@@ -21,6 +22,8 @@ from mlpype.base.utils.parsing import get_args_for_prefix
 
 
 class Experiment:
+    """The core of the mlpype library: run a standardised ML experiment with the given parameters."""
+
     def __init__(
         self,
         data_sources: Dict[str, Union[DataCatalog, DataSet]],

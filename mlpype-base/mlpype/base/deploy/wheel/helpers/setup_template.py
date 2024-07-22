@@ -1,3 +1,4 @@
+"""Setup.py file for your serialised, trained model."""
 import os
 from pathlib import Path
 from typing import List, Union

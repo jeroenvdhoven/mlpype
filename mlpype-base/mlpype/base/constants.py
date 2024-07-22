@@ -1,4 +1,9 @@
+"""Provides constants used in mlpype."""
+
+
 class Constants:
+    """Provides constants used in mlpype."""
+
     MODEL_FOLDER: str = "model"
     MODEL_CLASS_FILE: str = "model_class"
     MODEL_PARAM_FILE: str = "model_inputs_outputs.json"

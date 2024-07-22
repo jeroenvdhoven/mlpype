@@ -1,3 +1,4 @@
+"""Contains tools to create plots for mlpype experiments."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
@@ -7,6 +8,8 @@ from mlpype.base.data.dataset import DataSet
 
 
 class PlotFunction(Protocol):
+    """A function definition for creating plots from data."""
+
     def __call__(self, path: Path, *data: Any) -> None:
         """Creates a plot from the given data and writes it to the given path.
 
@@ -17,6 +20,8 @@ class PlotFunction(Protocol):
 
 
 class BasePlotter(ABC):
+    """A base class for creating plots."""
+
     @abstractmethod
     def plot(self, plot_folder: Path, data: DataSet) -> Path:
         """Creates a plot from the given data and writes it to the given path.
@@ -36,6 +41,8 @@ class BasePlotter(ABC):
 
 @dataclass
 class Plotter(BasePlotter):
+    """Creates plots from data."""
+
     plot_function: PlotFunction
     file_name: Union[Path, str]
     dataset_names: List[str]

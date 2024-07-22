@@ -1,3 +1,4 @@
+"""Provides a base class for evaluators."""
 from abc import ABC, abstractmethod
 from typing import Dict, Generic, Optional, TypeVar, Union
 
@@ -9,6 +10,8 @@ Data = TypeVar("Data")
 
 
 class BaseEvaluator(Generic[Data], ABC):
+    """Evaluates a Model on the given data."""
+
     def __init__(
         self,
     ) -> None:

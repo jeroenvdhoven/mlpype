@@ -1,3 +1,4 @@
+"""Base class for an Operator that can be used in a Pipeline."""
 from abc import ABC, abstractmethod
 from typing import Generic, Tuple, TypeVar
 
@@ -5,6 +6,8 @@ Data = TypeVar("Data")
 
 
 class Operator(ABC, Generic[Data]):
+    """An Operator that can been fitted to Data and transform new data."""
+
     def __init__(self) -> None:
         """An Operator that can been fitted to Data and transform new data.
 

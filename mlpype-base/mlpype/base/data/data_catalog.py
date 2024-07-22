@@ -1,3 +1,8 @@
+"""A collection of DataSources that together form a DataSet when loaded.
+
+This is a wrapper around a dictionary of DataSources, and allows you to
+define which datasets your model needs without pulling them into memory.
+"""
 import importlib
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, TypeVar, Union

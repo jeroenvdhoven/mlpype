@@ -1,3 +1,5 @@
+"""Provides tools for using SQL as an input data source."""
+
 from typing import Any
 
 import pandas as pd
@@ -6,6 +8,8 @@ from mlpype.base.data.data_source import DataSource
 
 
 class SqlSource(DataSource[pd.DataFrame]):
+    """Reads data from a sql table using Pandas read_sql."""
+
     def __init__(
         self,
         sql: str,

@@ -1,3 +1,4 @@
+"""A Serialiser to integrate Spark with mlpype."""
 import json
 from pathlib import Path
 from typing import Any, List, Type, Union

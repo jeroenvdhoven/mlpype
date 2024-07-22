@@ -1,3 +1,4 @@
+"""Provides an integration layer between MLpype-trained models and MLflow models."""
 from pathlib import Path
 
 from mlflow.pyfunc import PythonModel, PythonModelContext

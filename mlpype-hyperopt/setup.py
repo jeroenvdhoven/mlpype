@@ -1,3 +1,4 @@
+"""Main setup script for MLpype - Hyperopt."""
 from typing import List
 
 from setuptools import find_namespace_packages, setup

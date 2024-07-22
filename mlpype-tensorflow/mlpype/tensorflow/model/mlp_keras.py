@@ -1,3 +1,4 @@
+"""A simple model showing how to use a MLP from Keras with mlpype."""
 from typing import Any
 
 from keras import Model
@@ -6,6 +7,8 @@ from tensorflow import Tensor  # type: ignore
 
 
 class MLPKeras(Model):
+    """A simple model showing how to use a MLP from Keras with mlpype."""
+
     def __init__(
         self,
         output_size: int,
