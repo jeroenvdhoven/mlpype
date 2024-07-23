@@ -82,6 +82,10 @@ Currently the following subpackages are available:
 - `MLpype.hyperopt`: Use hyperopt to do hyperparameter tuning in MLpype.
 - `MLpype.spark`: In progress, will provide pyspark integrations for MLpype.
 
+# Documentation
+
+You can find the documentation [here](https://jeroenvdhoven.github.io/mlpype/index.html)
+
 # Contributing
 
 ## Basics
