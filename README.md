@@ -1,5 +1,7 @@
 # MLpype: standardise model training across libraries
 
+Go [here](https://jeroenvdhoven.github.io/mlpype/index.html) for the latest documentation.
+
 ## Why yet another ML package?
 
 ## Usage and examples
