@@ -1,6 +1,6 @@
 """Provides an implementation of the XGBoost Classifier model for mlpype."""
 from pathlib import Path
-from typing import Any, Dict, List, Type
+from typing import List, Type
 
 from xgboost.sklearn import XGBClassifier
 
@@ -11,9 +11,6 @@ class XGBClassifierModel(SklearnModel[XGBClassifier]):
     """Provides an implementation of the XGBoost Classifier model for mlpype."""
 
     XGB_MODEL_FILE = "model.txt"
-
-    def _init_model(self, args: Dict[str, Any]) -> XGBClassifier:
-        return XGBClassifier(**args)
 
     def _save(self, folder: Path) -> None:
         assert isinstance(self.model, XGBClassifier)
