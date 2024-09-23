@@ -55,6 +55,7 @@ exclude = 'tests|examples'
 skip-checking-short-docstrings = true
 skip-checking-raises = true
 allow-init-docstring = true
+disable = ["E203"]
 
 [tool.flake8]
 # to match black

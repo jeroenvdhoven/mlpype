@@ -1,6 +1,6 @@
 """Provides the core Model class, which is the base class for all mlpype-compliant models."""
 import json
-from abc import ABC, abstractclassmethod, abstractmethod
+from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Generic, List, Tuple, TypeVar, Union
@@ -106,7 +106,8 @@ class Model(ABC, Generic[Data]):
         model_class = joblib_serialiser.deserialise(folder / Constants.MODEL_CLASS_FILE)
         return model_class._load(folder, lists["inputs"], lists["outputs"])
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def _load(cls, folder: Path, inputs: List[str], outputs: List[str]) -> "Model":
         """Loads a model from file into this Model.
 
