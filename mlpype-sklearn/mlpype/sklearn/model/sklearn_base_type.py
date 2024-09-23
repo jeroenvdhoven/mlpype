@@ -1,17 +1,14 @@
 """Provides a generic class for sklearn-like Models."""
-from abc import ABC, abstractmethod
-from typing import Any, Iterable, Union
+from typing import Any, Iterable, Protocol, Union
 
 from mlpype.sklearn.data.sklearn_data import SklearnData
 
 
-class SklearnModelBaseType(ABC):
+class SklearnModelBaseType(Protocol):
     """Base class for sklearn-like models."""
 
-    @abstractmethod
-    def fit(self, *x: SklearnData) -> Any:
-        """Fit a model to the given data."""
+    def fit(self, *x: SklearnData, **kwargs: Any) -> Any:
+        """Fit a model to the given data. Kwargs are ignored."""
 
-    @abstractmethod
-    def predict(self, *x: SklearnData) -> Union[Iterable[SklearnData], SklearnData]:
-        """Predict for given data using a trained model."""
+    def predict(self, *x: SklearnData, **kwargs: Any) -> Union[Iterable[SklearnData], SklearnData]:
+        """Predict for given data using a trained model. Kwargs are ignored."""

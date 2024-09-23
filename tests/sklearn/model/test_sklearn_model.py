@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -63,8 +62,7 @@ class Test_SklearnModel:
 
     def test_get_parameters_from_object(self):
         class DummyModel(SklearnModel[LinearRegression]):
-            def _init_model(self, args: Dict[str, Any]) -> LinearRegression:
-                return LinearRegression(**args)
+            pass
 
         parser = MagicMock()
         model = DummyModel(inputs=["x"], outputs=["y"])
@@ -77,8 +75,7 @@ class Test_SklearnModel:
 
     def test_get_parameters_from_class(self):
         class DummyModel(SklearnModel[LinearRegression]):
-            def _init_model(self, args: Dict[str, Any]) -> LinearRegression:
-                return LinearRegression(**args)
+            pass
 
         parser = MagicMock()
 

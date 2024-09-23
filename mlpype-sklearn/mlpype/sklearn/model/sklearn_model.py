@@ -1,6 +1,5 @@
 """Provides a generic class for sklearn-like Models."""
 import typing
-from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import Any, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
@@ -16,7 +15,7 @@ from mlpype.sklearn.model.sklearn_base_type import SklearnModelBaseType
 T = TypeVar("T", bound=SklearnModelBaseType)
 
 
-class SklearnModel(Model[SklearnData], ABC, Generic[T]):
+class SklearnModel(Model[SklearnData], Generic[T]):
     """A generic class for sklearn-like Models."""
 
     SKLEARN_MODEL_FILE = "model.pkl"
@@ -31,14 +30,19 @@ class SklearnModel(Model[SklearnData], ABC, Generic[T]):
     ) -> None:
         """A generic class for sklearn-like Models.
 
-        You can set a sklearn model as a type hint to this class when defining a new model.
+        You should set a sklearn model as a type hint to this class when defining a new model.
         This allows us to get the parameters from the documentation of that sklearn model.
         For an example, see the implementation of LinearModel, especially the `SklearnModel[LinearRegression]` part.
 
+        Below are some examples for how to do this yourself.
+        ```python
+        # Works
         class LinearRegressionModel(SklearnModel[LinearRegression]):
-            def _init_model(self, **args) -> LinearRegression:
-                return LinearRegression(**args)
+            pass
 
+        # Unfortunately, using something like the following will not work due to how Generic types are handled.
+        LinearRegressionModel = SklearnModel[LinearRegression]
+        ```
 
         Args:
             inputs (List[str]): A list of names of input Data. This determines which Data is
@@ -56,12 +60,11 @@ class SklearnModel(Model[SklearnData], ABC, Generic[T]):
             model = self._init_model(model_args)
         self.model = model
 
-    @abstractmethod
     def _init_model(self, args: Dict[str, Any]) -> T:
-        raise NotImplementedError
+        return self._get_annotated_class()(**args)
 
     @classmethod
-    def _get_annotated_class(cls) -> Type[SklearnModelBaseType]:
+    def _get_annotated_class(cls) -> Type[T]:
         return typing.get_args(cls.__orig_bases__[0])[0]
 
     def set_seed(self) -> None:
