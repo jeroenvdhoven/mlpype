@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 from sklearn.linear_model import LogisticRegression
 
-from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.model import LogisticRegressionModel
 
 
 class Test_LogisticRegressionModel:

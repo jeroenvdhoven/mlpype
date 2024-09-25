@@ -5,9 +5,10 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Generic, List, Tuple, TypeVar, Union
 
+from dill import dump, load
+
 from mlpype.base.constants import Constants
 from mlpype.base.data import DataSet
-from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 
 Data = TypeVar("Data")
 
@@ -59,8 +60,6 @@ class Model(ABC, Generic[Data]):
         Args:
             folder (Union[str, Path]): The folder to store the Model in.
         """
-        joblib_serialiser = JoblibSerialiser()
-
         if isinstance(folder, str):
             folder = Path(folder)
 
@@ -72,7 +71,8 @@ class Model(ABC, Generic[Data]):
         with open(folder / Constants.MODEL_PARAM_FILE, "w") as f:
             json.dump(lists_to_save, f)
 
-        joblib_serialiser.serialise(self.__class__, folder / Constants.MODEL_CLASS_FILE)
+        with open(folder / Constants.MODEL_CLASS_FILE, "wb") as f:
+            dump(self.__class__, f)
         self._save(folder)
 
     @abstractmethod
@@ -102,8 +102,8 @@ class Model(ABC, Generic[Data]):
         with open(folder / Constants.MODEL_PARAM_FILE) as f:
             lists = json.load(f)
 
-        joblib_serialiser = JoblibSerialiser()
-        model_class = joblib_serialiser.deserialise(folder / Constants.MODEL_CLASS_FILE)
+        with open(folder / Constants.MODEL_CLASS_FILE, "rb") as f:
+            model_class = load(f)
         return model_class._load(folder, lists["inputs"], lists["outputs"])
 
     @classmethod

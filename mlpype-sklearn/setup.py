@@ -9,6 +9,7 @@ if __name__ == "__main__":
         "numpy>=1.26.4",
         "scikit-learn>=1.2.2",
         "pandas>=1.5.3",
+        "dill>=0.3.8",
     ]
     strict_deps = [s.replace(">=", "==") for s in deps]
 

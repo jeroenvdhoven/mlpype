@@ -6,7 +6,6 @@ We do not guarantee results if you use `python examples/sklearn/hierarchical_skl
 
 from pathlib import Path
 from typing import Dict, Iterable
-from unittest.mock import MagicMock
 
 import numpy as np
 import pandas as pd
@@ -25,18 +24,9 @@ from mlpype.base.pipeline.pipe import Pipe
 from mlpype.base.pipeline.pipeline import Pipeline
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from mlpype.sklearn.data.data_frame_source import DataFrameSource
-from mlpype.sklearn.model.linear_regression_model import LinearRegressionModel
-from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.model import LogisticRegressionModel
 from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
 from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
-
-# %%
-
-parser = MagicMock()
-# parser = ArgumentParser()
-model = LinearRegressionModel.get_parameters(parser)
-
-print(parser.add_argument.call_args_list)
 
 # %% [markdown]
 # Try a run with sklearn

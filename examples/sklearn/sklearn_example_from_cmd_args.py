@@ -9,6 +9,7 @@ from typing import Iterable
 import numpy as np
 import pandas as pd
 from sklearn.datasets import load_iris
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -23,7 +24,7 @@ from mlpype.base.pipeline.pipeline import Pipeline
 from mlpype.base.pipeline.type_checker import TypeCheckerPipe
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from mlpype.sklearn.data.data_frame_source import DataFrameSource
-from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.model.sklearn_model import SklearnModel
 from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
 from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
@@ -79,7 +80,7 @@ of = Path("outputs")
 
 experiment = Experiment.from_command_line(
     data_sources=ds,
-    model_class=LogisticRegressionModel,
+    model_class=SklearnModel.class_from_sklearn_model_class(LogisticRegression),
     model_inputs=["x"],
     model_outputs=["y"],
     pipeline=pipeline,

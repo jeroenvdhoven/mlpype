@@ -40,6 +40,10 @@ class SklearnModel(Model[SklearnData], Generic[T]):
         class LinearRegressionModel(SklearnModel[LinearRegression]):
             pass
 
+        # An alternative to dynamically generate the model, which is easier to export/import
+        # create_sklearn_model_class can be found in this file.
+        model_class = create_sklearn_model_class(LinearRegression)
+
         # Unfortunately, using something like the following will not work due to how Generic types are handled.
         LinearRegressionModel = SklearnModel[LinearRegression]
         ```
@@ -104,3 +108,55 @@ class SklearnModel(Model[SklearnData], Generic[T]):
         add_args_to_parser_for_class(
             parser, BaseModel, "model", [], excluded_args=["seed", "inputs", "outputs", "model"]
         )
+
+    @classmethod
+    def class_from_sklearn_model_class(
+        cls,
+        model_class: Type[SklearnModelBaseType],
+    ) -> Type["SklearnModel"]:
+        """Create a SklearnModel classfrom a SklearnModelBaseType.
+
+        This should support all sklearn classifaction and regression models.
+
+        Args:
+            model_class (Type[SklearnModelBaseType]): The class of the sklearn model. For example,
+                LinearRegression or LogisticRegression.
+
+        Returns:
+            Type[SklearnModel]: The created SklearnModel.
+        """
+
+        class SklearnConditionedModel(cls[model_class]):  # type: ignore
+            pass
+
+        return SklearnConditionedModel
+
+    @classmethod
+    def from_sklearn_model_class(
+        cls,
+        model_class: Type[SklearnModelBaseType],
+        inputs: List[str],
+        outputs: List[str],
+        seed: int = 1,
+        **model_args: Any,
+    ) -> "SklearnModel":
+        """Create a SklearnModel from a SklearnModelBaseType.
+
+        This should support all sklearn classifaction and regression models.
+
+        Args:
+            model_class (Type[SklearnModelBaseType]): The class of the sklearn model. For example,
+                LinearRegression or LogisticRegression.
+            inputs (List[str]): A list of names of input Data. This determines which Data is
+                used to fit the model.
+            outputs (List[str]): A list of names of output Data. This determines the names of
+                output variables.
+            seed (int, optional): The RNG seed to ensure reproducability.. Defaults to 1.
+            **model_args (Any): Optional keyword arguments passed to the model class to instantiate a new
+                model if `model` is None.
+
+        Returns:
+            SklearnModel: The created SklearnModel.
+        """
+        new_cls = cls.class_from_sklearn_model_class(model_class)
+        return new_cls(inputs=inputs, outputs=outputs, model=None, seed=seed, **model_args)
