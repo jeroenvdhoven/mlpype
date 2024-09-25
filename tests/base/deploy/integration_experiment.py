@@ -22,7 +22,7 @@ from mlpype.base.pipeline.pipeline import Pipeline
 from mlpype.base.pipeline.type_checker import TypeCheckerPipe
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from mlpype.sklearn.data.data_frame_source import DataFrameSource
-from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.model import LogisticRegressionModel
 
 from .dummy_model.custom_processer import CustomStandardScaler, tcc
 

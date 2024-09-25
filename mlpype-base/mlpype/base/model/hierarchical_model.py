@@ -64,10 +64,12 @@ class HierarchicalModel(Model, Generic[T]):
                 during training. Besides these, `inputs`, `outputs`, and `seed` will be send by default.
         """
         self.logger = getLogger(__name__)
-        super().__init__(inputs, outputs, seed)
         if model is None:
             model = {}
         self.model = model
+
+        super().__init__(inputs, outputs, seed)
+
         self.data_splitter = data_splitter
         self.data_merger = data_merger
         self.model_args = model_args

@@ -6,11 +6,11 @@ We do not guarantee results if you use `python examples/sklearn/sklearn_example.
 
 from pathlib import Path
 from typing import Iterable
-from unittest.mock import MagicMock
 
 import numpy as np
 import pandas as pd
 from sklearn.datasets import load_iris
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -24,18 +24,9 @@ from mlpype.base.pipeline.pipe import Pipe
 from mlpype.base.pipeline.pipeline import Pipeline
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from mlpype.sklearn.data.data_frame_source import DataFrameSource
-from mlpype.sklearn.model.linear_regression_model import LinearRegressionModel
-from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.model import SklearnModel
 from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
 from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
-
-# %%
-
-parser = MagicMock()
-# parser = ArgumentParser()
-model = LinearRegressionModel.get_parameters(parser)
-
-print(parser.add_argument.call_args_list)
 
 # %% [markdown]
 # Try a run with sklearn
@@ -58,11 +49,12 @@ def _make_data() -> Iterable[np.ndarray]:
 # %%
 train_x, test_x, train_y, test_y = _make_data()
 
-model = LogisticRegressionModel(
-    model=None,
-    inputs=["x"],
-    outputs=["y"],
-)
+model = SklearnModel.from_sklearn_model_class(LogisticRegression, inputs=["x"], outputs=["y"])
+# model = LogisticRegressionModel(
+#     model=None,
+#     inputs=["x"],
+#     outputs=["y"],
+# )
 
 ds = {
     "train": DataCatalog(

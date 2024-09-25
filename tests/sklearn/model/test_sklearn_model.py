@@ -7,7 +7,7 @@ from pytest import fixture
 from sklearn.linear_model import LinearRegression
 
 from mlpype.base.data.dataset import DataSet
-from mlpype.sklearn.model.linear_regression_model import LinearRegressionModel
+from mlpype.sklearn.model import LinearRegressionModel
 from mlpype.sklearn.model.sklearn_model import SklearnModel
 
 
