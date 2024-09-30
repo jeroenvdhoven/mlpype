@@ -3,7 +3,7 @@ PYTHON_VERSION=3.11
 PYENV_NAME=mlpype
 
 pyenv-delete:
-	pyenv virtualenv-delete ${PYENV_NAME} -f
+	pyenv virtualenv-delete -f ${PYENV_NAME}
 
 pyenv:
 	pyenv install -s ${PYTHON_VERSION}
@@ -13,6 +13,9 @@ pyenv:
 pyenv-dev-install: pyenv dev-install
 
 pyenv-dev-setup: pyenv dev-setup
+
+# Development setup
+dev-setup: dev-install pre-commit-install
 
 dev-install:
 	./scripts/dev_install.sh -e 1
@@ -58,6 +61,3 @@ pre-commit-install:
 
 pre-commit-run:
 	pre-commit run --all-files
-
-# Development setup
-dev-setup: dev-install pre-commit-install
