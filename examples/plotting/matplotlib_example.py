@@ -27,8 +27,7 @@ from mlpype.base.pipeline.pipe import Pipe
 from mlpype.base.pipeline.pipeline import Pipeline
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from mlpype.sklearn.data.data_frame_source import DataFrameSource
-from mlpype.sklearn.model.linear_regression_model import LinearRegressionModel
-from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.model import LinearRegressionModel, LogisticRegressionModel
 from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
 from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
