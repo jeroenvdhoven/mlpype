@@ -269,9 +269,10 @@ run here for logging purposes. Consider using the `from_command_line` or
             for name, data in full_datasets.items():
                 plot_folder = self.output_folder / Constants.PLOT_FOLDER / name
                 plot_folder.mkdir(parents=True, exist_ok=True)
-                plot_file = plotter.plot(plot_folder, data)
+                plot_files = plotter.plot(plot_folder, data, self)
 
-                self.experiment_logger.log_file(plot_file)
+                for plot_file in plot_files:
+                    self.experiment_logger.log_file(plot_file)
 
     def _create_output_folders(self) -> None:
         of = self.output_folder

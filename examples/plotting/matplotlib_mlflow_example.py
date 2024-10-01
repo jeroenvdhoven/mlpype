@@ -10,6 +10,7 @@ This will make sure the artifacts will show up.
 """
 # %%
 
+import logging
 from pathlib import Path
 from typing import Iterable
 from unittest.mock import MagicMock
@@ -31,15 +32,14 @@ from mlpype.base.experiment.experiment import Experiment
 from mlpype.base.pipeline.pipe import Pipe
 from mlpype.base.pipeline.pipeline import Pipeline
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
-from mlpype.matplotlib.evaluate.plot import MatplotlibPlotter
+from mlpype.matplotlib.evaluate import MatplotlibPlotter, ShapleyPlot
 from mlpype.mlflow.logger.mlflow_logger import MlflowLogger
 from mlpype.sklearn.data.data_frame_source import DataFrameSource
-from mlpype.sklearn.model.linear_regression_model import LinearRegressionModel
-from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.model import LinearRegressionModel, LogisticRegressionModel
 from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
 from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
-# %%
+logging.basicConfig(level=logging.INFO)
 
 experiment_name = "plot-example-experiment"
 logger = MlflowLogger(experiment_name, "http://127.0.0.1:5000")
@@ -116,7 +116,18 @@ evaluator = Evaluator(
 
 tcc = [NumpyTypeChecker, PandasTypeChecker]
 
-pipeline = Pipeline([Pipe("scale", StandardScaler, inputs=["x"], outputs=["x"])])
+
+class StandardDfScaler(StandardScaler):
+    """Standard scaler for pandas DFs."""
+
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Transforms the given DF but keep the DF class."""
+        res = super().transform(df)
+        return pd.DataFrame(res, index=df.index, columns=df.columns)
+
+
+pipeline = Pipeline([Pipe("scale", StandardDfScaler, inputs=["x"], outputs=["x"])])
+
 of = Path("outputs")
 
 pred_ds_name = Constants.PREDICTION_SUFFIX
@@ -132,6 +143,7 @@ experiment = Experiment(
     plots=[
         MatplotlibPlotter(plot_predictions, "predictions.png", [f"y{pred_ds_name}"]),
         Plotter(preds_vs_true, "predictions_vs_true.png", ["y", f"y{pred_ds_name}"]),
+        ShapleyPlot("x", "y", sample_size=30),
     ],
 )
 

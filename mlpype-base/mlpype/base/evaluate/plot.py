@@ -23,32 +23,37 @@ class BasePlotter(ABC):
     """A base class for creating plots."""
 
     @abstractmethod
-    def plot(self, plot_folder: Path, data: DataSet) -> Path:
+    def plot(self, plot_folder: Path, data: DataSet, experiment: Any) -> List[Path]:
         """Creates a plot from the given data and writes it to the given path.
 
         Args:
             plot_folder (Path): The folder to write the plot to. You still need to set your
-                file name.
+                file name. If multiple plots are created, you can use the same folder, but
+                make sure to return all file names in the list.
             data (DataSet): The full dataset to plot. This should contain all the data you
                 need to make your plots. It contains the last DataSet from the pipeline,
                 with the predictions added as "{output_name}{Constants.PREDICTION_POSTFIX}"
+            experiment (Any): The experiment object. Useful for extracting
+                the trained model.
 
         Returns:
-            Path: The file path of where the plot is stored.
+            List[Path]: The file paths of where the plot(s) are stored.
         """
         raise NotImplementedError
 
 
 @dataclass
 class Plotter(BasePlotter):
-    """Creates plots from data."""
+    """Creates 1 plot from data."""
 
     plot_function: PlotFunction
     file_name: Union[Path, str]
     dataset_names: List[str]
 
-    def plot(self, plot_folder: Path, data: DataSet) -> Path:
+    def plot(self, plot_folder: Path, data: DataSet, experiment: Any) -> List[Path]:
         """Selects the correct data from the DataSet, creates a plot, and writes it to `plot_folder / self.file_name`.
+
+        This is a simple wrapper to make a single plot.
 
         Args:
             plot_folder (Path): The folder to write the plot to. The final plot will be written to
@@ -56,11 +61,13 @@ class Plotter(BasePlotter):
             data (DataSet): A DataSet containing all the data you need to make your plots.
                 In an Experiment, this will contain the last DataSet from the Pipeline with the
                 predictions added as "{output_name}{Constants.PREDICTION_POSTFIX}"
+            experiment (Any): The experiment object. Not used by default for this
+                plotter; it assumens you only use the transformed input data.
 
         Returns:
-            Path: The file path of where the plot is stored.
+            List[Path]: The file paths of where the plot(s) are stored.
         """
         plot_ds = data.get_all(self.dataset_names)
         plot_file = plot_folder / self.file_name
         self.plot_function(plot_file, *plot_ds)
-        return plot_file
+        return [plot_file]
