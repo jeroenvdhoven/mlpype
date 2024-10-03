@@ -1,7 +1,7 @@
 """Provides tools to simplify making Shapley plots in mlpype."""
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,6 +11,8 @@ from shap import Explainer, partial_dependence_plot, plots
 from mlpype.base.data.dataset import DataSet
 from mlpype.base.evaluate.plot import BasePlotter
 from mlpype.base.experiment.experiment import Experiment
+from mlpype.base.model.model import Model
+from mlpype.sklearn.data.sklearn_data import SklearnData
 
 SkleanData = Union[np.ndarray, pd.DataFrame]
 
@@ -86,48 +88,75 @@ class ShapleyPlot(BasePlotter):
         """
         root_folder = plot_folder / "shapley"
         root_folder.mkdir(parents=True, exist_ok=True)
-        model = experiment.model
 
+        forecast = self._make_forecast_function(experiment.model)
+        sampled, shap_values = self._sample_and_shapley(data, forecast)
+
+        result = []
+        result += self._partial_plots(root_folder, forecast, sampled)
+        result.append(self._beeswarm_plot(root_folder, shap_values))
+
+        return result
+
+    def _make_forecast_function(self, model: Model) -> Callable[[SklearnData], Any]:
         def forecast(X: SkleanData) -> SkleanData:
             return model.transform(DataSet(x=X))[self.output_name]
 
+        return forecast
+
+    def _sample_and_shapley(self, data: DataSet, model: Callable) -> Tuple[SkleanData, np.ndarray]:
+        """
+        Samples the input data and returns the shapley values.
+
+        Args:
+            data (DataSet): The input Dataset.
+            model (Callable): The model-predict function.
+
+        Returns:
+            Tuple[SkleanData, np.ndarray]: The sampled data and the shapley values.
+        """
         input_data = data.get(self.input_name)
         if not isinstance(input_data, (np.ndarray, pd.DataFrame)):
             self.logger.warning("Input data is not an array or dataframe. Shapley may not work.")
 
         # Shapley values on sampled data
         sampled = self.sample_function(input_data, self.sample_size)
-        expl = Explainer(forecast, sampled)
+        expl = Explainer(model, sampled)
         shap_values = expl(sampled)
 
-        if isinstance(input_data, np.ndarray):
-            column_ids = list(range(input_data.shape[1]))
-        elif isinstance(input_data, pd.DataFrame):
-            column_ids = list(input_data.columns)
+        return sampled, shap_values
+
+    def _partial_plots(self, root_folder: Path, model: Callable, sampled: SkleanData) -> List[Path]:
+        """Plots partial dependency plots for all column."""
+        if isinstance(sampled, np.ndarray):
+            column_ids = list(range(sampled.shape[1]))
+        elif isinstance(sampled, pd.DataFrame):
+            column_ids = list(sampled.columns)
         else:
-            raise ValueError(f"Input data must be either a numpy array or a pandas dataframe. Got {type(input_data)}")
+            raise ValueError(f"Input data must be either a numpy array or a pandas dataframe. Got {type(sampled)}")
 
-        result = []
-
-        # Plot partial dependence
         partial_deps_folder = root_folder / "partial_dependence"
         partial_deps_folder.mkdir(parents=True, exist_ok=True)
+
+        result = []
         for col in column_ids:
             self.logger.info(f"Plotting partial dependence for column: {col}")
             partial_plot_file = partial_deps_folder / f"{col}.png"
-            partial_dependence_plot(col, forecast, sampled, show=False)
+            partial_dependence_plot(col, model, sampled, show=False)
             plt.tight_layout()
             plt.savefig(partial_plot_file)
             plt.close()
             result.append(partial_plot_file)
+        return result
 
-        # Beeplot
+    def _beeswarm_plot(self, root_folder: Path, shap_values: np.ndarray) -> Path:
+        """Makes a beeswarm plot."""
         self.logger.info("Plotting beeswarm plot")
         beeplot_file = root_folder / "beeswarm.png"
+
         plots.beeswarm(shap_values, show=False)
         plt.tight_layout()
         plt.savefig(beeplot_file)
         plt.close()
-        result.append(beeplot_file)
 
-        return result
+        return beeplot_file
