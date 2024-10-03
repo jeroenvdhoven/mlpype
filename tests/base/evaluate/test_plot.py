@@ -20,8 +20,8 @@ def test_Plotter():
     )
 
     tmp_dir = Path("tempdir")
-    result = plotter.plot(tmp_dir, dataset)
+    result = plotter.plot(tmp_dir, dataset, MagicMock())
 
     dataset.get_all.assert_called_once_with(names)
     plot_func.assert_called_once_with(tmp_dir / fn, *data)
-    assert result == tmp_dir / fn
+    assert result == [tmp_dir / fn]

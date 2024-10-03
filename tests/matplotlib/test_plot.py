@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pandas as pd
 
 from mlpype.base.data.dataset import DataSet
-from mlpype.matplotlib.evaluate.plot import MatplotlibPlotter
+from mlpype.matplotlib.evaluate.matplot import MatplotlibPlotter
 
 
 def plot(x: pd.DataFrame):
@@ -29,15 +29,15 @@ class TestMatplotlibPlotter:
         )
 
         tmp_dir = Path("tempdir")
-        with patch("mlpype.matplotlib.evaluate.plot.plt") as mock_matplotlib:
-            result = plotter.plot(tmp_dir, dataset)
+        with patch("mlpype.matplotlib.evaluate.matplot.plt") as mock_matplotlib:
+            result = plotter.plot(tmp_dir, dataset, MagicMock())
 
         mock_matplotlib.savefig.assert_called_once_with(tmp_dir / fn)
         mock_matplotlib.close.assert_called_once_with()
 
         dataset.get_all.assert_called_once_with(names)
         plot_func.assert_called_once_with(*data)
-        assert result == tmp_dir / fn
+        assert result == [tmp_dir / fn]
 
     def test_integration(self):
         fn = "filename.png"
@@ -55,6 +55,7 @@ class TestMatplotlibPlotter:
 
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
-            file = plotter.plot(tmp_dir, dataset)
+            file_list = plotter.plot(tmp_dir, dataset, MagicMock())
 
-            assert file.exists()
+            assert len(file_list) == 1
+            assert file_list[0].exists()

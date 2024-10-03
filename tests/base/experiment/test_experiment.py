@@ -297,7 +297,7 @@ def test_log_plots():
     model.transform.side_effect = predictions
     plotters = [MagicMock(spec=BasePlotter), MagicMock(spec=BasePlotter), MagicMock(spec=BasePlotter)]
     for i, p in enumerate(plotters):
-        p.plot.side_effect = [f"train{i}", f"test{i}"]
+        p.plot.side_effect = [[f"train{i}"], [f"test{i}"]]
 
     with TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
@@ -335,7 +335,10 @@ def test_log_plots():
     }
     for plotter in plotters:
         plotter.plot.assert_has_calls(
-            [call(tmp_dir / Constants.PLOT_FOLDER / name, expected_datasets[name]) for name in ["train", "test"]],
+            [
+                call(tmp_dir / Constants.PLOT_FOLDER / name, expected_datasets[name], experiment)
+                for name in ["train", "test"]
+            ],
             any_order=True,
         )
 
