@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, call, patch
 from git import InvalidGitRepositoryError
 from pytest import fixture
 
+from mlpype.base.logger.experiment_logger import ExperimentLogger
 from mlpype.mlflow.logger.mlflow_logger import MlflowLogger
 from tests.utils import pytest_assert
 
@@ -178,4 +179,23 @@ class Test_mlflow_logger:
             file = Path("outputs", "dummy", "file.txt")
             logger.log_file(file)
 
-            mock_log_artifact.assert_called_once_with(str(file), "dummy")
+            mock_log_artifact.assert_called_once_with(str(file))
+
+    def test_model(self, logger: MlflowLogger):
+        folder = Path("folder")
+        model = MagicMock()
+        with patch.object(ExperimentLogger, "log_model") as mock_log_model, patch(
+            "mlpype.mlflow.logger.mlflow_logger.mlflow_log_model"
+        ) as mock_mlflow_log_model, patch(
+            "mlpype.mlflow.logger.mlflow_logger.PypeMLFlowModel"
+        ) as mock_integration_model:
+            logger.log_model(model, folder)
+
+        model.save.assert_called_once_with(folder)
+        mock_log_model.assert_called_once_with(model, folder)
+        mock_integration_model.assert_called_once_with()
+        mock_mlflow_log_model.assert_called_once_with(
+            artifact_path=logger.ARTIFACT_FOLDER,
+            python_model=mock_integration_model.return_value,
+            artifacts={"folder": str(folder.parent)},
+        )

@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Iterable
 
 import numpy as np
-from mlflow import register_model  # type: ignore
 from mlflow import search_runs  # type: ignore
 from mlflow.pyfunc import load_model
 from mlflow.tracking.fluent import get_experiment_by_name
@@ -35,7 +34,7 @@ from mlpype.base.pipeline.type_checker import TypeCheckerPipe
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 from mlpype.mlflow.logger.mlflow_logger import MlflowLogger
 from mlpype.sklearn.data.data_frame_source import DataFrameSource
-from mlpype.sklearn.model.logistic_regression_model import LogisticRegressionModel
+from mlpype.sklearn.model import LogisticRegressionModel
 from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
 from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 
