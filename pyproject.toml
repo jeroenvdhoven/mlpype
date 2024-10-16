@@ -6,7 +6,7 @@ authors = [
 description = "Standardise model training across libraries"
 readme = "README.md"
 requires-python = ">=3.9"
-version = "0.6.0"
+version = "0.6.1"
 dynamic = ["license"]
 
 [tool.isort]
