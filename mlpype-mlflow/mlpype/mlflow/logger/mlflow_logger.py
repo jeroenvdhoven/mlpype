@@ -146,6 +146,7 @@ class MlflowLogger(ExperimentLogger):
             model (Model): The Model to be logged.
             folder (Union[str, Path]): The file to log the Model to.
         """
+        folder = Path(folder)
         model.save(folder)
         super().log_model(model, folder)
         mlflow_log_model(
@@ -153,7 +154,7 @@ class MlflowLogger(ExperimentLogger):
             # PypeMLFlowModel is a near-dummy class. It knows how to load a model
             # from a MLpype training result.
             python_model=PypeMLFlowModel(),
-            artifacts={"folder": str(folder)},
+            artifacts={"folder": str(folder.parent)},
         )
 
     def log_file(self, file: Union[str, Path]) -> None:
@@ -168,13 +169,7 @@ class MlflowLogger(ExperimentLogger):
             file (Union[str, Path]): The file to log.
         """
         file = Path(file)
-        # Remove the output folder from the path. Unfortunately, this is due to legacy coding.
-        # Ideally, we do not remove the outputs folder and keep a clean structure.
-        artifact_path = Path(*file.parts[1:-1])
-        if str(artifact_path) == ".":
-            log_artifact(str(file))
-        else:
-            log_artifact(str(file), str(artifact_path))
+        log_artifact(str(file))
 
     def register_mlpype_model(self, run_id: str, model_name: str) -> None:
         """Applies the register_model function of mlflow to MLpype-trained models.

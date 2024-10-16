@@ -23,8 +23,16 @@ class PypeMLFlowModel(PythonModel):
                 the results higher up in the folder structure.
         """
         assert "folder" in context.artifacts
-        root_path = Path(context.artifacts["folder"]).parent.parent.parent
-        self.inferencer = Inferencer.from_folder(root_path)
+        root = Path(context.artifacts["folder"])
+        print(f"Starting in {root}")
+        for _ in range(4):
+            if (root / "extra_files.json").exists():
+                break
+            root = root.parent
+            print(f"Trying {root}")
+        else:
+            raise ValueError("Could not locate proper root folder to import model.")
+        self.inferencer = Inferencer.from_folder(root)
 
     def predict(self, context: PythonModelContext, model_input: DataSet) -> DataSet:
         """
