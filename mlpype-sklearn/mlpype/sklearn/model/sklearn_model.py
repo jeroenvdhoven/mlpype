@@ -1,6 +1,7 @@
 """Provides a generic class for sklearn-like Models."""
 import typing
 from argparse import ArgumentParser
+from logging import getLogger
 from pathlib import Path
 from typing import Any, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
 
@@ -13,10 +14,31 @@ from mlpype.sklearn.data.sklearn_data import SklearnData
 from mlpype.sklearn.model.sklearn_base_type import SklearnModelBaseType
 
 T = TypeVar("T", bound=SklearnModelBaseType)
+logger = getLogger(__name__)
 
 
 class SklearnModel(Model[SklearnData], Generic[T]):
-    """A generic class for sklearn-like Models."""
+    """A generic class for sklearn-like Models.
+
+    You should set a sklearn model as a type hint to this class when defining a new model.
+    This allows us to get the parameters from the documentation of that sklearn model.
+    For an example, see the implementation of LinearModel, especially the `SklearnModel[LinearRegression]` part.
+
+    Below are some examples for how to do this yourself.
+
+    .. code-block:: python
+
+        # Works
+        class LinearRegressionModel(SklearnModel[LinearRegression]):
+            pass
+
+        # An alternative to dynamically generate the model, which is easier to export/import
+        # create_sklearn_model_class can be found in this file.
+        model_class = create_sklearn_model_class(LinearRegression)
+
+        # Unfortunately, using something like the following will not work due to how Generic types are handled.
+        LinearRegressionModel = SklearnModel[LinearRegression]
+    """
 
     SKLEARN_MODEL_FILE = "model.pkl"
 
@@ -30,24 +52,6 @@ class SklearnModel(Model[SklearnData], Generic[T]):
     ) -> None:
         """A generic class for sklearn-like Models.
 
-        You should set a sklearn model as a type hint to this class when defining a new model.
-        This allows us to get the parameters from the documentation of that sklearn model.
-        For an example, see the implementation of LinearModel, especially the `SklearnModel[LinearRegression]` part.
-
-        Below are some examples for how to do this yourself.
-        ```python
-        # Works
-        class LinearRegressionModel(SklearnModel[LinearRegression]):
-            pass
-
-        # An alternative to dynamically generate the model, which is easier to export/import
-        # create_sklearn_model_class can be found in this file.
-        model_class = create_sklearn_model_class(LinearRegression)
-
-        # Unfortunately, using something like the following will not work due to how Generic types are handled.
-        LinearRegressionModel = SklearnModel[LinearRegression]
-        ```
-
         Args:
             inputs (List[str]): A list of names of input Data. This determines which Data is
                 used to fit the model.
@@ -57,7 +61,7 @@ class SklearnModel(Model[SklearnData], Generic[T]):
                 we will use the model_args to instantiate a new model. Should be of type SklearnModelBaseType
             seed (int, optional): The RNG seed to ensure reproducability.. Defaults to 1.
             **model_args (Any): Optional keyword arguments passed to the model class to instantiate a new
-                model if `model` is None.
+                model if `model` is None. This is where the arguments to the sklearn model go.
         """
         super().__init__(inputs, outputs, seed)
         if model is None:
@@ -128,6 +132,23 @@ class SklearnModel(Model[SklearnData], Generic[T]):
 
         class SklearnConditionedModel(cls[model_class]):  # type: ignore
             pass
+
+        try:
+            old_docs = cls.__doc__
+            assert isinstance(old_docs, str)
+            SklearnConditionedModel.__doc__ = old_docs.replace(
+                "A generic class for sklearn-like Models.",
+                f"""
+A generic class for sklearn-like Models.
+
+See SklearnModel for the original source and docs for subfunctions.
+
+This model uses a fixed class: {model_class.__name__}.
+The source module is: {model_class.__module__}
+""",
+            )
+        except AttributeError:
+            logger.warning("Failed to add docstring to SklearnConditionedModel.")
 
         return SklearnConditionedModel
 

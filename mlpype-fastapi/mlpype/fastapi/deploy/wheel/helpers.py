@@ -12,10 +12,11 @@ def load_app() -> FastAPI:
     Based on mlpypeApp.
 
     If you create a python file F where this App is loaded:
-    ```
-    from <model name> import load_app
-    app = load_app()
-    ```
+
+    .. code-block:: python
+
+        from <model name> import load_app
+        app = load_app()
 
     You can host this model using a command like:
     uvicorn <python package path to file F>:app

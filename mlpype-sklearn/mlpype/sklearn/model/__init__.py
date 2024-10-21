@@ -1,18 +1,29 @@
 """Provides classes for sklearn models.
 
 For sklearn models not already configured here, you can use the SklearnModel class to quickly incorporate your model.
+
+.. automodule:: mlpype.sklearn.models
+   :members:
+   :undoc-members:
+   :show-inheritance:
 """
-from sklearn.linear_model import LinearRegression, LogisticRegression
+
+import sys
+
+from sklearn.utils import all_estimators
 
 from .sklearn_base_type import SklearnModelBaseType
 from .sklearn_model import SklearnModel
 
-LinearRegressionModel = SklearnModel.class_from_sklearn_model_class(LinearRegression)
-LogisticRegressionModel = SklearnModel.class_from_sklearn_model_class(LogisticRegression)
+current_module = sys.modules[__name__]
+classes = all_estimators(["classifier", "regressor"])
 
-__all__ = [
-    "SklearnModel",
-    "SklearnModelBaseType",
-    "LinearRegressionModel",
-    "LogisticRegressionModel",
-]
+dynamic_classes = []
+for name, klass in classes:
+    new_name = f"{name}Model"
+    dynamic_class = SklearnModel.class_from_sklearn_model_class(klass)
+    dynamic_classes.append(new_name)
+    setattr(current_module, new_name, dynamic_class)
+
+
+__all__ = ["SklearnModel", "SklearnModelBaseType", *dynamic_classes]

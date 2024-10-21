@@ -57,33 +57,34 @@ class DataCatalog(Dict[str, DataSource[Data]]):
         """Read a catalog in from a configuration YAML file.
 
         We expect the following format:
-        ```
-        <dataset name>:
-            callable: <python path to class, method on a class, or function.
-                Should produce a DataSource.
-            args:
-                <name of argument>: <value>
-        ```
+
+        .. code-block:: python
+
+            <dataset name>:
+                callable: <python path to class, method on a class, or function.
+                    Should produce a DataSource.
+                args:
+                    <name of argument>: <value>
 
         Values can be a plain value (like string, bool, etc) or a complex object.
         These will follow the same format as the callable-args structure of the
         DataSource's, but don't need to be DataSource's. e.g.:
 
-        ```
-        dataframe:
-            callable: mlpype.sklearn.data.DataFrameSource
-            args:
-                df:
-                    callable: pandas.DataFrame
-                    args:
-                        data:
-                            x:
-                                - 1.0
-                                - 2.0
-                            y:
-                                - "a"
-                                - "b"
-        ```
+        .. code-block:: python
+
+            dataframe:
+                callable: mlpype.sklearn.data.DataFrameSource
+                args:
+                    df:
+                        callable: pandas.DataFrame
+                        args:
+                            data:
+                                x:
+                                    - 1.0
+                                    - 2.0
+                                y:
+                                    - "a"
+                                    - "b"
 
         To use a method on a class, use `path.to.class:function`. This will only work for
         static or class methods.
