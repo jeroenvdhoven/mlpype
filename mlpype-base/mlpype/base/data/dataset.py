@@ -16,9 +16,11 @@ class DataSet(Dict[str, Data]):
     """A DataSet consisting of multiple name-Data pairs.
 
     The Data can be multiple types of objects:
+
     - pandas DataFrames (or of other languages)
     - spark DataFrames
     - strings, integers, etc.
+
     """
 
     def get_all(self, keys: List[str]) -> List[Data]:
