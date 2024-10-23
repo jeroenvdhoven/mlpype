@@ -1,4 +1,5 @@
 """Provides a generic class for sklearn-like Models."""
+import types
 import typing
 from argparse import ArgumentParser
 from logging import getLogger
@@ -129,28 +130,36 @@ class SklearnModel(Model[SklearnData], Generic[T]):
         Returns:
             Type[SklearnModel]: The created SklearnModel.
         """
-
-        class SklearnConditionedModel(cls[model_class]):  # type: ignore
-            pass
-
         try:
             old_docs = cls.__doc__
             assert isinstance(old_docs, str)
-            SklearnConditionedModel.__doc__ = old_docs.replace(
-                "A generic class for sklearn-like Models.",
-                f"""
+        except AttributeError:
+            logger.warning("Failed to add docstring to SklearnConditionedModel.")
+            old_docs = "A generic class for sklearn-like Models."
+
+        new_name = f"{model_class.__name__}Model"
+        new_doc = old_docs.replace(
+            "A generic class for sklearn-like Models.",
+            f"""
 A generic class for sklearn-like Models.
 
 See SklearnModel for the original source and docs for subfunctions.
 
 This model uses a fixed class: {model_class.__name__}.
 The source module is: {model_class.__module__}
-""",
-            )
-        except AttributeError:
-            logger.warning("Failed to add docstring to SklearnConditionedModel.")
 
-        return SklearnConditionedModel
+.. autoclass:: {new_name}
+    :members:
+
+""",
+        )
+        klass = types.new_class(
+            new_name,
+            (SklearnModel[model_class],),  # type: ignore
+        )
+        klass.__doc__ = new_doc
+
+        return klass
 
     @classmethod
     def from_sklearn_model_class(
