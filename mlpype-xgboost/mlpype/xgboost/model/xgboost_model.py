@@ -16,12 +16,11 @@ class XGBModel(SklearnModel[T]):
     with specific XGBoost functionality for saving and loading models. If you want to
     use a specific (currently not already created xgboost model), just use the following example:
 
-    .. code-block:: python
-
-        from mlpype.xgboost.model import XGBModel
-        from xgboost import XGBClassifier
-        XGBClassifierModel = XGBModel.class_from_sklearn_model_class(XGBClassifier)
-
+    ```python
+    from mlpype.xgboost.model import XGBModel
+    from xgboost import XGBClassifier
+    XGBClassifierModel = XGBModel.class_from_sklearn_model_class(XGBClassifier)
+    ```
 
     """
 

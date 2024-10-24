@@ -1,0 +1,146 @@
+nav:
+- MLpype: index.md
+- Packages:
+  - base:
+    - base: mlpype/base.md
+    - constants: mlpype/base/constants.md
+    - data:
+      - data: mlpype/base/data.md
+      - data_catalog: mlpype/base/data/data_catalog.md
+      - data_sink: mlpype/base/data/data_sink.md
+      - data_source: mlpype/base/data/data_source.md
+      - dataset: mlpype/base/data/dataset.md
+    - deploy:
+      - deploy: mlpype/base/deploy.md
+      - inference: mlpype/base/deploy/inference.md
+    - evaluate:
+      - base_evaluator: mlpype/base/evaluate/base_evaluator.md
+      - evaluate: mlpype/base/evaluate.md
+      - evaluator: mlpype/base/evaluate/evaluator.md
+      - plot: mlpype/base/evaluate/plot.md
+    - experiment:
+      - argument_parsing: mlpype/base/experiment/argument_parsing.md
+      - experiment: mlpype/base/experiment.md
+      - experiment: mlpype/base/experiment/experiment.md
+    - logger:
+      - experiment_logger: mlpype/base/logger/experiment_logger.md
+      - local_logger: mlpype/base/logger/local_logger.md
+      - logger: mlpype/base/logger.md
+    - model:
+      - hierarchical_model: mlpype/base/model/hierarchical_model.md
+      - model: mlpype/base/model.md
+      - model: mlpype/base/model/model.md
+    - pipeline:
+      - operator: mlpype/base/pipeline/operator.md
+      - pipe: mlpype/base/pipeline/pipe.md
+      - pipeline: mlpype/base/pipeline.md
+      - pipeline: mlpype/base/pipeline/pipeline.md
+      - type_checker: mlpype/base/pipeline/type_checker.md
+    - serialiser:
+      - joblib_serialiser: mlpype/base/serialiser/joblib_serialiser.md
+      - serialiser: mlpype/base/serialiser/serialiser.md
+      - serialiser: mlpype/base/serialiser.md
+    - utils:
+      - parsing: mlpype/base/utils/parsing.md
+      - utils: mlpype/base/utils.md
+      - workspace: mlpype/base/utils/workspace.md
+  - fastapi:
+    - deploy:
+      - app: mlpype/fastapi/deploy/app.md
+      - deploy: mlpype/fastapi/deploy.md
+      - wheel_extension: mlpype/fastapi/deploy/wheel_extension.md
+    - fastapi: mlpype/fastapi.md
+  - hyperopt:
+    - hyperopt: mlpype/hyperopt.md
+    - optimise: mlpype/hyperopt/optimise.md
+  - light_gbm:
+    - light_gbm: mlpype/light_gbm.md
+    - model:
+      - lightgbm_model: mlpype/light_gbm/model/lightgbm_model.md
+      - model: mlpype/light_gbm/model.md
+  - matplotlib:
+    - evaluate:
+      - evaluate: mlpype/matplotlib/evaluate.md
+      - matplot: mlpype/matplotlib/evaluate/matplot.md
+      - shapley: mlpype/matplotlib/evaluate/shapley.md
+    - matplotlib: mlpype/matplotlib.md
+  - mlflow:
+    - deploy:
+      - deploy: mlpype/mlflow/deploy.md
+      - load_experiment: mlpype/mlflow/deploy/load_experiment.md
+    - logger:
+      - logger: mlpype/mlflow/logger.md
+      - mlflow_logger: mlpype/mlflow/logger/mlflow_logger.md
+    - mlflow: mlpype/mlflow.md
+    - model:
+      - model: mlpype/mlflow/model.md
+      - model: mlpype/mlflow/model/model.md
+  - sklearn:
+    - data:
+      - data: mlpype/sklearn/data.md
+      - data_frame_source: mlpype/sklearn/data/data_frame_source.md
+      - sklearn_data: mlpype/sklearn/data/sklearn_data.md
+      - sql_source: mlpype/sklearn/data/sql_source.md
+    - model:
+      - model: mlpype/sklearn/model.md
+      - sklearn_base_type: mlpype/sklearn/model/sklearn_base_type.md
+      - sklearn_model: mlpype/sklearn/model/sklearn_model.md
+    - pipeline:
+      - numpy_type_checker: mlpype/sklearn/pipeline/numpy_type_checker.md
+      - pandas_type_checker: mlpype/sklearn/pipeline/pandas_type_checker.md
+      - pipeline: mlpype/sklearn/pipeline.md
+    - sklearn: mlpype/sklearn.md
+  - spark:
+    - data:
+      - data: mlpype/spark/data.md
+      - spark_data_frame_source: mlpype/spark/data/spark_data_frame_source.md
+      - spark_read: mlpype/spark/data/spark_read.md
+      - spark_sql_source: mlpype/spark/data/spark_sql_source.md
+    - evaluate:
+      - evaluate: mlpype/spark/evaluate.md
+      - spark_evaluator: mlpype/spark/evaluate/spark_evaluator.md
+    - model:
+      - linear_spark_model: mlpype/spark/model/linear_spark_model.md
+      - model: mlpype/spark/model.md
+      - spark_model: mlpype/spark/model/spark_model.md
+      - types: mlpype/spark/model/types.md
+    - pipeline:
+      - pipeline: mlpype/spark/pipeline.md
+      - spark_pipe: mlpype/spark/pipeline/spark_pipe.md
+      - spark_type_checker: mlpype/spark/pipeline/spark_type_checker.md
+    - serialiser:
+      - serialiser: mlpype/spark/serialiser.md
+      - spark_serialiser: mlpype/spark/serialiser/spark_serialiser.md
+    - spark: mlpype/spark.md
+    - utils:
+      - guarantee: mlpype/spark/utils/guarantee.md
+      - utils: mlpype/spark/utils.md
+  - tensorflow:
+    - data:
+      - data: mlpype/tensorflow/data.md
+      - tensor_source: mlpype/tensorflow/data/tensor_source.md
+    - model:
+      - keras_pype_model: mlpype/tensorflow/model/keras_pype_model.md
+      - mlp_keras: mlpype/tensorflow/model/mlp_keras.md
+      - mlp_pype_model: mlpype/tensorflow/model/mlp_pype_model.md
+      - model: mlpype/tensorflow/model.md
+    - pipeline:
+      - pipeline: mlpype/tensorflow/pipeline.md
+      - tensor_checker: mlpype/tensorflow/pipeline/tensor_checker.md
+    - tensorflow: mlpype/tensorflow.md
+  - xgboost:
+    - model:
+      - model: mlpype/xgboost/model.md
+      - xgboost_model: mlpype/xgboost/model/xgboost_model.md
+    - xgboost: mlpype/xgboost.md
+plugins:
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          heading_level: 2
+          show_root_heading: true
+- search
+site_name: MLpype
+theme:
+  name: material

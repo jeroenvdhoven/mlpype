@@ -1,12 +1,10 @@
 """Provides classes for sklearn models.
 
 For sklearn models not already configured here, you can use the SklearnModel class to quickly incorporate your model.
-
-
-.. automodule:: mlpype.sklearn.model
-   :members:
-   :undoc-members:
-   :show-inheritance:
+We have already integrated classifier and regressor models from sklearn. You can import them like:
+```python
+from mlpype.sklearn.model import <sklearn name>Model
+```
 """
 
 #  This weird import setup is required since sklearn.utils seems to want to refer to mlpype.sklearn.utils
@@ -19,24 +17,15 @@ from .sklearn_model import SklearnModel
 # from sklearn.linear_model import LinearRegression, LogisticRegression
 
 
-utils = importlib.import_module("sklearn.utils", package=None)
-
-current_module = sys.modules[__name__]
-classes = utils.all_estimators(["classifier", "regressor"])
+__utils = importlib.import_module("sklearn.utils", package=None)
+__classes = __utils.all_estimators(["classifier", "regressor"])
 # classes = [LinearRegression, LogisticRegression]
 
-dynamic_classes = []
-for name, klass in classes:
-    new_name = f"{name}Model"
-    dynamic_class = SklearnModel.class_from_sklearn_model_class(klass)
-    dynamic_classes.append(new_name)
-    setattr(current_module, new_name, dynamic_class)
+__dynamic_classes = []
+for name, klass in __classes:
+    __new_name = f"{name}Model"
+    __dynamic_class = SklearnModel.class_from_sklearn_model_class(klass)
+    __dynamic_classes.append(__new_name)
+    setattr(sys.modules[__name__], __new_name, __dynamic_class)
 
-    # Update doc for dynamic class so sphinx can auto generate docs
-#     __doc__ += f"""
-
-# .. autoclass:: mlpype.sklearn.model.{new_name}
-#     :members:
-
-# """
-__all__ = ["SklearnModel", "SklearnModelBaseType", *dynamic_classes]
+__all__ = ["SklearnModel", "SklearnModelBaseType", *__dynamic_classes]
