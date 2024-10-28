@@ -1,8 +1,15 @@
+"""A tool to help build documentation for mlpype.
+
+We're aware of mkdocs_gen_files, but this doesn't quite cover our use case due to:
+
+- python files that are not importable but should be shipped
+- Dynamically generated classes
+"""
 import shutil
 from importlib import import_module
 from inspect import getmembers, getmodule, isclass, ismodule
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List, Union
 
 import yaml
 
@@ -11,6 +18,7 @@ doc_root = Path(root_path) / "docs"
 
 
 def main() -> None:
+    """Walks the mlpype package hierarchy and creates documentation for each package."""
     shutil.rmtree(doc_root, ignore_errors=True)
     autoapi_dirs = []  # location to parse for API reference
     for f in root_path.iterdir():
@@ -21,8 +29,6 @@ def main() -> None:
     # for package_folder in [root_path / "mlpype-base"]:
     structure = {}
     for package_folder in autoapi_dirs:
-        # if "sklearn"  not in str(package_folder):
-        # continue
         package_root = package_folder / "mlpype"
         structure.update(_walk_package(package_root, "mlpype", skip_folders=["wheel"]))
 
@@ -33,7 +39,8 @@ def main() -> None:
     _update_mkdocs_yml(structure)
 
 
-def _update_index(package_names_in_docs):
+def _update_index(package_names_in_docs: List[str]) -> None:
+    """Updates the main index.md file to include the README and a list of all subpackages."""
     package_references = "\n".join([f"- [mlpype {p}](mlpype/{p}.md)" for p in package_names_in_docs])
 
     with open(root_path / "README.md", "r") as f:
@@ -53,6 +60,7 @@ Subpackages for MLpype:
 
 
 def _update_mkdocs_yml(structure: dict) -> None:
+    """Update mkdocs.yml with the full navigation of the project."""
     with open(root_path / "mkdocs.yml", "r") as f:
         contents = yaml.safe_load(f)
 
@@ -68,7 +76,8 @@ def _update_mkdocs_yml(structure: dict) -> None:
 
 
 def _create_nav(structure: dict, root: list) -> list:
-    result = []
+    """Create the navigation structure for mlpype/mkdocs."""
+    result: List[Dict[str, Any]] = []
 
     for key, value in structure.items():
         if isinstance(value, dict):
@@ -85,8 +94,8 @@ def _create_nav(structure: dict, root: list) -> list:
     return sorted(result, key=_get_key)
 
 
-def _get_key(l: dict):
-    key = list(l.keys())[0]
+def _get_key(dct: Dict[str, Any]) -> str:
+    key = list(dct.keys())[0]
     if key == "__init__.py":
         return f"0{key}"
     else:
@@ -97,7 +106,7 @@ def _walk_package(root: Path, import_root: str, skip_folders: List[str]) -> dict
     # subfolders will be walked.
     # init will provide the main doc package.
     # other python files will be imported, act as stub.
-    result = {}
+    result: Dict[str, Union[dict, str]] = {}
 
     for f in root.iterdir():
         new_root = root / f
@@ -155,8 +164,8 @@ def _list_contents_of_file(import_root: str, is_init: bool) -> Dict[str, List[st
             for cls_name, cls_obj in getmembers(module)
             if isclass(cls_obj)
             and (
-                (is_init and "mlpype" in getmodule(cls_obj).__name__)
-                or (not is_init and import_root in getmodule(cls_obj).__name__)
+                (is_init and "mlpype" in getmodule(cls_obj).__name__)  # type: ignore
+                or (not is_init and import_root in getmodule(cls_obj).__name__)  # type: ignore
             )
         ],
         "functions": [
@@ -165,8 +174,8 @@ def _list_contents_of_file(import_root: str, is_init: bool) -> Dict[str, List[st
             if callable(func_obj)
             and not isclass(func_obj)
             and (
-                (is_init and "mlpype" in getmodule(func_obj).__name__)
-                or (not is_init and import_root in getmodule(func_obj).__name__)
+                (is_init and "mlpype" in getmodule(func_obj).__name__)  # type: ignore
+                or (not is_init and import_root in getmodule(func_obj).__name__)  # type: ignore
             )
             and not func_name.startswith("_")
         ],
@@ -176,13 +185,13 @@ def _list_contents_of_file(import_root: str, is_init: bool) -> Dict[str, List[st
         result["modules"] = [
             f"{root_module_name}.{mod_name}"
             for mod_name, mod_obj in getmembers(module)
-            if ismodule(mod_obj) and "mlpype" in getmodule(mod_obj).__name__
+            if ismodule(mod_obj) and "mlpype" in getmodule(mod_obj).__name__  # type: ignore
         ]
 
     return result
 
 
-def _create_markdown_from_contents(contents: Dict[str, List[str]], file_path: str):
+def _create_markdown_from_contents(contents: Dict[str, List[str]], file_path: str) -> str:
     if file_path == "mlpype.sklearn.model.__init__":
         # TODO: find a good way to incorporate dynamic models.
         classes_str = ["::: mlpype.sklearn.model.SklearnModel", "::: mlpype.sklearn.model.SklearnModelBaseType"]
