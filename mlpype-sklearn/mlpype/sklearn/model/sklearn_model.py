@@ -33,11 +33,11 @@ class SklearnModel(Model[SklearnData], Generic[T]):
         pass
 
     # An alternative to dynamically generate the model, which is easier to export/import
-    # create_sklearn_model_class can be found in this file.
-    model_class = create_sklearn_model_class(LinearRegression)
+    model_class = SklearnModel.class_from_sklearn_model_class(LinearRegression)
 
     # Unfortunately, using something like the following will not work due to how Generic types are handled.
     LinearRegressionModel = SklearnModel[LinearRegression]
+    ```
     """
 
     SKLEARN_MODEL_FILE = "model.pkl"
