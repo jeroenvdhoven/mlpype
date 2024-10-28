@@ -51,8 +51,12 @@ coverage-all:
 	python -m pytest --cov-report term-missing --cov mlpype -ra
 
 # Document code
-create-docs:
-	cd docs && sphinx-build -b html . _build
+build-docs:
+	python -m scripts.build_mkdown
+	python -m mkdocs build
+
+serve-docs:
+	python -m mkdocs serve
 
 # Pre-commit defaults
 pre-commit-install:

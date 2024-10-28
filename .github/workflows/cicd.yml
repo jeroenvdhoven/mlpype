@@ -64,7 +64,7 @@ jobs:
       - name: Install dependencies
         run: make local-install
       - name: Create docs
-        run: make create-docs
+        run: make build-docs
 
       - uses: actions/upload-pages-artifact@v1
         with:

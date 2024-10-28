@@ -8,6 +8,7 @@ We're aware of mkdocs_gen_files, but this doesn't quite cover our use case due t
 import shutil
 from importlib import import_module
 from inspect import getmembers, getmodule, isclass, ismodule
+from logging import getLogger
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
@@ -15,6 +16,7 @@ import yaml
 
 root_path = Path(__file__).parent.parent.absolute()
 doc_root = Path(root_path) / "docs"
+logger = getLogger(__name__)
 
 
 def main() -> None:
@@ -25,7 +27,7 @@ def main() -> None:
         if f.name.startswith("mlpype-") and f.is_dir():
             autoapi_dirs.append(f)
 
-    print(f"Detected: {autoapi_dirs}")
+    logger.info(f"Detected: {autoapi_dirs}")
     # for package_folder in [root_path / "mlpype-base"]:
     structure = {}
     for package_folder in autoapi_dirs:
@@ -115,7 +117,7 @@ def _walk_package(root: Path, import_root: str, skip_folders: List[str]) -> dict
                 continue
 
             new_import_root = f"{import_root}.{f.name}"
-            print(f"Generating markdown from subpackage {new_import_root}")
+            logger.info(f"Generating markdown from subpackage {new_import_root}")
             import_module(new_import_root)
             result[f.name] = _walk_package(new_root, new_import_root, skip_folders)
         elif new_root.suffix == ".py":
@@ -123,11 +125,11 @@ def _walk_package(root: Path, import_root: str, skip_folders: List[str]) -> dict
             result[f.name] = f.name
             if f.name == "__init__.py":
                 # Generate markdown from init
-                print(f"Generating markdown from INIT {import_root}")
+                logger.info(f"Generating markdown from INIT {import_root}")
                 _create_mkdown_from_file(new_import_root, True)
             else:
                 # Generate markdown from python file
-                print(f"Generating markdown from python file {new_import_root}")
+                logger.info(f"Generating markdown from python file {new_import_root}")
                 _create_mkdown_from_file(new_import_root, False)
     return result
 
