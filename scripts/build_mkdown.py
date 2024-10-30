@@ -5,10 +5,11 @@ We're aware of mkdocs_gen_files, but this doesn't quite cover our use case due t
 - python files that are not importable but should be shipped
 - Dynamically generated classes
 """
+import logging
 import shutil
 from importlib import import_module
 from inspect import getmembers, getmodule, isclass, ismodule
-from logging import getLogger
+from logging import INFO, getLogger
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
@@ -16,7 +17,8 @@ import yaml
 
 root_path = Path(__file__).parent.parent.absolute()
 doc_root = Path(root_path) / "docs"
-logger = getLogger(__name__)
+logging.basicConfig(level=INFO)
+logger = getLogger(Path(__file__).name)
 
 
 def main() -> None:
@@ -52,7 +54,9 @@ def _update_index(package_names_in_docs: List[str]) -> None:
         f"""
 # MLpype\n\n
 Subpackages for MLpype:
+
 {package_references}
+
 """
         + readme[1:]
     )
