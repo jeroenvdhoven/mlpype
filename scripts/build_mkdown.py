@@ -90,7 +90,7 @@ def _create_nav(structure: dict, root: list) -> list:
             result.append({key: _create_nav(value, root + [key])})
         else:
             if key == "__init__.py":
-                name = root[-1]
+                name = f"Module {root[-1]}"
                 path = f"{'/'.join(root)}.md"
             else:
                 name = key.replace(".py", "")
@@ -102,7 +102,7 @@ def _create_nav(structure: dict, root: list) -> list:
 
 def _get_key(dct: Dict[str, Any]) -> str:
     key = list(dct.keys())[0]
-    if key == "__init__.py":
+    if key.startswith("Module"):
         return f"0{key}"
     else:
         return key
