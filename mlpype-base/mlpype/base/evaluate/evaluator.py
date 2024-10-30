@@ -10,7 +10,33 @@ Data = TypeVar("Data")
 
 
 class Evaluator(BaseEvaluator[Data]):
-    """Evaluates a Model on the given Functions."""
+    """Evaluates a Model on the given Functions.
+
+    This is the default Evaluator, and should fit most models and packages.
+    It assumes you provide functions that take in (y_true, y_pred) and return a float, int, string, or boolean value.
+
+    Most sklearn evaluation metrics and those from similar packages should be compliant with this format, and otherwise
+    it's not too difficult to adept them to this format. Spark for instance does things differently and has its
+    own implementation. For example, in sklearn you can do:
+
+    ```python
+    from mlpype.base.evaluate import Evaluator
+    from sklearn.metrics import mean_squared_error
+    from sklearn.metrics import mean_absolute_error
+    from sklearn.metrics import mean_absolute_percentage_error
+
+    evaluator = Evaluator(
+        {
+            "mse": mean_squared_error,
+            "mae": mean_absolute_error,
+            "mape": mean_absolute_percentage_error,
+        }
+    )
+    ```
+
+    The advantage of this is that this can easily be applied to each input dataset you use, so evaluations
+    can be replicated with ease across datasets, so all metrics are directly available.
+    """
 
     def __init__(
         self,
