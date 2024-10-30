@@ -198,6 +198,8 @@ def _list_contents_of_file(import_root: str, is_init: bool) -> Dict[str, List[st
 
 
 def _create_markdown_from_contents(contents: Dict[str, List[str]], file_path: str) -> str:
+    is_init = file_path.endswith("__init__")
+
     if file_path == "mlpype.sklearn.model.__init__":
         # TODO: find a good way to incorporate dynamic models.
         classes_str = ["::: mlpype.sklearn.model.SklearnModel", "::: mlpype.sklearn.model.SklearnModelBaseType"]
@@ -205,7 +207,7 @@ def _create_markdown_from_contents(contents: Dict[str, List[str]], file_path: st
         classes_str = [f"::: {c}" for c in contents["classes"]]
     functions_str = [f"::: {c}" for c in contents["functions"]]
 
-    if file_path.endswith("__init__"):
+    if is_init:
         file_path = file_path.replace(".__init__", "")
 
     if "modules" in contents:
@@ -218,7 +220,11 @@ def _create_markdown_from_contents(contents: Dict[str, List[str]], file_path: st
     else:
         modules_str = []
 
-    return f"::: {file_path}\n\n" + "\n\n".join(modules_str + classes_str + functions_str)
+    base_content = [f"::: {file_path}"]
+    if is_init:
+        base_content += classes_str + functions_str + modules_str
+
+    return "\n\n".join(base_content)
 
 
 if __name__ == "__main__":
