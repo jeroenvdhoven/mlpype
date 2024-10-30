@@ -15,7 +15,18 @@ from mlpype.base.utils.workspace import switch_workspace
 
 
 class Inferencer:
-    """Provides a standard way of inferencing with mlpype models."""
+    """Provides a standard way of inferencing with mlpype models.
+
+    This is the standard way of using the model in production. You can create
+    an Inferencer by:
+    - Loading one from the output folder from a mlpype experiment. (recommended)
+    - Loading one from an experiment.
+    - Creating one directly from a model, pipeline, and type checkers.
+
+    It then provides a standardised `predict` method for inference. You can provide a
+    DataSet or DataCatalog, and it will return a DataSet with the predictions from
+    the model, with transformed data from the pipeline if requested.
+    """
 
     def __init__(
         self,
@@ -66,6 +77,17 @@ class Inferencer:
     @classmethod
     def from_folder(cls: Type["Inferencer"], folder: Path, serialiser: Optional[Serialiser] = None) -> "Inferencer":
         """Loads a Inferencer from the results of an Experiment.
+
+        This is the recommended way of loading an Inferencer from an experiment to minimise
+        the chances of loading issues. This function does the following:
+
+        - Import extra files as specified when training the model from the given folder. This
+            will change the current working directory to the given folder temporarily, and will
+            load in the content of the extra python files you specified in `extra_files`.
+        - Load the model from the given folder.
+        - Load the pipeline from the given folder.
+        - Load the type checkers from the given folder.
+        - Return an Inferencer using the loaded model, pipeline, and type checkers.
 
         We use the absolute version of the path to try and prevent loading issues.
 
