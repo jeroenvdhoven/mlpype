@@ -10,9 +10,9 @@ if __name__ == "__main__":
         "pypiserver==1.5.1",
         "twine==4.0.1",
         "importlib-metadata<8.0.0",
-        "sphinx-autoapi==3.1.2",
-        "sphinx-rtd-theme==2.0.0",
-        "myst-parser==3.0.1",
+        "mkdocs==1.6.1",
+        "mkdocs-material==9.5.42",
+        "mkdocstrings[python]==0.26.2",
     ]
     test_deps = ["pytest", "pytest-cov"]
     deps = [

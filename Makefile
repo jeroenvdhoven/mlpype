@@ -10,9 +10,7 @@ pyenv:
 	pyenv virtualenv ${PYTHON_VERSION} ${PYENV_NAME} -f
 	echo ${PYENV_NAME} > .python-version
 
-pyenv-dev-install: pyenv dev-install
-
-pyenv-dev-setup: pyenv dev-setup
+pyenv-dev-install: pyenv dev-setup
 
 # Development setup
 dev-setup: dev-install pre-commit-install
