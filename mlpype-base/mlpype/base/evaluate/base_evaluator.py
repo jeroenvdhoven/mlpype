@@ -15,7 +15,12 @@ class BaseEvaluator(Generic[Data], ABC):
     def __init__(
         self,
     ) -> None:
-        """Evaluates a Model on the given data."""
+        """Evaluates a Model on the given data.
+
+        This is the base class for all evaluators. Most packages however can use the
+        Evaluator class directly, to provide an easier interface. That one allows you
+        to provide a dictionary of functions that you can then evaluate on your data.
+        """
 
     @abstractmethod
     def evaluate(
@@ -23,7 +28,7 @@ class BaseEvaluator(Generic[Data], ABC):
     ) -> Dict[str, Union[str, float, int, str, bool]]:
         """Evaluate the given model on the given dataset.
 
-        We assume the model does not need to be transformed anymore if pipeline is None.
+        We assume the data does not need to be transformed anymore if pipeline is None.
 
         Args:
             model (Model): The Model to evaluate.
