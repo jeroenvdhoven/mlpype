@@ -22,7 +22,23 @@ from mlpype.base.utils.parsing import get_args_for_prefix
 
 
 class Experiment:
-    """The core of the mlpype library: run a standardised ML experiment with the given parameters."""
+    """The core of the mlpype library: run a standardised ML experiment with the given parameters.
+
+    This combines all the components of the mlpype library to run a standardised ML experiment.
+    DataCatalogs will be initialised (`read`) in the beginning of the run. After this,
+    the Pipeline will be fitted on the train data, and the Model will be trained on the
+    transformed train data. After this, the Model will be evaluated on all data.
+
+    All metrics, parameters, model and pipeline artifacts, and plots will be logged. Finally,
+    the performance metrics will be returned.
+
+    A trained/logged Experiment can be reloaded using the Inferencer class and its `from_folder` method.
+
+    It is highly recommended to use one of the class methods to initialise this object:
+            - from_dictionary: If you've already got your parameters in the right form:
+                - `model__<arg>` for model parameters
+                - `pipeline__<pipe_name>__<arg> for pipeline parameters.
+    """
 
     def __init__(
         self,
