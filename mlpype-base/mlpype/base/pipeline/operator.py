@@ -6,14 +6,16 @@ Data = TypeVar("Data")
 
 
 class Operator(ABC, Generic[Data]):
-    """An Operator that can been fitted to Data and transform new data."""
+    """An Operator that can been fitted to Data and transform new data.
+
+    This is not meant to be extended, but should work well enough to help
+    people identify what their Pipes need as input. sklearn pipe segments
+    are supported, like StandardScaler. Custom Operators can be made
+    by extending this class.
+    """
 
     def __init__(self) -> None:
-        """An Operator that can been fitted to Data and transform new data.
-
-        This is not meant to be extended, but should work well enough to help
-        people identify what their Pipes need as input.
-        """
+        """An Operator that can been fitted to Data and transform new data."""
         super().__init__()
 
     @abstractmethod

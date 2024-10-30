@@ -14,13 +14,25 @@ from mlpype.base.utils.parsing import get_args_for_prefix
 
 
 class Pipeline:
-    """A pipeline of operations that can be re-applied to new, similar Data."""
+    """A pipeline of operations that can be re-applied to new, similar Data.
+
+    This custom pipeline class has been made to account for dictionary inputs, giving you
+    flexibility in how you build your pipeline and input data. It allows for multiple
+    inputs, outputs, and even fit inputs that are only used during fitting, while
+    still giving an interface similar to sklearn and other pipeline tools.
+
+    It consists of a list of either Pipe objects or other Pipeline objects. Pipe objects
+    are a single step in the pipeline, while Pipelines are an entire pipeline. In the end,
+    Pipe's form a thin layer around an Operator to act as an interface between the
+    Operator and the DataSet. This allows you to reuse existing pipeline segments from sklearn
+    and similar tools.
+
+    By default, we'll log at INFO level which step we're at in fit, transform,
+    and inverse_transform.
+    """
 
     def __init__(self, pipes: List[Union[Pipe, "Pipeline"]]) -> None:
         """A pipeline of operations that can be re-applied to new, similar Data.
-
-        By default, we'll log at INFO level which step we're at in fit, transform,
-        and inverse_transform.
 
         Args:
             pipes (List[Union[Pipe, Pipeline]]): A list of either Pipes

@@ -6,7 +6,16 @@ from mlpype.base.pipeline import Operator
 
 
 class Pipe:
-    """A single step in a Pipeline."""
+    """A single step in a Pipeline.
+
+    Used to fit an Operator to data and apply transformations to subsequent DataSets.
+    A Pipe is a single step in a Pipeline, consisting of inputs, outputs, and an Operator.
+    The inputs are fed to the Operator's fit method, after which the inputs can be transformed
+    into the outputs using the Operator's transform method.
+
+    This exists mainly so existing pipeline segments can be easily reused, like those from sklearn, but still
+    use the DataSet setup from mlpype.
+    """
 
     def __init__(
         self,
@@ -19,8 +28,6 @@ class Pipe:
         skip_on_inference: bool = False,
     ) -> None:
         """A single step in a Pipeline.
-
-        Used to fit an Operator to data and apply transformations to subsequent DataSets.
 
         Args:
             name (str): The name of the Pipe.
