@@ -1,6 +1,6 @@
 # fail_fast: true
 default_stages:
-  - "commit"
+  - "pre-commit"
   
 repos:
 - repo: https://github.com/PyCQA/autoflake
@@ -67,4 +67,4 @@ repos:
     verbose: true
     pass_filenames: false
     stages:
-      - "push"
+      - "pre-push"
