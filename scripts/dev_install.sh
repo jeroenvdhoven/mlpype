@@ -53,7 +53,7 @@ do
     esac
 done
 host="${host:-local}"
-editable="${editable:-1}"
+editable="${editable:-0}"
 
 echo "Editable state: $editable, host: $host"
 
