@@ -95,3 +95,30 @@ class TestHierarchicalModel:
         loaded_result = loaded_model.transform(data)
 
         assert result == loaded_result
+
+    def test_class_from_sklearn_model_class(self):
+        klass = HierarchicalModel.class_from_model_class(DummyModel)
+
+        assert klass.__name__ == "HierarchicalDummyModel"
+        assert issubclass(klass, HierarchicalModel)
+
+        annotated = klass._get_annotated_class()
+        assert annotated == DummyModel
+
+    def test_from_sklearn_model_class(self, data: DataSet[List[int]]):
+        model = HierarchicalModel.from_model_class(DummyModel, ["in"], ["out"], splitter, merger)
+
+        assert model.__class__.__name__ == "HierarchicalDummyModel"
+        assert isinstance(model, HierarchicalModel)
+
+        annotated = model._get_annotated_class()
+        assert annotated == DummyModel
+
+        model.fit(data)
+
+        predictions = model.transform(data)
+
+        assert len(predictions["out"]) == len(data["in"])
+        assert predictions == {
+            "out": [*[model.model["low"].mean for _ in range(4)], *[model.model["high"].mean for _ in range(4)]]
+        }
