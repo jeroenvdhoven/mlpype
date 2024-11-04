@@ -21,23 +21,23 @@ logger = getLogger(__name__)
 class SklearnModel(Model[SklearnData], Generic[T]):
     """A generic class for sklearn-like Models.
 
-    You should set a sklearn model as a type hint to this class when defining a new model.
-    This allows us to get the parameters from the documentation of that sklearn model.
-    For an example, see the implementation of LinearModel, especially the `SklearnModel[LinearRegression]` part.
+        You should set a sklearn model as a type hint to this class when defining a new model.
+        This allows us to get the parameters from the documentation of that sklearn model.
+        For an example, see the implementation of LinearModel, especially the `SklearnModel[LinearRegression]` part.
 
-    Below are some examples for how to do this yourself.
+        Below are some examples for how to do this yourself.
+    `
+        ```python
+        # Works
+        class LinearRegressionModel(SklearnModel[LinearRegression]):
+            pass
 
-    ```python
-    # Works
-    class LinearRegressionModel(SklearnModel[LinearRegression]):
-        pass
+        # An alternative to dynamically generate the model, which is easier to export/import
+        model_class = SklearnModel.class_from_sklearn_model_class(LinearRegression)
 
-    # An alternative to dynamically generate the model, which is easier to export/import
-    model_class = SklearnModel.class_from_sklearn_model_class(LinearRegression)
-
-    # Unfortunately, using something like the following will not work due to how Generic types are handled.
-    LinearRegressionModel = SklearnModel[LinearRegression]
-    ```
+        # Unfortunately, using something like the following will not work due to how Generic types are handled.
+        LinearRegressionModel = SklearnModel[LinearRegression]
+        ```
     """
 
     SKLEARN_MODEL_FILE = "model.pkl"
@@ -118,7 +118,7 @@ class SklearnModel(Model[SklearnData], Generic[T]):
         cls,
         model_class: Type[SklearnModelBaseType],
     ) -> Type["SklearnModel"]:
-        """Create a SklearnModel classfrom a SklearnModelBaseType.
+        """Create a SklearnModel class from a SklearnModelBaseType.
 
         This should support all sklearn classifaction and regression models.
 
@@ -129,14 +129,14 @@ class SklearnModel(Model[SklearnData], Generic[T]):
         Returns:
             Type[SklearnModel]: The created SklearnModel.
         """
+        new_name = f"{model_class.__name__}Model"
         try:
             old_docs = cls.__doc__
             assert isinstance(old_docs, str)
         except AttributeError:
-            logger.warning("Failed to add docstring to SklearnConditionedModel.")
+            logger.warning(f"Failed to add docstring to {new_name}.")
             old_docs = "A generic class for sklearn-like Models."
 
-        new_name = f"{model_class.__name__}Model"
         new_doc = old_docs.replace(
             "A generic class for sklearn-like Models.",
             f"""
@@ -146,9 +146,6 @@ See SklearnModel for the original source and docs for subfunctions.
 
 This model uses a fixed class: {model_class.__name__}.
 The source module is: {model_class.__module__}
-
-.. autoclass:: {new_name}
-    :members:
 
 """,
         )

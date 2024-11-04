@@ -71,8 +71,7 @@ def merge_data(arrays: Dict[str, np.ndarray]) -> np.ndarray:
 train_x, test_x, train_y, test_y = _make_data()
 
 
-class HierLogisticRegressionModel(HierarchicalModel[LogisticRegressionModel]):
-    """A Hierarchical model for Logistic Regressino submodels."""
+HierLogisticRegressionModel = HierarchicalModel.class_from_model_class(LogisticRegressionModel)
 
 
 model = HierLogisticRegressionModel(

@@ -98,3 +98,32 @@ class Test_SklearnModel:
 
         assert isinstance(predictions["outputs"], np.ndarray)
         np.testing.assert_array_almost_equal(y, predictions["outputs"])
+
+    def test_class_from_sklearn_model_class(self):
+        klass = SklearnModel.class_from_sklearn_model_class(LinearRegression)
+
+        assert klass.__name__ == "LinearRegressionModel"
+        assert issubclass(klass, SklearnModel)
+
+        annotated = klass._get_annotated_class()
+        assert annotated == LinearRegression
+
+    def test_from_sklearn_model_class(self):
+        model = SklearnModel.from_sklearn_model_class(LinearRegression, ["inputs"], ["outputs"])
+
+        assert model.__class__.__name__ == "LinearRegressionModel"
+        assert isinstance(model, SklearnModel)
+
+        annotated = model._get_annotated_class()
+        assert annotated == LinearRegression
+
+        x = pd.DataFrame({"x": [1, 2, 3, 4], "y": [3, 5, 6, 7]})
+        y = pd.DataFrame({"z": x["x"] * 1.5 - 2 * x["y"] + 2.4})
+        data = DataSet(inputs=x.copy(), outputs=y.copy())
+
+        model.fit(data)
+
+        predictions = model.transform(data)
+
+        assert isinstance(predictions["outputs"], np.ndarray)
+        np.testing.assert_array_almost_equal(y, predictions["outputs"])
