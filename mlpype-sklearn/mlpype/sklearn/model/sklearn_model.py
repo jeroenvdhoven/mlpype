@@ -21,23 +21,23 @@ logger = getLogger(__name__)
 class SklearnModel(Model[SklearnData], Generic[T]):
     """A generic class for sklearn-like Models.
 
-        You should set a sklearn model as a type hint to this class when defining a new model.
-        This allows us to get the parameters from the documentation of that sklearn model.
-        For an example, see the implementation of LinearModel, especially the `SklearnModel[LinearRegression]` part.
+    You should set a sklearn model as a type hint to this class when defining a new model.
+    This allows us to get the parameters from the documentation of that sklearn model.
+    For an example, see the implementation of LinearModel, especially the `SklearnModel[LinearRegression]` part.
 
-        Below are some examples for how to do this yourself.
-    `
-        ```python
-        # Works
-        class LinearRegressionModel(SklearnModel[LinearRegression]):
-            pass
+    Below are some examples for how to do this yourself.
 
-        # An alternative to dynamically generate the model, which is easier to export/import
-        model_class = SklearnModel.class_from_sklearn_model_class(LinearRegression)
+    ```python
+    # Works
+    class LinearRegressionModel(SklearnModel[LinearRegression]):
+        pass
 
-        # Unfortunately, using something like the following will not work due to how Generic types are handled.
-        LinearRegressionModel = SklearnModel[LinearRegression]
-        ```
+    # An alternative to dynamically generate the model, which is easier to export/import
+    model_class = SklearnModel.class_from_sklearn_model_class(LinearRegression)
+
+    # Unfortunately, using something like the following will not work due to how Generic types are handled.
+    LinearRegressionModel = SklearnModel[LinearRegression]
+    ```
     """
 
     SKLEARN_MODEL_FILE = "model.pkl"
