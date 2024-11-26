@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 # %%
-from hyperopt import hp
+from hyperopt import hp  # type: ignore
 from hyperopt.pyll import scope
 from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier

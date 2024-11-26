@@ -1,6 +1,10 @@
 """Please run this file using `python -m examples.tensorflow.keras_model_example`.
 
 We do not guarantee results if you use `python examples/tensorflow/keras_model_example.py`
+
+The goal of this file is to show how to use `mlpype` and `tensorflow` together. The steps are:
+1. Create an experiment. For this example, we use the iris dataset and a feedforward MLP keras model.
+2. Run the experiment.
 """
 
 from pathlib import Path

@@ -1,6 +1,16 @@
 """Please run this file using `python -m examples.spark.example`.
 
 We do not guarantee results if you use `python examples/spark/example.py`
+
+This example shows how to use `mlpype` and `pyspark` together. The steps are:
+1. Create an experiment. For this example, we use a dummy dataset and a linear regression classifier.
+2. Run the experiment.
+
+This requires that spark is installed on your system. Spark requires a few differen tools, like
+- SparkPipe: These are pipe segments more tuned to be used with the pyspark framework, especially for serialisation.
+- SparkSerialiser: This is a serialiser for spark pipelines and models.
+
+As per usual, this script ends with loading the model back into memory and running an evaluation.
 """
 
 
