@@ -1,6 +1,14 @@
 """Please run this file using `python -m examples.hyperopt.hyperopt_example`.
 
 We do not guarantee results if you use `python examples/hyperopt/hyperopt_example.py`
+
+The goal of this file is to show how to use `mlpype` and `hyperopt` together. The steps are:
+1. Create an experiment. For this example, we use the iris dataset and a random forest classifier.
+2. Define the hyperopt search space.
+3. Use the premade optimise_experiment function to run hyperopt on your experiment.
+
+As per usual, this script ends with loading the model back into memory and running an evaluation.
+
 """
 from pathlib import Path
 from typing import Iterable
@@ -84,7 +92,13 @@ experiment = Experiment(
 )
 # %% [markdown]
 # Hyperopt configuration
-
+# Here you can set the search space. As you can see, the structure is:
+# - Preface all model parameters with model__
+# - Preface all pipeline parameters with pipeline__<pipe name>__
+#
+# This allows you to not just tweak model parameters, but also pipeline params!
+# Think of the number of bins in a FeatureHasher.
+# Otherwise, this works largely similar to how you'd use hyperopt usually.
 search_space = {
     "model__n_estimators": scope.int(hp.quniform("model__n_estimators", 10, 100, 5)),
     "model__max_depth": scope.int(hp.quniform("model__max_depth", 1, 10, 1)),

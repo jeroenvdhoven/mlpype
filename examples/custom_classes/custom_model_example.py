@@ -1,6 +1,18 @@
 """Please run this file using `python -m examples.custom_classes.custom_model_example`.
 
 We do not guarantee results if you use `python examples/custom_classes/custom_model_example.py`
+
+The goal of this file is to show how to use custom Model classes in your experiment. The steps are:
+1. Create your own Model class. For this example, we'll extend the LogisticRegressionModel.
+    It is important that your Model class is importable! To do this, make sure any code that actually
+    computes anything doesn't get run if you import this file. For this purpose, all executing
+    code is put inside a __main__ check, except the class definition. It is also possible to put
+    the class definition inside a different file to avoid this.
+2. Create an experiment. For this example, we use the iris dataset and a logistic regression classifier.
+    Make sure you set `additional_files_to_store` if you use any custom functions or classes. These
+    objects need to be stored in the output folder so your model can reuse them when loading back in.
+
+As per usual, this script ends with loading the model back into memory and running an evaluation.
 """
 
 from pathlib import Path
