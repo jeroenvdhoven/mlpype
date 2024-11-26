@@ -6,6 +6,10 @@ python -m examples.mlflow.mlflow_sklearn_example --model__fit_intercept=False --
 
 This requires the mlpype.sklearn package to also be installed.
 
+The goal of this file is to show how to use `mlpype` and `mlflow` together. This file will use
+the MlflowLogger to automatically log your entire experiment to the configured mlflow server. This
+example uses a local mlflow server for this purpose.
+
 Please make sure mlflow is running locally before starting this script, e.g. by using `mlflow ui`
 If you are running this example locally, make sure you run this from the top level directory.
 This will make sure the artifacts will show up.

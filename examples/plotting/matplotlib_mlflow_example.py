@@ -2,7 +2,10 @@
 
 We do not guarantee results if you use `python examples/plotting/matplotlib_mlflow_example.py`
 
-This file shows how to combine plots and MLflow to log created charts directly to MLflow.
+This file shows how to combine plots and MLflow to log created charts directly to MLflow. It includes:
+- Examples using MatplotlibPlotter for plots specifically using matplotlib.
+- Examples using ShapleyPlot for auto generating shapley plots.
+- Examples for the base Plotter.
 
 Please make sure mlflow is running locally before starting this script, e.g. by using `mlflow ui`
 If you are running this example locally, make sure you run this from the top level directory.

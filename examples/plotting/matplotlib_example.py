@@ -1,6 +1,10 @@
 """Please run this file using `python -m examples.plotting.matplotlib_example`.
 
 We do not guarantee results if you use `python examples/plotting/matplotlib_example.py`
+
+This example shows how you can add matplotlib plots to your experiment. These will be automatically
+logged. It uses the Plotter class and some custom functions for creating simple charts to make sure
+charts can be made for every experiment you run using this setup.
 """
 # %%
 

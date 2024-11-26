@@ -4,6 +4,11 @@ We do not guarantee results if you use `python examples/mlflow/mlflow_sklearn_ex
 
 This requires the mlpype.sklearn package to also be installed.
 
+The goal of this file is to show how to use `mlpype` and `mlflow` together, and register your model.
+This file will use the MlflowLogger to automatically log your entire experiment to the configured
+mlflow server. This example uses a local mlflow server for this purpose. It will show you
+how to register a model automatically and use this to load a model back into memory using mlflow's tools.
+
 Please make sure mlflow is running locally before starting this script. The following should work:
 `mlflow server --backend-store-uri sqlite:///mydb.sqlite --default-artifact-root ./mlruns`
 If you are running this example locally, make sure you run this from the top level directory.
