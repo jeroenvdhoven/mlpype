@@ -1,6 +1,21 @@
 """Call this using some form of command line.
 
 e.g. python -m examples.sklearn.sklearn_example_from_cmd_args --model__fit_intercept=False
+
+The goal of this file is to show how to use `mlpype` and `sklearn` together.
+It also shows how you can pass arguments using the command line. The steps are:
+1. Create an experiment using from_command_line. For this example, we use the iris dataset and a
+    logistic regression classifier.
+    a. Show how to use SklearnModel.from_sklearn_model_class to reuse Sklearn models.
+2. Run the experiment.
+
+Like arguments provided in hyperopt, you can also provide arguments using the command line.
+    They follow the same convention:
+    - For model arguments, preface the argument name with `model__`.
+    - For pipeline arguments, preface the argument name with `pipeline__<pipe name>__`.
+        This uses the argument for the given pipe.
+
+As per usual, this script ends with loading the model back into memory and running an evaluation.
 """
 
 from pathlib import Path

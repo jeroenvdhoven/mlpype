@@ -1,6 +1,18 @@
 """Please run this file using `python -m examples.sklearn.hierarchical_sklearn_example`.
 
 We do not guarantee results if you use `python examples/sklearn/hierarchical_sklearn_example.py`
+
+The goal of this file is to show how to use hierarchical models.
+The goal of these models is to make a model per 'split', where you can define how the dataset is split.
+The steps are:
+1. Show how to use HierarchicalModel.class_from_model_class to convert any mlpype model into a hierarchical model.
+2. Show how to create the split and merge functions, needed for a hierarchical model.
+    These govern how the data is split and merged. The split function should return a dictionary of datasets,
+    and the merge function should merge a dict of datasets into one.
+3. Create an experiment. For this example, we use the iris dataset and a logistic regression classifier.
+4. Run the experiment.
+
+As per usual, this script ends with loading the model back into memory and running an evaluation.
 """
 # %%
 

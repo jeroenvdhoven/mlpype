@@ -1,6 +1,14 @@
 """Please run this file using `python -m examples.sklearn.sklearn_example`.
 
 We do not guarantee results if you use `python examples/sklearn/sklearn_example.py`
+
+The goal of this file is to show how to use `mlpype` and `sklearn` together. The steps are:
+1. Show how to use SklearnModel.from_sklearn_model_class to reuse Sklearn models.
+2. Create an experiment. For this example, we use the iris dataset and a logistic regression classifier.
+3. Run the experiment.
+
+As per usual, this script ends with loading the model back into memory and running an evaluation.
+
 """
 # %%
 
