@@ -166,7 +166,3 @@ print(result)
 model = load_model("models:/mlflow_testing_model/latest")
 result = model.predict(test_data)
 print("Results from py-func loaded model: ", str(result))
-
-# %%
-model
-# %%
