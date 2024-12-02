@@ -22,7 +22,6 @@ from typing import Iterable
 import numpy as np
 from mlflow import search_runs  # type: ignore
 from mlflow.pyfunc import load_model
-from mlflow.tracking.fluent import get_experiment_by_name
 from sklearn.datasets import load_iris
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import accuracy_score
@@ -49,8 +48,15 @@ from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
 # %%
 # Make a logger using Mlflow. Ensure it starts with 'http://', or you will get connection issues.
 # Make sure you start mlflow before running this!
-experiment_name = "jeroen-example-experiment"
-logger = MlflowLogger(experiment_name, "http://127.0.0.1:5000", artifact_location="mlruns")
+experiment_name = "example-experiment"
+model_name = "example-model"
+logger = MlflowLogger(
+    experiment_name,
+    "http://127.0.0.1:5000",
+    artifact_location="mlruns",
+    # Setting the model name is optional, but will automatically register your model.
+    model_name=model_name,
+)
 
 # for on-databricks logging. This will also log artifacts.
 # experiment_name = "/Users/<user name>/<experiment name>"
@@ -147,18 +153,20 @@ result = inferencer.predict(test_data)
 print(result)
 
 # %%
-# Log model in MLflow
-exp = get_experiment_by_name(experiment_name)
-# Get the last run in this experiment.
-runs = search_runs(experiment_ids=exp.experiment_id, output_format="list")
-assert len(runs) > 0
-run = runs[0]
-
-logger.register_mlpype_model(run.info.run_id, "mlflow_testing_model")
+# If you set model_name, it will automatically register the model. Otherwise, you can manually do this.
+# # Log model in MLflow
+# exp = get_experiment_by_name(experiment_name)
+# # Get the last run in this experiment.
+# runs = search_runs(experiment_ids=exp.experiment_id, output_format="list")
+# assert len(runs) > 0
+# run = runs[0]
+# logger.register_mlpype_model(run.info.run_id, "mlflow_testing_model")
 
 # %%
 model = load_model("models:/mlflow_testing_model/latest")
 result = model.predict(test_data)
 print("Results from py-func loaded model: ", str(result))
 
+# %%
+model
 # %%

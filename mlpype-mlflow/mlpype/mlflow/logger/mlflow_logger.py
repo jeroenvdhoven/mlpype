@@ -28,7 +28,9 @@ class MlflowLogger(ExperimentLogger):
 
     ARTIFACT_FOLDER = "artifact_folder"
 
-    def __init__(self, name: str, uri: str, artifact_location: Optional[str] = None) -> None:
+    def __init__(
+        self, name: str, uri: str, artifact_location: Optional[str] = None, model_name: Optional[str] = None
+    ) -> None:
         """A logger using mlflow for mlpype.
 
         Args:
@@ -38,7 +40,9 @@ class MlflowLogger(ExperimentLogger):
                 It can also equal `databricks`.
             artifact_location (Optional[str]): The artificat uri location. This is needed if you set up
                 your own artifact location, to make sure files are copied over to any remote tracking server.
-                This is not required when using hosted databricks. Defaults to None, like in
+                This is not required when using hosted databricks. Defaults to None.
+            model_name (Optional[str]): The name to register the model under. This will register the results
+                of your experiment as a model in mlflow. If set to None, your model will not be registered.
         """
         super().__init__()
         logger = logging.getLogger(__name__)
@@ -49,6 +53,7 @@ class MlflowLogger(ExperimentLogger):
         self.uri = uri
         self.artifact_location = artifact_location
         self.run = None
+        self.model_name = model_name
 
     def __enter__(self) -> None:
         """Setup the mlflow experiment and call start_run."""
@@ -156,6 +161,10 @@ class MlflowLogger(ExperimentLogger):
             python_model=PypeMLFlowModel(),
             artifacts={"folder": str(folder.parent)},
         )
+
+        if self.model_name is not None:
+            assert self.run is not None, "Please start the experiment first"
+            self.register_mlpype_model(self.run.info.run_id, self.model_name)
 
     def log_file(self, file: Union[str, Path]) -> None:
         """Logs a given file as part of an experiment.
