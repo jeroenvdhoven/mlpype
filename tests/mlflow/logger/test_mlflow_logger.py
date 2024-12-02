@@ -2,7 +2,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
 from git import InvalidGitRepositoryError
-from pytest import fixture
+from pytest import fixture, mark
 
 from mlpype.base.logger.experiment_logger import ExperimentLogger
 from mlpype.mlflow.logger.mlflow_logger import MlflowLogger
@@ -181,14 +181,23 @@ class Test_mlflow_logger:
 
             mock_log_artifact.assert_called_once_with(str(file))
 
-    def test_model(self, logger: MlflowLogger):
+    @mark.parametrize(["name", "model_name"], [["no registration", None], ["registration", "very_fancy_model_name"]])
+    def test_model_no_register(self, name: str, model_name: str):
         folder = Path("folder")
         model = MagicMock()
+        run = MagicMock()
+        run_id = "run_id_32"
+        run.info.run_id = run_id
+        logger = MlflowLogger("example", "http://localhost:5000", model_name=model_name)
+        logger.run = run
+
         with patch.object(ExperimentLogger, "log_model") as mock_log_model, patch(
             "mlpype.mlflow.logger.mlflow_logger.mlflow_log_model"
         ) as mock_mlflow_log_model, patch(
             "mlpype.mlflow.logger.mlflow_logger.PypeMLFlowModel"
-        ) as mock_integration_model:
+        ) as mock_integration_model, patch.object(
+            logger, "register_mlpype_model"
+        ) as mock_register_mlpype_model:
             logger.log_model(model, folder)
 
         model.save.assert_called_once_with(folder)
@@ -199,3 +208,8 @@ class Test_mlflow_logger:
             python_model=mock_integration_model.return_value,
             artifacts={"folder": str(folder.parent)},
         )
+
+        if model_name is None:
+            mock_register_mlpype_model.assert_not_called()
+        else:
+            mock_register_mlpype_model.assert_called_once_with(run_id, model_name)
