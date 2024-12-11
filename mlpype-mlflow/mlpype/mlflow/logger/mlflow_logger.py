@@ -180,14 +180,22 @@ class MlflowLogger(ExperimentLogger):
         file = Path(file)
         log_artifact(str(file))
 
-    def register_mlpype_model(self, run_id: str, model_name: str) -> None:
+    def register_mlpype_model(self, run_id: Optional[str], model_name: Optional[str]) -> None:
         """Applies the register_model function of mlflow to MLpype-trained models.
 
         Specifically, this registers the artifact folder that we created
         in the log_model function.
 
         Args:
-            run_id (str): The run id of the model.
-            model_name (str): The name to register the model under (using register_model)
+            run_id (Optional[str]): The run id of the model. If not provided, it will be taken from
+                self.run
+            model_name (Optional[str]): The name to register the model under (using register_model).
+                If not provided, it will be taken from self.model_name, assuming it's set.
         """
+        if run_id is None:
+            assert self.run is not None, "Please start the experiment first"
+            run_id = self.run.info.run_id
+        if model_name is None:
+            assert self.model_name is not None, "Please provide a model name"
+            model_name = self.model_name
         register_model(f"runs:/{run_id}/{self.ARTIFACT_FOLDER}", model_name)
