@@ -213,3 +213,61 @@ class Test_mlflow_logger:
             mock_register_mlpype_model.assert_not_called()
         else:
             mock_register_mlpype_model.assert_called_once_with(run_id, model_name)
+
+    @mark.parametrize(
+        ["run_id", "model_name"],
+        [
+            [None, None],
+            ["run_id_32", None],
+            [None, "very_fancy_model_name"],
+            ["run_id_32", "very_fancy_model_name"],
+        ],
+    )
+    def test_register_mlpype_model(self, logger: MlflowLogger, run_id: str, model_name: str):
+        logger.run = MagicMock()
+        logger.run.info.run_id = "default_run_id"
+
+        logger.model_name = "default_model_name"
+
+        with patch("mlpype.mlflow.logger.mlflow_logger.register_model") as mock_register_model:
+            logger.register_mlpype_model(run_id, model_name)
+
+        expected_run = run_id if run_id is not None else logger.run.info.run_id
+        expected_model_name = model_name if model_name is not None else logger.model_name
+        mock_register_model.assert_called_once_with(
+            f"runs:/{expected_run}/{logger.ARTIFACT_FOLDER}", expected_model_name
+        )
+
+    @mark.parametrize(
+        ["model_name"],
+        [
+            [None],
+            ["very_fancy_model_name"],
+        ],
+    )
+    def test_log_model(self, logger: MlflowLogger, model_name: str):
+        model = MagicMock()
+        folder = Path("folder")
+
+        with patch.object(ExperimentLogger, "log_model") as mock_load_model, patch(
+            "mlpype.mlflow.logger.mlflow_logger.mlflow_log_model"
+        ) as mock_log_model, patch.object(logger, "register_mlpype_model") as mock_register_mlpype_model, patch(
+            "mlpype.mlflow.logger.mlflow_logger.PypeMLFlowModel"
+        ) as mock_pype:
+            logger.model_name = model_name
+            logger.run = MagicMock()
+            logger.log_model(model, folder)
+
+        model.save.assert_called_once_with(folder)
+        mock_load_model.assert_called_once_with(model, folder)
+        mock_pype.assert_called_once_with()
+        mock_log_model.assert_called_once_with(
+            artifact_path=logger.ARTIFACT_FOLDER,
+            python_model=mock_pype.return_value,
+            artifacts={"folder": str(folder.parent)},
+        )
+
+        if model_name is not None:
+            mock_register_mlpype_model.assert_called_once_with(logger.run.info.run_id, model_name)
+        else:
+            mock_register_mlpype_model.assert_not_called()
