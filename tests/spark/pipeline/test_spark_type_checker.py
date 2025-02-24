@@ -1,10 +1,24 @@
+from datetime import date
 from typing import Dict, List, Union
 from unittest.mock import MagicMock, call, patch
 
 import pandas as pd
 from pandas.testing import assert_frame_equal
 from pydantic import create_model
+from pyspark.ml.linalg import VectorUDT
 from pyspark.sql import SparkSession
+from pyspark.sql.types import (
+    ArrayType,
+    BooleanType,
+    DateType,
+    DoubleType,
+    FloatType,
+    IntegerType,
+    NumericType,
+    StringType,
+    StructField,
+    StructType,
+)
 from pytest import mark
 
 from mlpype.spark.pipeline.spark_type_checker import SparkData, SparkTypeChecker
@@ -58,8 +72,8 @@ class Test_SparkData:
 class Test_SparkTypeChecker:
     def test_fit(self):
         data = MagicMock()
-        dtypes = {"a": int, "b": float}
-        data.dtypes = dtypes
+        dtypes = MagicMock()
+        data.schema = dtypes
         checker = SparkTypeChecker()
 
         with patch.object(checker, "_convert_dtypes") as mock_convert:
@@ -70,38 +84,41 @@ class Test_SparkTypeChecker:
 
     def test_convert_dtypes(self):
         checker = SparkTypeChecker()
-        data = {"a": "2", "b": "9"}
+        schema = MagicMock()
+        schema.fields = StructType([StructField("colA", IntegerType()), StructField("colB", StringType())])
         returns = [2, 3]
 
         with patch.object(checker, "_convert_dtype", side_effect=returns) as mock_convert:
-            result = checker._convert_dtypes(data)
+            result = checker._convert_dtypes(schema)
 
-        mock_convert.assert_has_calls([call("2"), call("9")])
+        mock_convert.assert_has_calls([call(f) for f in schema.fields])
 
-        assert result == {"a": 2, "b": 3}
+        assert result == {"colA": 2, "colB": 3}
 
     @mark.parametrize(
-        ["string_type", "expected"],
+        ["name", "field", "expected"],
         [
-            ["str", str],
-            ["string", str],
-            ["int", int],
-            ["bigint", int],
-            ["float", float],
-            ["double", float],
-            ["bool", bool],
+            ["String", StructField("String", StringType()), (StringType, str)],
+            ["Integer", StructField("Integer", IntegerType()), (IntegerType, int)],
+            ["Numeric", StructField("Numeric", NumericType()), (NumericType, float)],
+            ["Double", StructField("Double", DoubleType()), (NumericType, float)],
+            ["Float", StructField("Float", FloatType()), (NumericType, float)],
+            ["Boolean", StructField("Boolean", BooleanType()), (BooleanType, bool)],
+            ["Date", StructField("Date", DateType()), (DateType, date)],
+            ["Vector", StructField("Vector", VectorUDT()), (VectorUDT, list[float])],
         ],
     )
-    def test_convert_dtype(self, string_type: str, expected: type):
+    def test_convert_dtype(self, name: str, field: StructField, expected: type):
         checker = SparkTypeChecker()
-        result = checker._convert_dtype(string_type)
+        result = checker._convert_dtype(field)
 
-        assert result == (string_type, expected)
+        assert result == expected
 
     def test_convert_dtype_assertion(self):
         checker = SparkTypeChecker()
-        with pytest_assert(ValueError, "- not supported"):
-            checker._convert_dtype("-")
+        with pytest_assert(ValueError, "ArrayType(IntegerType(), True) not supported"):
+            t = StructField("failure", ArrayType(IntegerType()))
+            checker._convert_dtype(t)
 
     def test_transform_assert_missing_columns(self, spark_session: SparkSession):
         df = pd.DataFrame({"a": [1, 2, 3], "b": ["a", "2", "f"]})
@@ -126,7 +143,7 @@ class Test_SparkTypeChecker:
         checker = SparkTypeChecker()
         checker.fit(spark_df)
 
-        with pytest_assert(AssertionError, "Dtypes did not match up for col b: Expected string, got double"):
+        with pytest_assert(AssertionError, "Dtypes did not match up for col b: Expected StringType, got DoubleType"):
             checker.transform(spark_missing_df)
 
     def test_transform_pass(self, spark_session: SparkSession):

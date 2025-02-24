@@ -1,11 +1,14 @@
 from unittest.mock import MagicMock, call
 
+import pandas as pd
 from pyspark.ml.evaluation import RegressionEvaluator
+from pyspark.ml.feature import VectorAssembler
 from pyspark.sql import SparkSession
 from pytest import fixture
 
 from mlpype.base.data.dataset import DataSet
 from mlpype.spark.evaluate.spark_evaluator import SparkEvaluator
+from mlpype.spark.model.linear_spark_model import LinearSparkModel
 from tests.spark.utils import spark_session
 from tests.utils import pytest_assert
 
@@ -21,7 +24,7 @@ class TestSparkEvaluator:
     def model(self, pred_data: DataSet) -> MagicMock:
         model = MagicMock()
 
-        model.transform_for_evaluation.return_value = pred_data
+        model.transform.return_value = pred_data
         model.outputs = ["df"]
         return model
 
@@ -33,7 +36,7 @@ class TestSparkEvaluator:
         data = MagicMock()
         result = evaluator.evaluate(model, data)
 
-        model.transform_for_evaluation.assert_called_once_with(data)
+        model.transform.assert_called_once_with(data)
 
         assert java_eval.setMetricName.call_count == 2
         for i, metric in enumerate(metrics):
@@ -56,7 +59,7 @@ class TestSparkEvaluator:
 
         model = MagicMock()
         multi_result_set = DataSet(x=MagicMock(), df=MagicMock())
-        model.transform_for_evaluation.return_value = multi_result_set
+        model.transform.return_value = multi_result_set
 
         data = MagicMock()
 
@@ -76,7 +79,7 @@ class TestSparkEvaluator:
         result = evaluator.evaluate(model, data, pipeline=pipeline)
 
         pipeline.transform.assert_called_once_with(data)
-        model.transform_for_evaluation.assert_called_once_with(pipe_transform)
+        model.transform.assert_called_once_with(pipe_transform)
 
         assert java_eval.setMetricName.call_count == 2
         for i, metric in enumerate(metrics):
@@ -91,6 +94,37 @@ class TestSparkEvaluator:
         }
 
         assert result == expected
+
+    def test_integration(self, spark_session: SparkSession):
+        df = pd.DataFrame(
+            {
+                "x": [1, 2, 3],
+                "y": [4, 5, 6],
+            }
+        )
+        va = VectorAssembler(inputCols=["x"], outputCol="features")
+
+        spark_df = spark_session.createDataFrame(df)
+        spark_df = va.transform(spark_df)
+        dataset = DataSet(df=spark_df)
+
+        model = LinearSparkModel(
+            inputs=["df"],
+            outputs=["df"],
+            featuresCol="features",
+            labelCol="y",
+        )
+        model.fit(dataset)
+        java_eval = RegressionEvaluator(labelCol="y")
+
+        evaluator = SparkEvaluator(java_eval, ["mae", "mse"])
+        result = evaluator.evaluate(model, dataset)
+
+        assert "mae" in result
+        assert "mse" in result
+        for value in result.values():
+            assert isinstance(value, float)
+            assert value < 0.0001  # near perfect prediction is possible here.
 
     def test_str(self, spark_session: SparkSession):  # needed for initialising RegressionEvaluator
         java_eval = RegressionEvaluator()

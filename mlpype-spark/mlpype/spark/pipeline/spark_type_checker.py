@@ -1,9 +1,22 @@
 """Provides tools for type checking Spark DataFrames and serialising/deserialising them."""
+from datetime import date
 from typing import Any, Dict, List, Tuple, Type, Union
 
 from pydantic import create_model
+from pyspark.ml.linalg import VectorUDT
 from pyspark.sql import DataFrame as SparkDataFrame
 from pyspark.sql import SparkSession
+from pyspark.sql.types import (
+    AtomicType,
+    BooleanType,
+    DateType,
+    IntegerType,
+    NumericType,
+    StringType,
+    StructField,
+    StructType,
+    UserDefinedType,
+)
 
 from mlpype.base.pipeline.type_checker import DataModel, TypeChecker
 
@@ -66,26 +79,27 @@ class SparkTypeChecker(TypeChecker[SparkDataFrame]):
         Returns:
             SparkTypeChecker: self
         """
-        self.raw_types = self._convert_dtypes(dict(data.dtypes))
+        self.raw_types = self._convert_dtypes(data.schema)
         return self
 
-    def _convert_dtypes(self, dct: Dict[str, str]) -> Dict[str, Tuple[str, type]]:
-        return {name: self._convert_dtype(string_type) for name, string_type in dct.items()}
+    def _convert_dtypes(self, schema: StructType) -> Dict[str, Tuple[Type[Union[UserDefinedType, AtomicType]], type]]:
+        return {field.name: self._convert_dtype(field) for field in schema.fields}
 
-    def _convert_dtype(self, string_type: str) -> Tuple[str, type]:
-        conv_type: Union[Type, None] = None
-        if string_type in ["str", "string"]:
-            conv_type = str
-        elif string_type in ["int", "bigint"]:
-            conv_type = int
-        elif string_type in ["float", "double"]:
-            conv_type = float
-        elif string_type == "bool":
-            conv_type = bool
+    def _convert_dtype(self, field: StructField) -> Tuple[Type[Union[UserDefinedType, AtomicType]], type]:
+        if isinstance(field.dataType, StringType):
+            return (StringType, str)
+        elif isinstance(field.dataType, IntegerType):
+            return (IntegerType, int)
+        elif isinstance(field.dataType, NumericType):
+            return (NumericType, float)
+        elif isinstance(field.dataType, BooleanType):
+            return (BooleanType, bool)
+        elif isinstance(field.dataType, DateType):
+            return (DateType, date)
+        elif isinstance(field.dataType, VectorUDT):
+            return (VectorUDT, list[float])
         else:
-            raise ValueError(f"{string_type} not supported")
-
-        return (string_type, conv_type)
+            raise ValueError(f"{field.dataType} not supported")
 
     def transform(self, data: SparkDataFrame) -> SparkDataFrame:
         """Checks if the given data fits the specifications this TypeChecker was fitted for.
@@ -100,15 +114,16 @@ class SparkTypeChecker(TypeChecker[SparkDataFrame]):
         colnames = list(self.raw_types.keys())
         for col in colnames:
             assert col in data.columns, f"`{col}` is missing from the dataset"
-        dtype_dict = dict(data.dtypes)
+        dtype_dict = {field.name: field.dataType for field in data.schema.fields}
 
         data = data.select(colnames)
 
         for name, (spark_type, _) in self.raw_types.items():
             actual_dtype = dtype_dict[name]
-            assert (
-                actual_dtype == spark_type
-            ), f"Dtypes did not match up for col {name}: Expected {spark_type}, got {actual_dtype}"
+            assert isinstance(actual_dtype, spark_type), (
+                f"Dtypes did not match up for col {name}: Expected {spark_type.__name__}, "
+                f"got {actual_dtype.__class__.__name__}"
+            )
         return data
 
     def get_pydantic_type(self) -> Type[SparkData]:

@@ -28,9 +28,13 @@ def pytest_assert(error_class, message: Optional[str] = None, exact: bool = True
         if message is not None:
             error_message: str = e.args[0]
             if exact:
-                assert error_message == message
+                assert (
+                    error_message == message
+                ), f"Error messages did not match: Got {error_message}, expected {message}"
             else:
-                assert message in error_message
+                assert (
+                    message in error_message
+                ), f"Error messages did not match: Got {error_message}, expected {message}"
 
 
 class DummyModel(Model[List[Union[int, float]]]):
