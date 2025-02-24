@@ -14,8 +14,9 @@ As per usual, this script ends with loading the model back into memory and runni
 """
 
 
+from pathlib import Path
+
 import pandas as pd
-from pipeline.type_checker import TypeCheckerPipe
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.ml.feature import StandardScaler, VectorAssembler
 from pyspark.sql import SparkSession
@@ -25,6 +26,7 @@ from mlpype.base.deploy import Inferencer
 from mlpype.base.experiment import Experiment
 from mlpype.base.logger import LocalLogger
 from mlpype.base.pipeline import Pipeline
+from mlpype.base.pipeline.type_checker import TypeCheckerPipe
 from mlpype.spark.data.spark_data_frame_source import SparkDataFrameSource
 from mlpype.spark.evaluate.spark_evaluator import SparkEvaluator
 from mlpype.spark.model import LinearSparkModel
@@ -48,9 +50,7 @@ pipeline = Pipeline(
     ]
 )
 
-model = LinearSparkModel(
-    ["x"], ["x"], featuresCol="a_scaled", labelCol="target", predictionCol="prediction", output_col="prediction"
-)
+model = LinearSparkModel(["x"], ["x"], featuresCol="a_scaled", labelCol="target", predictionCol="prediction")
 
 logger = LocalLogger()
 
@@ -76,5 +76,12 @@ experiment.run()
 # Test running
 inferencer = Inferencer.from_experiment(experiment)
 prediction = inferencer.predict(data["train"])
+
+print(prediction["x"].toPandas())
+
+
+# Test loading again from folder.
+inf_path = Inferencer.from_folder(Path("outputs"))
+prediction = inf_path.predict(data["train"])
 
 print(prediction["x"].toPandas())

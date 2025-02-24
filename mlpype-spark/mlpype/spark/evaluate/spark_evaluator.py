@@ -48,7 +48,7 @@ class SparkEvaluator(BaseEvaluator):
         if pipeline is not None:
             data = pipeline.transform(data)
 
-        predictions = model.transform_for_evaluation(data).get_all(model.outputs)
+        predictions = model.transform(data).get_all(model.outputs)
 
         assert len(predictions) == 1, "Expect exactly 1 output from a SparkModel."
 

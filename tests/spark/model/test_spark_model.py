@@ -1,8 +1,7 @@
-import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import List, Optional
-from unittest.mock import MagicMock, patch
+from typing import List
+from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 import pandas as pd
@@ -105,37 +104,28 @@ class Test_SparkModel:
         with pytest_assert(AssertionError, "Please fit this model before transforming data."):
             model._transform(x)
 
-    @mark.parametrize(
-        ["name", "prediction_col"],
-        [
-            ["return full set", None],
-            ["return only column", "pred_col"],
-        ],
-    )
-    def test_transform(self, name: str, prediction_col: Optional[str]):
+    def test_transform(self):
         predictor = MagicMock()
         model = LinearSparkModel(
             inputs=["x"],
             outputs=["x"],
             predictor=predictor,
-            output_col=prediction_col,
         )
+        fcol = "features"
         x = MagicMock()
         data = DataSet(x=x, y=MagicMock())
+        pred_model = predictor.fit.return_value
+        pred_model.getOrDefault.return_value = fcol
 
         model.fit(data)
         result = model.transform(data)
 
-        model = predictor.fit.return_value
-        model.transform.assert_called_once_with(x)
+        pred_model.transform.assert_called_once_with(x)
 
-        predictions = model.transform.return_value
-
-        if prediction_col is None:
-            assert result["x"] == predictions
-        else:
-            predictions.select.assert_called_once_with(prediction_col)
-            assert result["x"] == predictions.select.return_value
+        predictions = pred_model.transform.return_value
+        pred_model.getOrDefault.assert_called_once_with("featuresCol")
+        predictions.drop.assert_called_once_with(fcol)
+        assert result["x"] == predictions.drop.return_value
 
     def test_save_assertions(self):
         model = LinearSparkModel(
@@ -162,13 +152,16 @@ class Test_SparkModel:
 
         with TemporaryDirectory() as tmp_dir, patch(
             "mlpype.spark.model.spark_model.JoblibSerialiser.serialise"
-        ) as mock_serialise:
+        ) as mock_serialise, patch.object(LinearSparkModel, "_create_zip") as mock_create_zip:
             tmp_dir = Path(tmp_dir)
             mlpype_model._save(tmp_dir)
 
-            with open(tmp_dir / mlpype_model.mlpype_MODEL_CONFIG, "r") as f:
-                config = json.load(f)
-                assert config == {"output_col": None}
+            mock_create_zip.assert_has_calls(
+                [
+                    call(tmp_dir / LinearSparkModel.SPARK_PREDICTOR_PATH),
+                    call(tmp_dir / LinearSparkModel.SPARK_MODEL_PATH),
+                ]
+            )
 
             model.save.assert_called_once_with(str(tmp_dir / mlpype_model.SPARK_MODEL_PATH))
             predictor.save.assert_called_once_with(str(tmp_dir / mlpype_model.SPARK_PREDICTOR_PATH))
@@ -177,13 +170,21 @@ class Test_SparkModel:
     def test_load(self):
         with TemporaryDirectory() as tmp_dir, patch.object(
             LinearSparkModel, "_get_annotated_class"
-        ) as mock_annotate, patch("mlpype.spark.model.spark_model.JoblibSerialiser.deserialise") as mock_deserialise:
+        ) as mock_annotate, patch(
+            "mlpype.spark.model.spark_model.JoblibSerialiser.deserialise"
+        ) as mock_deserialise, patch.object(
+            LinearSparkModel, "_unzip"
+        ) as mock_unzip:
             tmp_dir = Path(tmp_dir)
 
-            with open(tmp_dir / LinearSparkModel.mlpype_MODEL_CONFIG, "w") as f:
-                json.dump({"output_col": None}, f)
-
             result = LinearSparkModel._load(tmp_dir, ["x"], ["x"])
+
+            mock_unzip.assert_has_calls(
+                [
+                    call(tmp_dir / f"{LinearSparkModel.SPARK_PREDICTOR_PATH}.zip"),
+                    call(tmp_dir / f"{LinearSparkModel.SPARK_MODEL_PATH}.zip"),
+                ]
+            )
 
             mock_annotate.assert_called_once_with()
             mock_pred_class = mock_annotate.return_value
@@ -195,7 +196,6 @@ class Test_SparkModel:
 
             assert result.inputs == ["x"]
             assert result.outputs == ["x"]
-            assert result.output_col is None
             assert result.predictor == mock_pred_class.load.return_value
             assert result.model == mock_model_class.load.return_value
 
@@ -230,7 +230,6 @@ class Test_SparkModel:
         model = LinearSparkModel(
             inputs=["df"],
             outputs=["df"],
-            output_col="prediction_col",
             predictionCol="prediction_col",
             featuresCol="vector",
             labelCol="response",
@@ -241,10 +240,13 @@ class Test_SparkModel:
         transformed = model.transform(dataset)
 
         assert "df" in transformed
-        assert ["prediction_col"] == transformed["df"].columns
 
         transformed_df = transformed["df"].toPandas()
-        assert transformed_df.shape == (df.shape[0], 1)
+        for col in ["prediction_col", "response", "x", "y"]:
+            assert col in transformed_df.columns
+        assert "vector" not in transformed_df.columns
+
+        assert transformed_df.shape == (df.shape[0], 4)
         assert np.all(~transformed_df.isna())
 
         # saving/loading
@@ -256,23 +258,3 @@ class Test_SparkModel:
             loaded_preds = loaded_model.transform(dataset)["df"].toPandas()
 
             assert_frame_equal(transformed_df, loaded_preds)
-
-    def test_transform_for_evaluation(self, spark_session: SparkSession):
-        df = MagicMock()
-        data = DataSet(df=df)
-        model = LinearSparkModel(
-            inputs=["df"],
-            outputs=["df"],
-            output_col="prediction_col",
-            predictionCol="prediction_col",
-            featuresCol="vector",
-            labelCol="response",
-            fitIntercept=False,
-        )
-        with patch.object(model, "_transform") as mock_transform:
-            result = model.transform_for_evaluation(data)
-
-            mock_transform.assert_called_once_with(df, reduce_columns_if_possible=False)
-            assert isinstance(result, DataSet)
-            assert len(result) == 1
-            assert result["df"] == mock_transform.return_value
