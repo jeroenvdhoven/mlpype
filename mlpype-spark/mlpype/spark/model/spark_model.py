@@ -103,8 +103,8 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
 
         serialiser = JoblibSerialiser()
 
-        self.predictor.save(str(folder / self.SPARK_PREDICTOR_PATH))
-        self.model.save(str(folder / self.SPARK_MODEL_PATH))
+        self.predictor.write().overwrite().save(str(folder / self.SPARK_PREDICTOR_PATH))
+        self.model.write().overwrite().save(str(folder / self.SPARK_MODEL_PATH))
         serialiser.serialise(type(self.model), str(folder / self.SPARK_MODEL_CLASS_PATH))
 
         self._create_zip(folder / self.SPARK_PREDICTOR_PATH)

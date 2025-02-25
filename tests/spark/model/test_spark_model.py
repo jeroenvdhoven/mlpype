@@ -163,8 +163,16 @@ class Test_SparkModel:
                 ]
             )
 
-            model.save.assert_called_once_with(str(tmp_dir / mlpype_model.SPARK_MODEL_PATH))
-            predictor.save.assert_called_once_with(str(tmp_dir / mlpype_model.SPARK_PREDICTOR_PATH))
+            model.write.assert_called_once_with()
+            model.write.return_value.overwrite.assert_called_once_with()
+            model.write.return_value.overwrite.return_value.save.assert_called_once_with(
+                str(tmp_dir / mlpype_model.SPARK_MODEL_PATH)
+            )
+            predictor.write.assert_called_once_with()
+            predictor.write.return_value.overwrite.assert_called_once_with()
+            predictor.write.return_value.overwrite.return_value.save.assert_called_once_with(
+                str(tmp_dir / mlpype_model.SPARK_PREDICTOR_PATH)
+            )
             mock_serialise.assert_called_once_with(type(model), str(tmp_dir / mlpype_model.SPARK_MODEL_CLASS_PATH))
 
     def test_load(self):
