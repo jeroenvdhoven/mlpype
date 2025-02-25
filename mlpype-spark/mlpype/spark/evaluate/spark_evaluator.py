@@ -2,6 +2,7 @@
 from typing import Dict, List, Optional, Union
 
 from pyspark.ml.evaluation import JavaEvaluator
+from pyspark.sql import DataFrame as SparkDataFrame
 
 from mlpype.base.data.dataset import DataSet
 from mlpype.base.evaluate.base_evaluator import BaseEvaluator
@@ -16,6 +17,7 @@ class SparkEvaluator(BaseEvaluator):
         self,
         evaluator: JavaEvaluator,
         metrics: List[str],
+        set_cache: bool = False,
     ) -> None:
         """Used to evaluate Spark models in mlpype.
 
@@ -24,10 +26,13 @@ class SparkEvaluator(BaseEvaluator):
                 psypark.ml.evaluation.RegressionEvaluator
             metrics (List[str]): The list of metrics to retrieve using the Evaluator.
                 See the documentation of the one you use to know which are available.
+            set_cache (bool, optional): If True, the predictions will be cached just before
+                evaluation. This can help speed up the evaluation. Defaults to False.
         """
         super().__init__()
         self.evaluator = evaluator
         self.metrics = metrics
+        self.set_cache = set_cache
 
     def evaluate(
         self, model: SparkModel, data: DataSet, pipeline: Optional[Pipeline] = None
@@ -51,10 +56,13 @@ class SparkEvaluator(BaseEvaluator):
         predictions = model.transform(data).get_all(model.outputs)
 
         assert len(predictions) == 1, "Expect exactly 1 output from a SparkModel."
+        preds: SparkDataFrame = predictions[0]
+        if self.set_cache:
+            preds = preds.cache()
 
         result = {}
         for metric in self.metrics:
-            value = self.evaluator.setMetricName(metric).evaluate(predictions[0])  # type: ignore
+            value = self.evaluator.setMetricName(metric).evaluate(preds)  # type: ignore
             result[metric] = value
         return result
 

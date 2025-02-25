@@ -95,6 +95,38 @@ class TestSparkEvaluator:
 
         assert result == expected
 
+    def test_evaluate_cache(self, model: MagicMock, pred_data: DataSet):
+        java_eval = MagicMock()
+        metrics = ["a", "b"]
+        evaluator = SparkEvaluator(java_eval, metrics, set_cache=True)
+
+        pipe_transform = MagicMock()
+        pipeline = MagicMock()
+        pipeline.transform.return_value = pipe_transform
+
+        data = MagicMock()
+        result = evaluator.evaluate(model, data, pipeline=pipeline)
+
+        pipeline.transform.assert_called_once_with(data)
+        model.transform.assert_called_once_with(pipe_transform)
+
+        assert java_eval.setMetricName.call_count == 2
+        for i, metric in enumerate(metrics):
+            assert java_eval.setMetricName.call_args_list[i] == call(metric)
+
+        pred_data["df"].cache.assert_called_once()
+        preds = pred_data["df"].cache.return_value
+
+        set_return = java_eval.setMetricName.return_value
+        set_return.evaluate.assert_has_calls([call(preds), call(preds)])
+
+        expected = {
+            "a": set_return.evaluate.return_value,
+            "b": set_return.evaluate.return_value,
+        }
+
+        assert result == expected
+
     def test_integration(self, spark_session: SparkSession):
         df = pd.DataFrame(
             {
