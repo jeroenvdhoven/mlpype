@@ -1,0 +1,33 @@
+[project]
+name = "mlpype-mlflow"
+authors = [
+    {name = "Jeroen van den Hoven"},
+]
+description = "MLflow extension for MLpype"
+readme = "README.md"
+requires-python = ">=3.9"
+version = "0.6.4"
+license = {file = "../../LICENCE.txt"}
+
+dependencies = [
+    "mlpype-base==0.6.4",
+    "mlflow>=2.17.0",
+    "GitPython>=3.1.27",
+]
+
+[project.optional-dependencies]
+strict = [
+    "mlpype-base==0.6.4",
+    "mlflow==2.17.0",
+    "GitPython==3.1.27",
+]
+
+[tool.uv.sources]
+mlpype-base = { workspace = true }
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+"*" = ["**.yaml", "**.yml"]

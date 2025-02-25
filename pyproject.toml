@@ -7,7 +7,74 @@ description = "Standardise model training across libraries"
 readme = "README.md"
 requires-python = ">=3.9"
 version = "0.6.4"
-dynamic = ["license"]
+license = {file = "LICENCE.txt"}
+
+dependencies = [
+    "mlpype-base", 
+    "mlpype-fastapi",
+    "mlpype-hyperopt",
+    "mlpype-lightgbm", 
+    "mlpype-matplotlib",
+    "mlpype-mlflow",
+    "mlpype-sklearn",
+    "mlpype-spark", 
+    "mlpype-tensorflow",
+    "mlpype-xgboost",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.1.0",
+    "build==0.8.0",
+    "pypiserver==1.5.1",
+    "twine==4.0.1",
+    "importlib-metadata<8.0.0",
+    "mkdocs==1.6.1",
+    "mkdocs-material==9.5.42",
+    "mkdocstrings[python]==0.26.2",
+    "tensorflow-macos==2.14.1",
+    "uvicorn==0.18.2",
+]
+test = [
+    "pytest>=8.3.3",
+    "pytest-cov>=6.0.0",
+    "pip",
+]
+
+
+[tool.uv.sources]
+mlpype-base = { workspace = true }
+mlpype-fastapi = { workspace = true }
+mlpype-hyperopt = { workspace = true }
+mlpype-lightgbm = { workspace = true }
+mlpype-matplotlib = { workspace = true }
+mlpype-mlflow = { workspace = true }
+mlpype-sklearn = { workspace = true }
+mlpype-spark = { workspace = true }
+mlpype-tensorflow = { workspace = true }
+mlpype-xgboost = { workspace = true }
+
+
+[tool.uv.workspace]
+members = [
+    "packages/mlpype-base", 
+    "packages/mlpype-fastapi",
+    "packages/mlpype-hyperopt",
+    "packages/mlpype-lightgbm", 
+    "packages/mlpype-matplotlib",
+    "packages/mlpype-mlflow",
+    "packages/mlpype-sklearn",
+    "packages/mlpype-spark", 
+    "packages/mlpype-tensorflow",
+    "packages/mlpype-xgboost",
+]
+
+[build-system]
+requires = ["setuptools == 68.2.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["packages"]
 
 [tool.isort]
 multi_line_output = 3

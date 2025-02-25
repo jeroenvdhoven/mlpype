@@ -2,31 +2,26 @@
 PYTHON_VERSION=3.11
 PYENV_NAME=mlpype
 
-pyenv-delete:
-	pyenv virtualenv-delete -f ${PYENV_NAME}
+init: _init_env _init_deps _init_precommit
 
-pyenv:
-	pyenv install -s ${PYTHON_VERSION}
-	pyenv virtualenv ${PYTHON_VERSION} ${PYENV_NAME} -f
-	echo ${PYENV_NAME} > .python-version
+# Initialize UV project and virtual environment
+_init_env:
+	uv venv --python=$(PYTHON_VERSION)
 
-pyenv-dev-install: pyenv dev-setup
+# Editable install for easy development.
+_init_deps:
+	uv sync --extra dev --extra test --extra strict
 
-# Development setup
-dev-setup: dev-install pre-commit-install
-
-dev-install:
-	./scripts/dev_install.sh -e 1
-
-local-install:
-	./scripts/dev_install.sh
+# Install pre-commit
+_init_precommit:
+	uv run pre-commit install --hook-type pre-commit --hook-type pre-push --hook-type commit-msg
 
 # To test if packages can be build
 build-packages:
-	./scripts/build.sh
+	uv build --all-packages
 
 clean:
-	rm -rf dist/ packages/
+	rm -rf dist/ .venv/
 
 host-pypi-local:
 	mkdir -p packages
@@ -37,29 +32,24 @@ build-and-host-local: clean build-packages host-pypi-local
 
 # Test and coverage commands
 test-unit:
-	python -m pytest -m "not spark and not wheel"
+	uv run python -m pytest -m "not spark and not wheel"
 
 test-all:
-	python -m pytest
+	uv run python -m pytest
 
 coverage-unit:
-	python -m pytest -m "not spark and not wheel" --cov-report term-missing --cov mlpype -ra
+	uv run python -m pytest -m "not spark and not wheel" --cov-report term-missing --cov mlpype -ra
 
 coverage-all:
-	python -m pytest --cov-report term-missing --cov mlpype -ra
+	uv run python -m pytest --cov-report term-missing --cov mlpype -ra
 
 # Document code
 build-docs:
-	python -m scripts.build_mkdown
-	python -m mkdocs build
+	uv run python -m scripts.build_mkdown
+	uv run python -m mkdocs build
 
 serve-docs:
-	python -m mkdocs serve
-
-# Pre-commit defaults
-pre-commit-install:
-	pip install pre-commit
-	pre-commit install --hook-type pre-commit --hook-type pre-push --hook-type commit-msg
+	uv run python -m mkdocs serve
 
 pre-commit-run:
-	pre-commit run --all-files
+	uv run pre-commit run --all-files
