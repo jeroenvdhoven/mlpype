@@ -25,7 +25,7 @@ def main() -> None:
     """Walks the mlpype package hierarchy and creates documentation for each package."""
     shutil.rmtree(doc_root, ignore_errors=True)
     autoapi_dirs = []  # location to parse for API reference
-    for f in root_path.iterdir():
+    for f in (root_path / "packages").iterdir():
         if f.name.startswith("mlpype-") and f.is_dir():
             autoapi_dirs.append(f)
 

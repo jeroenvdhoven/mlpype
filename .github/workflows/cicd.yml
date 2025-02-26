@@ -27,18 +27,18 @@ jobs:
         with:
           spark-version: '3.4.0'
           hadoop-version: '3'
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
-      - name: Install dependencies
-        run: make local-install
-
-      - name: Install pre-commit
-        run: make pre-commit-install
+      - name: Install dependencies and precommit
+        run: make init
 
       - name: Run pre-commit
         run: make pre-commit-run
 
       - name: Test and coverage
-        run: python -m pytest -m "not wheel" --cov-report term-missing --cov mlpype -ra --junitxml=junit/test-results-${{ matrix.python-version }}.xml
+        run: uv run python -m pytest -m "not wheel" --cov-report term-missing --cov mlpype -ra --junitxml=junit/test-results-${{ matrix.python-version }}.xml
       
       - name: Upload test/covarage test results
         uses: actions/upload-artifact@v4
@@ -61,8 +61,12 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Install dependencies
-        run: make local-install
+        run: make init
+
       - name: Create docs
         run: make build-docs
 
@@ -84,7 +88,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
   
   # Deploy the package to pypi
   deploy-package:
@@ -99,11 +103,14 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Install dependencies
-        run: make local-install
+        run: make init
 
       - name: Build src
         run: make build-packages
 
       - name: Push
-        run: twine upload dist/* -u ${{ secrets.TWINE_USER }} -p ${{ secrets.TWINE_PW }}
+        run: uv run twine upload dist/* -u ${{ secrets.TWINE_USER }} -p ${{ secrets.TWINE_PW }}
