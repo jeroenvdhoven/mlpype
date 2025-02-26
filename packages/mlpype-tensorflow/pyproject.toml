@@ -14,6 +14,7 @@ dependencies = [
     "tensorflow==2.14.1",
     "numpy==1.26.4",
     "protobuf==3.20.3",
+    "tensorflow-macos==2.14.1 ; sys_platform == 'macos'",
 ]
 
 [project.optional-dependencies]
@@ -22,10 +23,6 @@ strict = [
     "tensorflow==2.14.1",
     "numpy==1.26.4",
     "protobuf==3.20.3",
-]
-
-dev = [
-    "tensorflow-macos==2.14.1",
 ]
 
 [tool.uv.sources]
