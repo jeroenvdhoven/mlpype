@@ -6,19 +6,19 @@ authors = [
 description = "Xgboost extension for MLpype"
 
 requires-python = ">=3.9"
-version = "0.6.4"
+version = "0.6.5"
 license = {"text" = "MIT"}
 
 dependencies = [
-    "mlpype-base==0.6.4",
-    "mlpype-sklearn==0.6.4",
+    "mlpype-base==0.6.5",
+    "mlpype-sklearn==0.6.5",
     "xgboost>=1.6.2",
 ]
 
 [project.optional-dependencies]
 strict = [
-    "mlpype-base==0.6.4",
-    "mlpype-sklearn==0.6.4",
+    "mlpype-base==0.6.5",
+    "mlpype-sklearn==0.6.5",
     "xgboost==1.6.2",
 ]
 
