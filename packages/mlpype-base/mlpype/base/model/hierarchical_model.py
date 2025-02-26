@@ -4,9 +4,7 @@ import typing
 from collections import defaultdict
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Callable, Dict, Generic, Iterable, Optional, Tuple, Type, TypeVar
-
-from git import List, Union
+from typing import Any, Callable, Dict, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 from mlpype.base.model.model import Model
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
@@ -112,7 +110,7 @@ class HierarchicalModel(Model, Generic[T]):
         data_list: List[Dict[str, Data]] = []
         for key, d in data.items():
             if len(self.outputs) == 1:
-                d = (d,)
+                d = (d,)  # type: ignore
             assert isinstance(d, tuple)
 
             if len(data_list) == 0:
@@ -131,7 +129,10 @@ class HierarchicalModel(Model, Generic[T]):
         for key, dataset in split_data.items():
             logger.info(f"Fitting for key: {key}")
             model = self._get_annotated_class()(
-                inputs=self.inputs, outputs=self.outputs, seed=self.seed, **self.model_args
+                inputs=self.inputs,
+                outputs=self.outputs,
+                seed=self.seed,
+                **self.model_args,
             )
             model._fit(*dataset)
             self.model[key] = model
@@ -168,7 +169,10 @@ class HierarchicalModel(Model, Generic[T]):
 
     @classmethod
     def _load(
-        cls: Type["HierarchicalModel"], folder: Path, inputs: List[str], outputs: List[str]
+        cls: Type["HierarchicalModel"],
+        folder: Path,
+        inputs: List[str],
+        outputs: List[str],
     ) -> "HierarchicalModel":
         model_subclass = cls._get_annotated_class()
         model_folder = folder / cls.HIERARCHICAL_MODEL_FOLDER
@@ -183,7 +187,13 @@ class HierarchicalModel(Model, Generic[T]):
 
         models = {model_name.name: model_subclass.load(model_name) for model_name in model_subfolder.iterdir()}
 
-        return cls(inputs=inputs, outputs=outputs, data_splitter=data_splitter, data_merger=data_merger, model=models)
+        return cls(
+            inputs=inputs,
+            outputs=outputs,
+            data_splitter=data_splitter,
+            data_merger=data_merger,
+            model=models,
+        )
 
     def set_seed(self) -> None:
         """Sets the seed for all submodels.
