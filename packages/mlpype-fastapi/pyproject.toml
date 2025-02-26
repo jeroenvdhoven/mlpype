@@ -4,10 +4,10 @@ authors = [
     {name = "Jeroen van den Hoven"},
 ]
 description = "FastAPI extension for MLpype"
-readme = "README.md"
+
 requires-python = ">=3.9"
 version = "0.6.4"
-license = {file = "../../LICENCE.txt"}
+license = {"text" = "MIT"}
 
 dependencies = [
     "mlpype-base==0.6.4",
@@ -22,6 +22,10 @@ strict = [
     "fastapi==0.86.0",
     "anyio<4",
     "typing-extensions==4.8.0"
+]
+
+dev = [
+    "uvicorn==0.18.2",
 ]
 
 [tool.uv.sources]

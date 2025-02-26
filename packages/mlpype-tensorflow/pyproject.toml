@@ -4,10 +4,10 @@ authors = [
     {name = "Jeroen van den Hoven"},
 ]
 description = "Tensorflow extension for MLpype"
-readme = "README.md"
+
 requires-python = ">=3.9"
 version = "0.6.4"
-license = {file = "../../LICENCE.txt"}
+license = {"text" = "MIT"}
 
 dependencies = [
     "mlpype-base==0.6.4",
@@ -22,6 +22,10 @@ strict = [
     "tensorflow==2.14.1",
     "numpy==1.26.4",
     "protobuf==3.20.3",
+]
+
+dev = [
+    "tensorflow-macos==2.14.1",
 ]
 
 [tool.uv.sources]

@@ -1933,9 +1933,7 @@ dev = [
     { name = "mkdocstrings", extra = ["python"] },
     { name = "pre-commit" },
     { name = "pypiserver" },
-    { name = "tensorflow-macos" },
     { name = "twine" },
-    { name = "uvicorn" },
 ]
 test = [
     { name = "pip" },
@@ -1965,9 +1963,7 @@ requires-dist = [
     { name = "pypiserver", marker = "extra == 'dev'", specifier = "==1.5.1" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3.3" },
     { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=6.0.0" },
-    { name = "tensorflow-macos", marker = "extra == 'dev'", specifier = "==2.14.1" },
     { name = "twine", marker = "extra == 'dev'", specifier = "==4.0.1" },
-    { name = "uvicorn", marker = "extra == 'dev'", specifier = "==0.18.2" },
 ]
 
 [[package]]
@@ -2017,6 +2013,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+dev = [
+    { name = "uvicorn" },
+]
 strict = [
     { name = "anyio" },
     { name = "fastapi" },
@@ -2034,6 +2033,7 @@ requires-dist = [
     { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
     { name = "typing-extensions", specifier = ">=4.8.0" },
     { name = "typing-extensions", marker = "extra == 'strict'", specifier = "==4.8.0" },
+    { name = "uvicorn", marker = "extra == 'dev'", specifier = "==0.18.2" },
 ]
 
 [[package]]
@@ -2218,6 +2218,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+dev = [
+    { name = "tensorflow-macos" },
+]
 strict = [
     { name = "mlpype-base" },
     { name = "numpy" },
@@ -2235,6 +2238,7 @@ requires-dist = [
     { name = "protobuf", marker = "extra == 'strict'", specifier = "==3.20.3" },
     { name = "tensorflow", specifier = "==2.14.1" },
     { name = "tensorflow", marker = "extra == 'strict'", specifier = "==2.14.1" },
+    { name = "tensorflow-macos", marker = "extra == 'dev'", specifier = "==2.14.1" },
 ]
 
 [[package]]

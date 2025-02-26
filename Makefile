@@ -10,7 +10,7 @@ _init_env:
 
 # Editable install for easy development.
 _init_deps:
-	uv sync --extra dev --extra test --extra strict
+	uv sync --all-packages --extra dev --extra test --extra strict
 
 # Install pre-commit
 _init_precommit:
