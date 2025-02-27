@@ -1,9 +1,10 @@
 """A mlpype-compliant framework for using Spark Models."""
 import shutil
+import tarfile
 import typing
-import zipfile
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
+from logging import getLogger
 from pathlib import Path
 from typing import Any, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
 
@@ -16,6 +17,7 @@ from mlpype.base.serialiser import JoblibSerialiser
 from mlpype.spark.model.types import SerialisablePredictor, SerialisableSparkModel
 
 T = TypeVar("T", bound=SerialisablePredictor)
+logger = getLogger(__name__)
 
 
 class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
@@ -67,7 +69,7 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
     def set_seed(self) -> None:
         """Sets the RNG seed."""
         # TODO: set seed properly in pyspark
-        print("Currently, setting a seed is not yet supported.")
+        logger.warning("Currently, setting a seed is not yet supported.")
 
     def fit(self, data: DataSet) -> "Model":
         """Fits the Model to the given DataSet.
@@ -98,13 +100,25 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         result = self.model.transform(data[0])
         return result.drop(self.model.getOrDefault("featuresCol"))
 
+    @classmethod
+    def _get_spark_prefix(cls, folder: Path) -> str:
+        if folder.is_absolute():
+            spark_prefix = "file://"
+        else:
+            logger.warning(
+                "Loading model from a relative path. This may not work as expected, and will fail in Databricks!"
+            )
+            spark_prefix = ""
+        return spark_prefix
+
     def _save(self, folder: Path) -> None:
         assert self.model is not None, "Please fit this model before transforming data."
+        spark_prefix = self._get_spark_prefix(folder)
 
         serialiser = JoblibSerialiser()
 
-        self.predictor.write().overwrite().save(str(folder / self.SPARK_PREDICTOR_PATH))
-        self.model.write().overwrite().save(str(folder / self.SPARK_MODEL_PATH))
+        self.predictor.write().overwrite().save(spark_prefix + str(folder / self.SPARK_PREDICTOR_PATH))
+        self.model.write().overwrite().save(spark_prefix + str(folder / self.SPARK_MODEL_PATH))
         serialiser.serialise(type(self.model), str(folder / self.SPARK_MODEL_CLASS_PATH))
 
         self._create_zip(folder / self.SPARK_PREDICTOR_PATH)
@@ -113,10 +127,11 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
     def _create_zip(self, folder: Path) -> None:
         """Creates a zip of the serialised model or predictor."""
         folder_name = folder.name
-        with zipfile.ZipFile(folder.parent / f"{folder_name}.zip", "w") as zip_ref:
-            for f in folder.rglob("*"):
-                if f.is_file():
-                    zip_ref.write(f, arcname=f.relative_to(folder))
+        logger.info(f"Turning {folder_name} into a tar file")
+        # assert folder.is_dir(), f"Folder {folder} does not exist."
+
+        with tarfile.open(folder.parent / f"{folder_name}.tar", "w") as tar_ref:
+            tar_ref.add(folder, arcname=folder_name)
 
         # Cleanup: remove input folder.
         shutil.rmtree(str(folder), ignore_errors=True)
@@ -124,24 +139,25 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
     @classmethod
     def _load(cls: Type["SparkModel"], folder: Path, inputs: List[str], outputs: List[str]) -> "SparkModel":
         serialiser = JoblibSerialiser()
+        spark_prefix = cls._get_spark_prefix(folder)
 
         predictor_class: Type[SerialisablePredictor] = cls._get_annotated_class()
         model_class: Type[SerialisableSparkModel] = serialiser.deserialise(str(folder / cls.SPARK_MODEL_CLASS_PATH))
 
-        cls._unzip(folder / f"{cls.SPARK_PREDICTOR_PATH}.zip")
-        cls._unzip(folder / f"{cls.SPARK_MODEL_PATH}.zip")
+        cls._unzip(folder / f"{cls.SPARK_PREDICTOR_PATH}.tar")
+        cls._unzip(folder / f"{cls.SPARK_MODEL_PATH}.tar")
 
-        predictor: SerialisablePredictor = predictor_class.load(str(folder / cls.SPARK_PREDICTOR_PATH))
-        model: SerialisableSparkModel = model_class.load(str(folder / cls.SPARK_MODEL_PATH))
+        predictor: SerialisablePredictor = predictor_class.load(spark_prefix + str(folder / cls.SPARK_PREDICTOR_PATH))
+        model: SerialisableSparkModel = model_class().load(spark_prefix + str(folder / cls.SPARK_MODEL_PATH))
 
         return cls(inputs=inputs, outputs=outputs, predictor=predictor, model=model, seed=1)
 
     @classmethod
-    def _unzip(cls, zip_file: Path) -> None:
+    def _unzip(cls, tar_file: Path) -> None:
         """Unzips the model or predictor."""
-        print(f"Unzipping: {zip_file}")
-        with zipfile.ZipFile(zip_file, "r") as zip_ref:
-            zip_ref.extractall(zip_file.parent / zip_file.name.replace(".zip", ""))
+        logger.info(f"Untarring: {tar_file}")
+        with tarfile.open(tar_file, "r") as tar_ref:
+            tar_ref.extractall(tar_file.parent)
 
     @classmethod
     def get_parameters(cls: Type["SparkModel"], parser: ArgumentParser) -> None:
@@ -158,5 +174,9 @@ class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):
         BaseModel = cls._get_annotated_class()
 
         add_args_to_parser_for_class(
-            parser, BaseModel, "model", [], excluded_args=["seed", "inputs", "outputs", "model"]
+            parser,
+            BaseModel,
+            "model",
+            [],
+            excluded_args=["seed", "inputs", "outputs", "model"],
         )

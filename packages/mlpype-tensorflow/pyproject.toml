@@ -34,3 +34,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.package-data]
 "*" = ["**.yaml", "**.yml"]
+
+[tool.black]
+line-length = 120
