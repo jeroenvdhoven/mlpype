@@ -12,7 +12,7 @@ from pyspark.sql import SparkSession
 from pytest import mark
 
 from mlpype.base.data import DataSet
-from mlpype.spark.model import LinearSparkModel
+from mlpype.spark.model import LinearSparkModel, SparkModel
 from tests.spark.utils import spark_session
 from tests.utils import pytest_assert
 
@@ -127,6 +127,39 @@ class Test_SparkModel:
         predictions.drop.assert_called_once_with(fcol)
         assert result["x"] == predictions.drop.return_value
 
+    def test_create_and_unzip(self):
+        model = LinearSparkModel(inputs=["x"], outputs=["x"], predictor=MagicMock())
+        with TemporaryDirectory() as tmp_dir:
+            tmp_dir = Path(tmp_dir)
+            zipdir = tmp_dir / "inputs"
+            zipdir.mkdir()
+            files = ["f1", "f2"]
+            for f in files:
+                with open(zipdir / f, "w") as f_write:
+                    f_write.write(f)
+
+            model._create_zip(zipdir)
+            assert (tmp_dir / "inputs.tar").is_file()
+            assert not zipdir.is_dir()
+
+            SparkModel._unzip(tmp_dir / "inputs.tar")
+            assert zipdir.is_dir()
+
+            for f in files:
+                assert (zipdir / f).is_file()
+                with open(zipdir / f, "r") as f_read:
+                    assert f_read.read() == f
+
+    @mark.parametrize(
+        ["path", "expected"],
+        [
+            [Path("/absolute/path"), "file://"],
+            [Path("relative/path"), ""],
+        ],
+    )
+    def test_get_spark_prefix(self, path, expected):
+        assert expected == SparkModel._get_spark_prefix(path)
+
     def test_save_assertions(self):
         model = LinearSparkModel(
             inputs=["x"],
@@ -139,7 +172,9 @@ class Test_SparkModel:
         ), TemporaryDirectory() as tmp_dir:
             model.save(tmp_dir)
 
-    def test_save(self):
+    @mark.parametrize("use_absolute_path", [False, True])
+    def test_save(self, use_absolute_path: bool):
+        tmp_dir = "/tmp/" if use_absolute_path else "./tmp"
         predictor = MagicMock()
         model = MagicMock()
         mlpype_model = LinearSparkModel(
@@ -150,9 +185,9 @@ class Test_SparkModel:
             output_col=None,
         )
 
-        with TemporaryDirectory() as tmp_dir, patch(
-            "mlpype.spark.model.spark_model.JoblibSerialiser.serialise"
-        ) as mock_serialise, patch.object(LinearSparkModel, "_create_zip") as mock_create_zip:
+        with patch("mlpype.spark.model.spark_model.JoblibSerialiser.serialise") as mock_serialise, patch.object(
+            LinearSparkModel, "_create_zip"
+        ) as mock_create_zip:
             tmp_dir = Path(tmp_dir)
             mlpype_model._save(tmp_dir)
 
@@ -162,50 +197,55 @@ class Test_SparkModel:
                     call(tmp_dir / LinearSparkModel.SPARK_MODEL_PATH),
                 ]
             )
+            spark_prefix = "file://" if use_absolute_path else ""
 
             model.write.assert_called_once_with()
             model.write.return_value.overwrite.assert_called_once_with()
             model.write.return_value.overwrite.return_value.save.assert_called_once_with(
-                str(tmp_dir / mlpype_model.SPARK_MODEL_PATH)
+                spark_prefix + str(tmp_dir / mlpype_model.SPARK_MODEL_PATH)
             )
             predictor.write.assert_called_once_with()
             predictor.write.return_value.overwrite.assert_called_once_with()
             predictor.write.return_value.overwrite.return_value.save.assert_called_once_with(
-                str(tmp_dir / mlpype_model.SPARK_PREDICTOR_PATH)
+                spark_prefix + str(tmp_dir / mlpype_model.SPARK_PREDICTOR_PATH)
             )
             mock_serialise.assert_called_once_with(type(model), str(tmp_dir / mlpype_model.SPARK_MODEL_CLASS_PATH))
 
-    def test_load(self):
-        with TemporaryDirectory() as tmp_dir, patch.object(
-            LinearSparkModel, "_get_annotated_class"
-        ) as mock_annotate, patch(
+    @mark.parametrize("use_absolute_path", [False, True])
+    def test_load(self, use_absolute_path: bool):
+        tmp_dir = "/tmp/" if use_absolute_path else "./tmp"
+        with patch.object(LinearSparkModel, "_get_annotated_class") as mock_annotate, patch(
             "mlpype.spark.model.spark_model.JoblibSerialiser.deserialise"
-        ) as mock_deserialise, patch.object(
-            LinearSparkModel, "_unzip"
-        ) as mock_unzip:
+        ) as mock_deserialise, patch.object(LinearSparkModel, "_unzip") as mock_unzip:
             tmp_dir = Path(tmp_dir)
 
             result = LinearSparkModel._load(tmp_dir, ["x"], ["x"])
 
             mock_unzip.assert_has_calls(
                 [
-                    call(tmp_dir / f"{LinearSparkModel.SPARK_PREDICTOR_PATH}.zip"),
-                    call(tmp_dir / f"{LinearSparkModel.SPARK_MODEL_PATH}.zip"),
+                    call(tmp_dir / f"{LinearSparkModel.SPARK_PREDICTOR_PATH}.tar"),
+                    call(tmp_dir / f"{LinearSparkModel.SPARK_MODEL_PATH}.tar"),
                 ]
             )
+            spark_prefix = "file://" if use_absolute_path else ""
 
             mock_annotate.assert_called_once_with()
             mock_pred_class = mock_annotate.return_value
-            mock_pred_class.load.assert_called_once_with(str(tmp_dir / LinearSparkModel.SPARK_PREDICTOR_PATH))
+            mock_pred_class.load.assert_called_once_with(
+                spark_prefix + str(tmp_dir / LinearSparkModel.SPARK_PREDICTOR_PATH)
+            )
 
             mock_deserialise.assert_called_once_with(str(tmp_dir / LinearSparkModel.SPARK_MODEL_CLASS_PATH))
             mock_model_class = mock_deserialise.return_value
-            mock_model_class.load.assert_called_once_with(str(tmp_dir / LinearSparkModel.SPARK_MODEL_PATH))
+            mock_model_class.assert_called_once_with()
+            mock_model_class.return_value.load.assert_called_once_with(
+                spark_prefix + str(tmp_dir / LinearSparkModel.SPARK_MODEL_PATH)
+            )
 
             assert result.inputs == ["x"]
             assert result.outputs == ["x"]
             assert result.predictor == mock_pred_class.load.return_value
-            assert result.model == mock_model_class.load.return_value
+            assert result.model == mock_model_class.return_value.load.return_value
 
     def test_get_parameters(self):
         parser = MagicMock()
