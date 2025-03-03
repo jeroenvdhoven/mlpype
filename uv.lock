@@ -1909,7 +1909,7 @@ wheels = [
 
 [[package]]
 name = "mlpype"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "." }
 dependencies = [
     { name = "mlpype-base" },
@@ -1958,7 +1958,7 @@ requires-dist = [
     { name = "mlpype-spark", editable = "packages/mlpype-spark" },
     { name = "mlpype-tensorflow", editable = "packages/mlpype-tensorflow" },
     { name = "mlpype-xgboost", editable = "packages/mlpype-xgboost" },
-    { name = "pip", marker = "extra == 'test'" },
+    { name = "pip", marker = "extra == 'test'", specifier = ">=25" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.1.0" },
     { name = "pypiserver", marker = "extra == 'dev'", specifier = "==1.5.1" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3.3" },
@@ -1968,7 +1968,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-base"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-base" }
 dependencies = [
     { name = "docstring-parser" },
@@ -2003,7 +2003,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-fastapi"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-fastapi" }
 dependencies = [
     { name = "anyio" },
@@ -2019,7 +2019,6 @@ dev = [
 strict = [
     { name = "anyio" },
     { name = "fastapi" },
-    { name = "mlpype-base" },
     { name = "typing-extensions" },
 ]
 
@@ -2030,7 +2029,6 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.86.0" },
     { name = "fastapi", marker = "extra == 'strict'", specifier = "==0.86.0" },
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
     { name = "typing-extensions", specifier = ">=4.8.0" },
     { name = "typing-extensions", marker = "extra == 'strict'", specifier = "==4.8.0" },
     { name = "uvicorn", marker = "extra == 'dev'", specifier = "==0.18.2" },
@@ -2038,7 +2036,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-hyperopt"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-hyperopt" }
 dependencies = [
     { name = "hyperopt" },
@@ -2048,7 +2046,6 @@ dependencies = [
 [package.optional-dependencies]
 strict = [
     { name = "hyperopt" },
-    { name = "mlpype-base" },
 ]
 
 [package.metadata]
@@ -2056,12 +2053,11 @@ requires-dist = [
     { name = "hyperopt", specifier = ">=0.2.7" },
     { name = "hyperopt", marker = "extra == 'strict'", specifier = "==0.2.7" },
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
 ]
 
 [[package]]
 name = "mlpype-lightgbm"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-lightgbm" }
 dependencies = [
     { name = "lightgbm" },
@@ -2072,8 +2068,6 @@ dependencies = [
 [package.optional-dependencies]
 strict = [
     { name = "lightgbm" },
-    { name = "mlpype-base" },
-    { name = "mlpype-sklearn" },
 ]
 
 [package.metadata]
@@ -2081,14 +2075,12 @@ requires-dist = [
     { name = "lightgbm", specifier = ">=4.3.0" },
     { name = "lightgbm", marker = "extra == 'strict'", specifier = "==4.3.0" },
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
     { name = "mlpype-sklearn", editable = "packages/mlpype-sklearn" },
-    { name = "mlpype-sklearn", marker = "extra == 'strict'", editable = "packages/mlpype-sklearn" },
 ]
 
 [[package]]
 name = "mlpype-matplotlib"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-matplotlib" }
 dependencies = [
     { name = "matplotlib" },
@@ -2101,7 +2093,6 @@ dependencies = [
 [package.optional-dependencies]
 strict = [
     { name = "matplotlib" },
-    { name = "mlpype-base" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "shap" },
@@ -2112,7 +2103,6 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.7.5" },
     { name = "matplotlib", marker = "extra == 'strict'", specifier = "==3.7.5" },
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
     { name = "numpy", specifier = ">=1.26.4" },
     { name = "numpy", marker = "extra == 'strict'", specifier = "==1.26.4" },
     { name = "pandas", specifier = ">=1.5.3" },
@@ -2123,7 +2113,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-mlflow"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-mlflow" }
 dependencies = [
     { name = "gitpython" },
@@ -2135,7 +2125,6 @@ dependencies = [
 strict = [
     { name = "gitpython" },
     { name = "mlflow" },
-    { name = "mlpype-base" },
 ]
 
 [package.metadata]
@@ -2145,12 +2134,11 @@ requires-dist = [
     { name = "mlflow", specifier = ">=2.17.0" },
     { name = "mlflow", marker = "extra == 'strict'", specifier = "==2.17.0" },
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
 ]
 
 [[package]]
 name = "mlpype-sklearn"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-sklearn" }
 dependencies = [
     { name = "dill" },
@@ -2163,7 +2151,6 @@ dependencies = [
 [package.optional-dependencies]
 strict = [
     { name = "dill" },
-    { name = "mlpype-base" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "scikit-learn" },
@@ -2174,7 +2161,6 @@ requires-dist = [
     { name = "dill", specifier = ">=0.3.8" },
     { name = "dill", marker = "extra == 'strict'", specifier = "==0.3.8" },
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
     { name = "numpy", specifier = ">=1.26.4" },
     { name = "numpy", marker = "extra == 'strict'", specifier = "==1.26.4" },
     { name = "pandas", specifier = ">=1.5.3" },
@@ -2185,7 +2171,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-spark"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-spark" }
 dependencies = [
     { name = "mlpype-base" },
@@ -2194,21 +2180,19 @@ dependencies = [
 
 [package.optional-dependencies]
 strict = [
-    { name = "mlpype-base" },
     { name = "pyspark" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
     { name = "pyspark", specifier = ">=3.4.0" },
     { name = "pyspark", marker = "extra == 'strict'", specifier = "==3.4.0" },
 ]
 
 [[package]]
 name = "mlpype-tensorflow"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-tensorflow" }
 dependencies = [
     { name = "mlpype-base" },
@@ -2220,7 +2204,6 @@ dependencies = [
 
 [package.optional-dependencies]
 strict = [
-    { name = "mlpype-base" },
     { name = "numpy" },
     { name = "protobuf" },
     { name = "tensorflow" },
@@ -2229,7 +2212,6 @@ strict = [
 [package.metadata]
 requires-dist = [
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
     { name = "numpy", specifier = "==1.26.4" },
     { name = "numpy", marker = "extra == 'strict'", specifier = "==1.26.4" },
     { name = "protobuf", specifier = "==3.20.3" },
@@ -2241,7 +2223,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-xgboost"
-version = "0.6.4"
+version = "0.6.7"
 source = { editable = "packages/mlpype-xgboost" }
 dependencies = [
     { name = "mlpype-base" },
@@ -2251,17 +2233,13 @@ dependencies = [
 
 [package.optional-dependencies]
 strict = [
-    { name = "mlpype-base" },
-    { name = "mlpype-sklearn" },
     { name = "xgboost" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "mlpype-base", marker = "extra == 'strict'", editable = "packages/mlpype-base" },
     { name = "mlpype-sklearn", editable = "packages/mlpype-sklearn" },
-    { name = "mlpype-sklearn", marker = "extra == 'strict'", editable = "packages/mlpype-sklearn" },
     { name = "xgboost", specifier = ">=1.6.2" },
     { name = "xgboost", marker = "extra == 'strict'", specifier = "==1.6.2" },
 ]

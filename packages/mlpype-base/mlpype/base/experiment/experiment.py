@@ -196,7 +196,6 @@ run here for logging purposes. Consider using the `from_command_line` or
         self._create_output_folders()
 
         of = self.output_folder
-        self.experiment_logger.log_model(self.model, of / Constants.MODEL_FOLDER)
         self.experiment_logger.log_artifact(of / Constants.PIPELINE_FILE, self.serialiser, object=self.pipeline)
         self.experiment_logger.log_artifact(
             of / Constants.INPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.input_type_checker
@@ -215,6 +214,9 @@ run here for logging purposes. Consider using the `from_command_line` or
         # log serialiser using a JoblibSerialiser
         jl_serialiser = JoblibSerialiser()
         self.experiment_logger.log_artifact(of / Constants.SERIALISER_FILE, jl_serialiser, object=self.serialiser)
+
+        # Finally, log the model. Do this so mlflow can actually be useful...
+        self.experiment_logger.log_model(self.model, of / Constants.MODEL_FOLDER)
 
     def _log_requirements(self) -> None:
         python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
