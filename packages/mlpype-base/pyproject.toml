@@ -28,11 +28,11 @@ strict = [
 
 
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.setuptools.package-data]
-"*" = ["**.yaml", "**.yml"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/mlpype"]
 
 [tool.black]
 line-length = 120
