@@ -1,14 +1,9 @@
 """The core of the mlpype library: run a standardised ML experiment with the given parameters."""
-import json
-import os
-import subprocess
-import sys
 from argparse import ArgumentParser
 from logging import getLogger
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union
 
-from mlpype.base.constants import Constants
 from mlpype.base.data import DataCatalog, DataSet
 from mlpype.base.evaluate import BaseEvaluator
 from mlpype.base.evaluate.plot import BasePlotter
@@ -183,119 +178,10 @@ run here for logging purposes. Consider using the `from_command_line` or
             predicted_train = self.model.transform(transformed["train"])
             self.output_type_checker.fit(predicted_train)
 
-            self.logger.info("Log results: metrics")
-            for dataset_name, metric_set in metrics.items():
-                self.experiment_logger.log_metrics(dataset_name, metric_set)
-
-            self.logger.info("Log results: pipeline, model, serialiser")
-            self._log_plots(transformed)
-            self._log_run()
+            self.logger.info("Log results.")
+            self.experiment_logger.log_run(self, metrics, transformed)
+            self.logger.info("Done")
         return metrics
-
-    def _log_run(self) -> None:
-        self._create_output_folders()
-
-        of = self.output_folder
-        self.experiment_logger.log_artifact(of / Constants.PIPELINE_FILE, self.serialiser, object=self.pipeline)
-        self.experiment_logger.log_artifact(
-            of / Constants.INPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.input_type_checker
-        )
-        self.experiment_logger.log_artifact(
-            of / Constants.OUTPUT_TYPE_CHECKER_FILE, self.serialiser, object=self.output_type_checker
-        )
-
-        # log requirements.txt
-        self._log_requirements()
-
-        # extra py files
-        self._log_extra_files()
-        self.logger.info("Done")
-
-        # log serialiser using a JoblibSerialiser
-        jl_serialiser = JoblibSerialiser()
-        self.experiment_logger.log_artifact(of / Constants.SERIALISER_FILE, jl_serialiser, object=self.serialiser)
-
-        # Finally, log the model. Do this so mlflow can actually be useful...
-        self.experiment_logger.log_model(self.model, of / Constants.MODEL_FOLDER)
-
-    def _log_requirements(self) -> None:
-        python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-        version_info = {
-            "python_version": python_version,
-            "major": sys.version_info.major,
-            "minor": sys.version_info.minor,
-            "micro": sys.version_info.micro,
-        }
-        version_file = self.output_folder / Constants.PYTHON_VERSION_FILE
-        with open(version_file, "w") as f:
-            json.dump(version_info, f)
-        self.experiment_logger.log_file(version_file)
-
-        reqs = subprocess.check_output([sys.executable, "-m", "pip", "freeze"]).decode()
-        requirements_file = self.output_folder / Constants.REQUIREMENTS_FILE
-        with open(requirements_file, "w") as f:
-            f.write(reqs)
-        self.experiment_logger.log_file(requirements_file)
-
-    def _log_extra_files(self) -> None:
-        """Logs the extra files for an experiment, as specified in the constructor.
-
-        This also supports saving files outside of the current working directory.
-        These files are saved under the root name of the file / folder you select.
-        """
-        paths_to_log = []
-        self.logger.info("Log extra files")
-        for extra_file in self.additional_files_to_store:
-            try:
-                # If the file to log is in the current work directory, use that to find
-                # the relative path to the CWD. This is to help imports.
-                source_path = Path(extra_file).relative_to(os.getcwd())
-                logged_path = str(source_path)
-            except ValueError:
-                # The file is not on our current working directory. It is assumed you
-                # added the file / folder to the system path in an alternative way.
-                # It will be added as such.
-                source_path = Path(extra_file).absolute()
-                logged_path = Path(extra_file).name
-            target_path = self.output_folder / logged_path
-            self.experiment_logger.log_local_file(source_path, target_path)
-            paths_to_log.append(logged_path)
-
-        self.logger.info("Log `extra files`-file")
-        extra_files_file = self.output_folder / Constants.EXTRA_FILES
-        with open(extra_files_file, "w") as f:
-            data = {"paths": paths_to_log}
-            json.dump(data, f)
-        # Make sure the file path is closed before logging anything, to make sure all writes have flushed.
-        self.experiment_logger.log_file(extra_files_file)
-
-    def _log_plots(self, datasets: Dict[str, DataSet]) -> None:
-        predicted = {name: self.model.transform(data) for name, data in datasets.items()}
-
-        full_datasets = {}
-        for dataset_name, dataset in predicted.items():
-            assert dataset_name in datasets
-            transformed_set = datasets[dataset_name]
-            for data_name, data in dataset.items():
-                new_name = f"{data_name}{Constants.PREDICTION_SUFFIX}"
-                assert new_name not in transformed_set
-                transformed_set[new_name] = data
-
-            full_datasets[dataset_name] = transformed_set
-
-        for plotter in self.plots:
-            for name, data in full_datasets.items():
-                plot_folder = self.output_folder / Constants.PLOT_FOLDER / name
-                plot_folder.mkdir(parents=True, exist_ok=True)
-                plot_files = plotter.plot(plot_folder, data, self)
-
-                for plot_file in plot_files:
-                    self.experiment_logger.log_file(plot_file)
-
-    def _create_output_folders(self) -> None:
-        of = self.output_folder
-        of.mkdir(exist_ok=True, parents=True)
-        (of / Constants.MODEL_FOLDER).mkdir(exist_ok=True)
 
     def copy(self, parameters: Dict[str, Any], seed: int = 1) -> "Experiment":
         """Create a fresh copy of this Experiment.
