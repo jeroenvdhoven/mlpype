@@ -1,17 +1,10 @@
-import shutil
-import sys
-from dataclasses import dataclass
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from typing import Iterable, List, Tuple
-from unittest.mock import MagicMock, call, mock_open, patch
+from typing import Iterable, Tuple
+from unittest.mock import MagicMock, call, patch
 
 from pytest import fixture, mark
 
-from mlpype.base.constants import Constants
 from mlpype.base.data import DataCatalog
-from mlpype.base.data.dataset import DataSet
-from mlpype.base.evaluate.plot import BasePlotter
 from mlpype.base.experiment.experiment import Experiment
 from mlpype.base.pipeline.type_checker import TypeCheckerPipe
 from tests.shared_fixtures import dummy_experiment, dummy_experiment_with_tcc
@@ -71,14 +64,7 @@ class Test_run:
         test_performance = MagicMock()
         evaluator.evaluate.side_effect = [train_performance, test_performance]
 
-        with patch.object(experiment, "_create_output_folders") as mock_create_folders, patch.object(
-            experiment, "_log_extra_files"
-        ) as mock_log_extra_files, patch.object(experiment, "_log_requirements") as mock_log_requirements, patch(
-            "mlpype.base.experiment.experiment.JoblibSerialiser"
-        ) as mock_joblib, patch.object(
-            experiment, "_log_plots"
-        ) as mock_log_plots:
-            result = experiment.run()
+        result = experiment.run()
 
         logger.__enter__.assert_called_once()
         logger.__exit__.assert_called_once()
@@ -113,35 +99,16 @@ class Test_run:
 
         # evaluation
         evaluator.evaluate.assert_has_calls([call(model, train_transform), call(model, test_transform)])
-        assert result == {
+        expected_metrics = {
             "train": train_performance,
             "test": test_performance,
         }
 
         # logging
-        logger.log_metrics.assert_has_calls(
-            [
-                call("train", train_performance),
-                call("test", test_performance),
-            ]
+        logger.log_run.assert_called_with(
+            experiment, expected_metrics, {"train": train_transform, "test": test_transform}
         )
-
-        mock_create_folders.assert_called_once_with()
-        logger.log_model.assert_called_once_with(model, output_folder / Constants.MODEL_FOLDER)
-        logger.log_artifact.assert_has_calls(
-            [
-                call(output_folder / Constants.PIPELINE_FILE, serialiser, object=pipeline),
-                call(output_folder / Constants.INPUT_TYPE_CHECKER_FILE, serialiser, object=input_type_checker),
-                call(output_folder / Constants.OUTPUT_TYPE_CHECKER_FILE, serialiser, object=output_type_checker),
-                call(output_folder / Constants.SERIALISER_FILE, mock_joblib.return_value, object=serialiser),
-            ]
-        )
-        logger.log_parameters.assert_called_once_with({})
-        mock_log_plots.assert_called_once_with({"train": train_transform, "test": test_transform})
-
-        # extra files
-        mock_log_extra_files.assert_called_once_with()
-        mock_log_requirements.assert_called_once_with()
+        assert result == expected_metrics
 
     def test_integration(self, run_experiment: Tuple[Experiment, dict]):
         experiment, metrics = run_experiment
@@ -166,271 +133,6 @@ class Test_run:
         predictions = experiment.model.transform(experiment.pipeline.transform(test_data))["y"]
 
         assert len(y) == len(predictions)
-
-
-class TestLogExtraFiles:
-    @fixture
-    def upper_file(self) -> List[Path]:
-        folder_path = Path(__file__).parent.parent.absolute() / "_tmp_dir_"
-        try:
-            assert not folder_path.is_dir()
-            folder_path.mkdir(parents=True, exist_ok=False)
-            file1_path = folder_path / "a.py"
-            with open(file1_path, "w") as f:
-                f.write("tmp_data")
-            file2_path = folder_path / "b" / "c.py"
-            file2_path.parent.mkdir(parents=False, exist_ok=False)
-            with open(file2_path, "w") as f:
-                f.write("tmp_data_2")
-            yield [folder_path, file1_path, file2_path]
-        finally:
-            shutil.rmtree(str(folder_path), ignore_errors=True)
-
-    def test_inside_cwd(self):
-        cwd = Path(__file__).parent
-
-        data_sources = {"train": MagicMock(), "test": MagicMock()}
-        model = MagicMock()
-        pipeline = MagicMock()
-        evaluator = MagicMock()
-        logger = MagicMock()
-        serialiser = MagicMock()
-        input_type_checker = MagicMock()
-        output_type_checker = MagicMock()
-        output_folder = Path("tmp")
-        additional_files_to_store = [cwd / "a.py"]
-
-        experiment = Experiment(
-            data_sources=data_sources,
-            model=model,
-            pipeline=pipeline,
-            evaluator=evaluator,
-            logger=logger,
-            serialiser=serialiser,
-            input_type_checker=input_type_checker,
-            output_type_checker=output_type_checker,
-            output_folder=output_folder,
-            additional_files_to_store=additional_files_to_store,
-        )
-
-        m_open = mock_open()
-        with patch("mlpype.base.experiment.experiment.os.getcwd", return_value=cwd) as mock_getcwd, patch(
-            "mlpype.base.experiment.experiment.open", m_open
-        ), patch("mlpype.base.experiment.experiment.json.dump") as mock_dump:
-            experiment._log_extra_files()
-
-            mock_getcwd.assert_called_once_with()
-            logger.log_local_file.assert_called_once_with(Path("a.py"), output_folder / "a.py")
-            logger.log_file.assert_called_once_with(output_folder / Constants.EXTRA_FILES)
-
-            m_open.assert_called_once_with(output_folder / Constants.EXTRA_FILES, "w")
-            opened_obj = m_open.return_value
-
-            mock_dump.assert_called_once_with({"paths": ["a.py"]}, opened_obj)
-
-    def test_outside_of_cwd(self, upper_file: List[Path]):
-        extra_folder = upper_file[0]
-        cwd = Path(__file__).parent
-
-        data_sources = {"train": MagicMock(), "test": MagicMock()}
-        model = MagicMock()
-        pipeline = MagicMock()
-        evaluator = MagicMock()
-        logger = MagicMock()
-        serialiser = MagicMock()
-        input_type_checker = MagicMock()
-        output_type_checker = MagicMock()
-        output_folder = Path("tmp")
-
-        experiment = Experiment(
-            data_sources=data_sources,
-            model=model,
-            pipeline=pipeline,
-            evaluator=evaluator,
-            logger=logger,
-            serialiser=serialiser,
-            input_type_checker=input_type_checker,
-            output_type_checker=output_type_checker,
-            output_folder=output_folder,
-            additional_files_to_store=[extra_folder],
-        )
-
-        m_open = mock_open()
-        with patch("mlpype.base.experiment.experiment.os.getcwd", return_value=cwd) as mock_getcwd, patch(
-            "mlpype.base.experiment.experiment.open", m_open
-        ), patch("mlpype.base.experiment.experiment.json.dump") as mock_dump:
-            experiment._log_extra_files()
-
-            mock_getcwd.assert_called_once_with()
-
-            logger.log_local_file.assert_called_once_with(extra_folder, output_folder / extra_folder.name)
-            logger.log_file.assert_called_once_with(output_folder / Constants.EXTRA_FILES)
-
-            m_open.assert_called_once_with(output_folder / Constants.EXTRA_FILES, "w")
-            opened_obj = m_open.return_value
-
-            mock_dump.assert_called_once_with({"paths": [str(extra_folder.name)]}, opened_obj)
-
-
-def test_log_plots():
-    model = MagicMock()
-
-    data = {
-        "train": DataSet(
-            x=MagicMock(),
-            y=MagicMock(),
-        ),
-        "test": DataSet(
-            x=MagicMock(),
-            y=MagicMock(),
-        ),
-    }
-    predictions = [
-        DataSet(
-            y=MagicMock(),
-        ),
-        DataSet(
-            y=MagicMock(),
-        ),
-    ]
-    logger = MagicMock()
-    model.transform.side_effect = predictions
-    plotters = [MagicMock(spec=BasePlotter), MagicMock(spec=BasePlotter), MagicMock(spec=BasePlotter)]
-    for i, p in enumerate(plotters):
-        p.plot.side_effect = [[f"train{i}"], [f"test{i}"]]
-
-    with TemporaryDirectory() as tmp_dir:
-        tmp_dir = Path(tmp_dir)
-        experiment = Experiment(
-            data_sources={"train": MagicMock(), "test": MagicMock()},
-            model=model,
-            pipeline=MagicMock(),
-            evaluator=MagicMock(),
-            logger=logger,
-            serialiser=MagicMock(),
-            input_type_checker=MagicMock(),
-            output_type_checker=MagicMock(),
-            output_folder=tmp_dir,
-            additional_files_to_store=[],
-            plots=plotters,
-        )
-        experiment._log_plots(data)
-
-    model.transform.assert_has_calls([call(data["train"]), call(data["test"])])
-    expected_datasets = {
-        "train": DataSet(
-            **{
-                "x": data["train"]["x"],
-                "y": data["train"]["y"],
-                f"y{Constants.PREDICTION_SUFFIX}": predictions[0]["y"],
-            }
-        ),
-        "test": DataSet(
-            **{
-                "x": data["test"]["x"],
-                "y": data["test"]["y"],
-                f"y{Constants.PREDICTION_SUFFIX}": predictions[1]["y"],
-            }
-        ),
-    }
-    for plotter in plotters:
-        plotter.plot.assert_has_calls(
-            [
-                call(tmp_dir / Constants.PLOT_FOLDER / name, expected_datasets[name], experiment)
-                for name in ["train", "test"]
-            ],
-            any_order=True,
-        )
-
-    logger.log_file.assert_has_calls(
-        [call(f"{name}{i}") for name in ["train", "test"] for i, _ in enumerate(plotters)], any_order=True
-    )
-
-
-@dataclass
-class VersionInfo:
-    major: int
-    minor: int
-    micro: int
-
-
-@fixture
-def version_info():
-    old_version = sys.version_info
-
-    sys.version_info = VersionInfo(major=4, minor=10, micro=129)
-
-    yield sys.version_info
-    sys.version_info = old_version
-
-
-def test_log_requirements(version_info: VersionInfo):
-    cwd = Path(__file__).parent
-
-    data_sources = {"train": MagicMock(), "test": MagicMock()}
-    model = MagicMock()
-    pipeline = MagicMock()
-    evaluator = MagicMock()
-    logger = MagicMock()
-    serialiser = MagicMock()
-    input_type_checker = MagicMock()
-    output_type_checker = MagicMock()
-    output_folder = Path("tmp")
-    additional_files_to_store = [cwd / "a.py"]
-
-    experiment = Experiment(
-        data_sources=data_sources,
-        model=model,
-        pipeline=pipeline,
-        evaluator=evaluator,
-        logger=logger,
-        serialiser=serialiser,
-        input_type_checker=input_type_checker,
-        output_type_checker=output_type_checker,
-        output_folder=output_folder,
-        additional_files_to_store=additional_files_to_store,
-    )
-
-    f1 = MagicMock()
-    f2 = MagicMock()
-    req_text = b"pandas==0.1.0\nnumpy=1.0.1"
-    with patch("mlpype.base.experiment.experiment.open", side_effect=[f1, f2]) as mock_open, patch(
-        "mlpype.base.experiment.experiment.subprocess.check_output", return_value=req_text
-    ) as mock_check_output, patch("mlpype.base.experiment.experiment.json.dump") as mock_dump:
-        experiment._log_requirements()
-
-        mock_open.assert_has_calls(
-            [
-                call(output_folder / Constants.PYTHON_VERSION_FILE, "w"),
-                call(output_folder / Constants.REQUIREMENTS_FILE, "w"),
-            ]
-        )
-
-        # logger.log_local_file.assert_called_once_with(Path("a.py"), output_folder / "a.py")
-        # logger.log_file.assert_called_once_with(output_folder / Constants.EXTRA_FILES)
-        # python version
-        mock_dump.assert_called_once_with(
-            {
-                "python_version": "4.10.129",
-                "major": version_info.major,
-                "minor": version_info.minor,
-                "micro": version_info.micro,
-            },
-            f1.__enter__.return_value,
-        )
-
-        # requirements
-        mock_check_output.assert_called_once_with([sys.executable, "-m", "pip", "freeze"])
-        f2.__enter__.return_value.write.assert_called_once_with(req_text.decode())
-
-        # logging
-        logger.log_file.assert_has_calls(
-            [
-                call(output_folder / Constants.PYTHON_VERSION_FILE),
-                call(output_folder / Constants.REQUIREMENTS_FILE),
-            ],
-            any_order=True,
-        )
 
 
 class Test_init:

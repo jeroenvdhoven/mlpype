@@ -21,7 +21,7 @@ build-packages:
 	uv build --all-packages
 
 clean:
-	rm -rf dist/ .venv/
+	rm -rf dist/
 
 host-pypi-local:
 	mkdir -p packages
