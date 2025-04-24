@@ -2,6 +2,7 @@
 from datetime import date
 from typing import Any, Dict, List, Tuple, Type, Union
 
+from loguru import logger
 from pydantic import create_model
 from pyspark.ml.linalg import VectorUDT
 from pyspark.sql import DataFrame as SparkDataFrame
@@ -68,7 +69,21 @@ class SparkData(DataModel):
 
 
 class SparkTypeChecker(TypeChecker[SparkDataFrame]):
-    """SparkTypeChecker is a TypeChecker for Spark DataFrames."""
+    """A TypeChecker for Spark DataFrames."""
+
+    def __init__(self, name: str = "no name", error_on_missing_column: bool = False) -> None:
+        """A TypeChecker for Spark DataFrames.
+
+        Args:
+            name (str, optional): Name of the dataset. Used to create named DataModels. Defaults to "no name".
+            error_on_missing_column (bool, optional): Whether to throw an error if a column is missing.
+                Since Pyspark's ML models tend to require all data being present in 1 DataFrame, it's easy
+                to get errors if the target column is missing. This tries to avoid that, and will instead print
+                a warning. Defaults to False.
+        """
+        super().__init__(name=name)
+        # self.raw_types: Dict[str, Tuple[Type[Union[UserDefinedType, AtomicType]], type]] = {}
+        self.error_on_missing_column = error_on_missing_column
 
     def fit(self, data: SparkDataFrame) -> "SparkTypeChecker":
         """Fit this SparkTypeChecker to the given data.
@@ -111,20 +126,23 @@ class SparkTypeChecker(TypeChecker[SparkDataFrame]):
             SparkDataFrame: data, if the data fits the specifications. Otherwise, an assertion error is thrown.
         """
         assert isinstance(data, SparkDataFrame), "Please provide a spark DataFrame!"
-        colnames = list(self.raw_types.keys())
-        for col in colnames:
-            assert col in data.columns, f"`{col}` is missing from the dataset"
         dtype_dict = {field.name: field.dataType for field in data.schema.fields}
 
-        data = data.select(colnames)
-
+        available_cols = []
         for name, (spark_type, _) in self.raw_types.items():
-            actual_dtype = dtype_dict[name]
-            assert isinstance(actual_dtype, spark_type), (
-                f"Dtypes did not match up for col {name}: Expected {spark_type.__name__}, "
-                f"got {actual_dtype.__class__.__name__}"
-            )
-        return data
+            if name in dtype_dict:
+                available_cols.append(name)
+                actual_dtype = dtype_dict[name]
+                assert isinstance(actual_dtype, spark_type), (
+                    f"Dtypes did not match up for col {name}: Expected {spark_type.__name__}, "
+                    f"got {actual_dtype.__class__.__name__}"
+                )
+            elif self.error_on_missing_column:
+                raise AssertionError(f"`{name}` is missing from the dataset")
+            else:
+                logger.warning(f"`{name}` is missing from the dataset")
+
+        return data.select(available_cols)
 
     def get_pydantic_type(self) -> Type[SparkData]:
         """Creates a Pydantic model for this data to handle serialisation/deserialisation.
