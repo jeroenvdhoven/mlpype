@@ -120,17 +120,30 @@ class Test_SparkTypeChecker:
             t = StructField("failure", ArrayType(IntegerType()))
             checker._convert_dtype(t)
 
-    def test_transform_assert_missing_columns(self, spark_session: SparkSession):
+    @mark.parametrize(
+        ["name", "error_on_missing_column"],
+        [
+            ["Should error", True],
+            ["Should not error", False],
+        ],
+    )
+    def test_transform_assert_missing_columns(
+        self, spark_session: SparkSession, name: str, error_on_missing_column: bool
+    ):
         df = pd.DataFrame({"a": [1, 2, 3], "b": ["a", "2", "f"]})
         spark_df = spark_session.createDataFrame(df)
 
         missing_df = pd.DataFrame({"a": [1, 2, 3]})
         spark_missing_df = spark_session.createDataFrame(missing_df)
 
-        checker = SparkTypeChecker()
+        checker = SparkTypeChecker(error_on_missing_column=error_on_missing_column)
         checker.fit(spark_df)
 
-        with pytest_assert(AssertionError, "`b` is missing from the dataset"):
+        if error_on_missing_column:
+            with pytest_assert(AssertionError, "`b` is missing from the dataset"):
+                checker.transform(spark_missing_df)
+        else:
+            # no error thrown
             checker.transform(spark_missing_df)
 
     def test_transform_check_dtype(self, spark_session: SparkSession):
