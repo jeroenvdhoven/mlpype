@@ -33,7 +33,7 @@ def main() -> None:
     # for package_folder in [root_path / "mlpype-base"]:
     structure = {}
     for package_folder in autoapi_dirs:
-        package_root = package_folder / "mlpype"
+        package_root = package_folder / "src" / "mlpype"
         structure.update(_walk_package(package_root, "mlpype", skip_folders=["wheel"]))
 
     package_names_in_docs = sorted([f.name for f in (doc_root / "mlpype").iterdir() if f.is_dir()])
