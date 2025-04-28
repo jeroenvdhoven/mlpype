@@ -1,8 +1,8 @@
 """Provides tools for type checking Spark DataFrames and serialising/deserialising them."""
 from datetime import date
+from logging import getLogger
 from typing import Any, Dict, List, Tuple, Type, Union
 
-from loguru import logger
 from pydantic import create_model
 from pyspark.ml.linalg import VectorUDT
 from pyspark.sql import DataFrame as SparkDataFrame
@@ -20,6 +20,8 @@ from pyspark.sql.types import (
 )
 
 from mlpype.base.pipeline.type_checker import DataModel, TypeChecker
+
+logger = getLogger(__name__)
 
 
 class SparkData(DataModel):
