@@ -2212,13 +2212,13 @@ strict = [
 [package.metadata]
 requires-dist = [
     { name = "mlpype-base", editable = "packages/mlpype-base" },
-    { name = "numpy", specifier = "==1.26.4" },
+    { name = "numpy", specifier = ">=1.26.4" },
     { name = "numpy", marker = "extra == 'strict'", specifier = "==1.26.4" },
-    { name = "protobuf", specifier = "==3.20.3" },
+    { name = "protobuf", specifier = ">=3.20.3" },
     { name = "protobuf", marker = "extra == 'strict'", specifier = "==3.20.3" },
-    { name = "tensorflow", specifier = "==2.14.1" },
+    { name = "tensorflow", specifier = ">=2.14.1" },
     { name = "tensorflow", marker = "extra == 'strict'", specifier = "==2.14.1" },
-    { name = "tensorflow-macos", marker = "sys_platform == 'darwin'", specifier = "==2.14.1" },
+    { name = "tensorflow-macos", marker = "sys_platform == 'darwin'", specifier = ">=2.14.1" },
 ]
 
 [[package]]

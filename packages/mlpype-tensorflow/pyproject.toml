@@ -11,10 +11,10 @@ license = {"text" = "MIT"}
 
 dependencies = [
     "mlpype-base==0.6.7",
-    "tensorflow==2.14.1",
-    "numpy==1.26.4",
-    "protobuf==3.20.3",
-    "tensorflow-macos==2.14.1 ; sys_platform == 'darwin'",
+    "tensorflow>=2.14.1",
+    "numpy>=1.26.4",
+    "protobuf>=3.20.3",
+    "tensorflow-macos>=2.14.1 ; sys_platform == 'darwin'",
 ]
 
 [project.optional-dependencies]
