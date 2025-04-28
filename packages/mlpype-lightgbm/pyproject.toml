@@ -6,12 +6,12 @@ authors = [
 description = "LightGBM extension for MLpype"
 
 requires-python = ">=3.9"
-version = "0.6.7"
+version = "0.6.8"
 license = {"text" = "MIT"}
 
 dependencies = [
-    "mlpype-base==0.6.7",
-    "mlpype-sklearn==0.6.7",
+    "mlpype-base==0.6.8",
+    "mlpype-sklearn==0.6.8",
     "lightgbm>=4.3.0",
 ]
 

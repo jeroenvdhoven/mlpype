@@ -1909,7 +1909,7 @@ wheels = [
 
 [[package]]
 name = "mlpype"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "." }
 dependencies = [
     { name = "mlpype-base" },
@@ -1968,7 +1968,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-base"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-base" }
 dependencies = [
     { name = "docstring-parser" },
@@ -2003,7 +2003,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-fastapi"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-fastapi" }
 dependencies = [
     { name = "anyio" },
@@ -2036,7 +2036,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-hyperopt"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-hyperopt" }
 dependencies = [
     { name = "hyperopt" },
@@ -2057,7 +2057,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-lightgbm"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-lightgbm" }
 dependencies = [
     { name = "lightgbm" },
@@ -2080,7 +2080,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-matplotlib"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-matplotlib" }
 dependencies = [
     { name = "matplotlib" },
@@ -2113,7 +2113,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-mlflow"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-mlflow" }
 dependencies = [
     { name = "gitpython" },
@@ -2138,7 +2138,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-sklearn"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-sklearn" }
 dependencies = [
     { name = "dill" },
@@ -2171,7 +2171,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-spark"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-spark" }
 dependencies = [
     { name = "mlpype-base" },
@@ -2192,7 +2192,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-tensorflow"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-tensorflow" }
 dependencies = [
     { name = "mlpype-base" },
@@ -2223,7 +2223,7 @@ requires-dist = [
 
 [[package]]
 name = "mlpype-xgboost"
-version = "0.6.7"
+version = "0.6.8"
 source = { editable = "packages/mlpype-xgboost" }
 dependencies = [
     { name = "mlpype-base" },
