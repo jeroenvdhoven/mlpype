@@ -179,11 +179,15 @@ class Pipeline:
             self.__iter_n += 1
             return self[pos]
 
-    def __getitem__(self, pos: Union[int, str]) -> Union["Pipeline", Pipe]:
+    def __getitem__(self, pos: Union[int, str, slice]) -> Union["Pipeline", Pipe]:
         """Gets the Pipe/Pipeline at the given position.
 
+        Slices and ints will be passed directly to the underlying list. Strings
+        will be searched for in the names of the Pipes in this and any nested Pipelines
+        in this object.
+
         Args:
-            pos (Union[int, str]): the position to retrieve.
+            pos (Union[int, str, slice]): the position to retrieve.
 
         Raises:
             KeyError: if `pos` does not exist in this object.
@@ -200,7 +204,9 @@ class Pipeline:
             raise KeyError(f"{pos} is not found in this pipeline")
         return value
 
-    def _get(self, pos: Union[int, str]) -> Union["Pipeline", Pipe, None]:
+    def _get(self, pos: Union[int, str, slice]) -> Union["Pipeline", Pipe, None]:
+        if isinstance(pos, slice):
+            return Pipeline(self.pipes[pos])
         if isinstance(pos, int):
             return self.pipes[pos]
         for pipe in self.pipes:

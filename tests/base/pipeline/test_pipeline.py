@@ -283,6 +283,11 @@ class Test_Pipeline:
         assert pipeline["step0"] == pipes[0]
         assert pipeline["step1"] == pipes[1]
 
+    def test_get_slice(self, pipeline: Pipeline, pipes: List[MagicMock]):
+        result = pipeline[:1]
+        assert isinstance(result, Pipeline)
+        assert result.pipes == pipes[:1]
+
     def test_get_item_nested(self, pipeline_with_pipeline: Pipeline, pipeline: Pipeline, pipes: List[MagicMock]):
         assert pipeline_with_pipeline[0] == pipeline
         assert pipeline_with_pipeline["step0"] == pipes[0]
