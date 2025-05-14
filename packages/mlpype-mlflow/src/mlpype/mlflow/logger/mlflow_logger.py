@@ -45,11 +45,11 @@ class MlflowLogger(ExperimentLogger):
                 of your experiment as a model in mlflow. If set to None, your model will not be registered.
         """
         super().__init__()
-        logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
         self.name = name
 
         if not uri.startswith("http://") and not uri.startswith("databricks"):
-            logger.warning(f"Most often `uri` has to start with `http://` or `databricks`. Got: {uri}")
+            self.logger.warning(f"Most often `uri` has to start with `http://` or `databricks`. Got: {uri}")
         self.uri = uri
         self.artifact_location = artifact_location
         self.run = None
@@ -154,17 +154,21 @@ class MlflowLogger(ExperimentLogger):
         folder = Path(folder)
         model.save(folder)
         super().log_model(model, folder)
-        mlflow_log_model(
-            artifact_path=self.ARTIFACT_FOLDER,
-            # PypeMLFlowModel is a near-dummy class. It knows how to load a model
-            # from a MLpype training result.
-            python_model=PypeMLFlowModel(),
-            artifacts={"folder": str(folder.parent)},
-        )
 
-        if self.model_name is not None:
-            assert self.run is not None, "Please start the experiment first"
-            self.register_mlpype_model(self.run.info.run_id, self.model_name)
+        try:
+            mlflow_log_model(
+                artifact_path=self.ARTIFACT_FOLDER,
+                # PypeMLFlowModel is a near-dummy class. It knows how to load a model
+                # from a MLpype training result.
+                python_model=PypeMLFlowModel(),
+                artifacts={"folder": str(folder.parent)},
+            )
+
+            if self.model_name is not None:
+                assert self.run is not None, "Please start the experiment first"
+                self.register_mlpype_model(self.run.info.run_id, self.model_name)
+        except Exception as e:
+            print(f"Failed to log model: {e}")
 
     def log_file(self, file: Union[str, Path]) -> None:
         """Logs a given file as part of an experiment.

@@ -1,10 +1,13 @@
 """Provides an integration layer between MLpype-trained models and MLflow models."""
+from logging import getLogger
 from pathlib import Path
 
 from mlflow.pyfunc import PythonModel, PythonModelContext
 
 from mlpype.base.data.dataset import DataSet
 from mlpype.base.deploy.inference import Inferencer
+
+logger = getLogger(__name__)
 
 
 class PypeMLFlowModel(PythonModel):
@@ -47,3 +50,19 @@ class PypeMLFlowModel(PythonModel):
             DataSet: The predicted output dataset.
         """
         return self.inferencer.predict(model_input)
+
+    def __getstate__(self) -> dict:
+        """Gets the state of this object, excluding any Inferencer."""
+        state = self.__dict__.copy()
+        if "inferencer" in state:
+            del state["inferencer"]
+        return state
+
+    def __setstate__(self, state: dict) -> None:
+        """Sets the state of this object, ignoring any Inferencer."""
+        logger.warning(
+            "PypeMLFlowModel is not intended to be loaded using pickle. "
+            "Please use `load_context` or otherwise properly initialise this class"
+        )
+        state["inferencer"] = None
+        self.__dict__ = state

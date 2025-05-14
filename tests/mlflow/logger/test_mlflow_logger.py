@@ -1,3 +1,4 @@
+import pickle
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
@@ -6,6 +7,7 @@ from pytest import fixture, mark
 
 from mlpype.base.logger.experiment_logger import ExperimentLogger
 from mlpype.mlflow.logger.mlflow_logger import MlflowLogger
+from mlpype.mlflow.model.model import PypeMLFlowModel
 from tests.utils import pytest_assert
 
 
@@ -271,3 +273,37 @@ class Test_mlflow_logger:
             mock_register_mlpype_model.assert_called_once_with(logger.run.info.run_id, model_name)
         else:
             mock_register_mlpype_model.assert_not_called()
+
+    def test_log_model_with_exception(self, logger: MlflowLogger):
+        model = MagicMock()
+        folder = Path("folder")
+
+        with patch.object(ExperimentLogger, "log_model") as mock_load_model, patch(
+            "mlpype.mlflow.logger.mlflow_logger.mlflow_log_model", side_effect=Exception
+        ) as mock_log_model, patch.object(logger, "register_mlpype_model") as mock_register_mlpype_model, patch(
+            "mlpype.mlflow.logger.mlflow_logger.PypeMLFlowModel"
+        ) as mock_pype:
+            logger.model_name = "very_fancy_model_name"
+            logger.run = MagicMock()
+            logger.log_model(model, folder)
+
+        model.save.assert_called_once_with(folder)
+        mock_load_model.assert_called_once_with(model, folder)
+        mock_pype.assert_called_once_with()
+        mock_log_model.assert_called_once_with(
+            artifact_path=logger.ARTIFACT_FOLDER,
+            python_model=mock_pype.return_value,
+            artifacts={"folder": str(folder.parent)},
+        )
+
+        mock_register_mlpype_model.assert_not_called()
+
+
+def test_PypeMLFlowModel_pickle_state():
+    model = PypeMLFlowModel()
+    model.inferencer = MagicMock()
+
+    res = pickle.dumps(model)
+    loaded = pickle.loads(res)
+
+    assert loaded.inferencer is None
