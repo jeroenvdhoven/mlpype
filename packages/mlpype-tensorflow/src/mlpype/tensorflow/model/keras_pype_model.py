@@ -24,7 +24,7 @@ T = TypeVar("T", bound=KerasBaseModel)
 class KerasPypeModel(Model[Tensor], ABC, Generic[T]):
     """A Model to integrate Keras models with the mlpype framework."""
 
-    KERAS_MODEL_FILE = "keras_model"
+    KERAS_MODEL_FILE = "keras_model.keras"
     LOSS_FILE = "loss_func.pkl"
 
     def __init__(
