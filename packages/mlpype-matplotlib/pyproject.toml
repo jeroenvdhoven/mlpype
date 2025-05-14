@@ -10,7 +10,7 @@ dynamic = ["version"]
 license = {"text" = "MIT"}
 
 dependencies = [
-    "mlpype-base==0.6.8",
+    "mlpype-base",
     "matplotlib>=3.7.5",
     "numpy>=1.26.4",
     "pandas>=1.5.3",

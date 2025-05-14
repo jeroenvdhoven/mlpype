@@ -10,7 +10,7 @@ dynamic = ["version"]
 license = {"text" = "MIT"}
 
 dependencies = [
-    "mlpype-base==0.6.8",
+    "mlpype-base",
     "pyspark>=3.4.0",
 ]
 

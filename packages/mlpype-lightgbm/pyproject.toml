@@ -10,8 +10,8 @@ dynamic = ["version"]
 license = {"text" = "MIT"}
 
 dependencies = [
-    "mlpype-base==0.6.8",
-    "mlpype-sklearn==0.6.8",
+    "mlpype-base",
+    "mlpype-sklearn",
     "lightgbm>=4.3.0",
 ]
 

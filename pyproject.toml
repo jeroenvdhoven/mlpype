@@ -40,6 +40,20 @@ test = [
 ]
 
 
+[tool.uv]
+reinstall-package = [
+    "mlpype-base",
+    "mlpype-fastapi",
+    "mlpype-hyperopt",
+    "mlpype-lightgbm",
+    "mlpype-matplotlib",
+    "mlpype-mlflow",
+    "mlpype-sklearn",
+    "mlpype-spark",
+    "mlpype-tensorflow",
+    "mlpype-xgboost"
+]
+
 [tool.uv.sources]
 mlpype-base = { workspace = true }
 mlpype-fastapi = { workspace = true }
