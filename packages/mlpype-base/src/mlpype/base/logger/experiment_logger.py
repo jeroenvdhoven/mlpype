@@ -1,6 +1,5 @@
 """An interface for logging experiments."""
 import json
-import logging
 import os
 import shutil
 import subprocess
@@ -9,6 +8,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from types import TracebackType
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
+
+from loguru import logger
 
 from mlpype.base.constants import Constants
 from mlpype.base.data import DataSet
@@ -21,10 +22,6 @@ if TYPE_CHECKING:
 
 class ExperimentLogger(ABC):
     """An interface for logging experiments."""
-
-    def __init__(self) -> None:
-        """An interface for logging experiments."""
-        self.logger = logging.getLogger(__name__)
 
     @abstractmethod
     def __enter__(self) -> None:
@@ -53,19 +50,19 @@ class ExperimentLogger(ABC):
             transformed (Dict[str, DataSet]): A dictionary of transformed datasets (after applying the pipeline)
         """
         for dataset_name, metric_set in metrics.items():
-            self.logger.info(f"Log results: metrics for {dataset_name}")
+            logger.info(f"Log results: metrics for {dataset_name}")
             self.log_metrics(dataset_name, metric_set)
 
         self._create_output_folders(exp.output_folder)
 
         # Log plots, requirements.txt, and extra files
-        self.logger.info("Log plots, requirements.txt, and extra files")
+        logger.info("Log plots, requirements.txt, and extra files")
         self._log_plots(exp, transformed)
         self._log_requirements(exp.output_folder)
         self._log_extra_files(exp.output_folder, exp.additional_files_to_store)
 
         # log serialiser using a JoblibSerialiser
-        self.logger.info("Log results: pipeline, serialiser, input/output type checkers")
+        logger.info("Log results: pipeline, serialiser, input/output type checkers")
         jl_serialiser = JoblibSerialiser()
         self.log_artifact(exp.output_folder / Constants.SERIALISER_FILE, jl_serialiser, object=exp.serialiser)
         self.log_artifact(exp.output_folder / Constants.PIPELINE_FILE, exp.serialiser, object=exp.pipeline)
@@ -77,7 +74,7 @@ class ExperimentLogger(ABC):
         )
 
         # Finally, log the model. Do this so mlflow can actually be useful...
-        self.logger.info("Log model")
+        logger.info("Log model")
         self.log_model(exp.model, exp.output_folder / Constants.MODEL_FOLDER)
 
     def _log_requirements(self, output_folder: Path) -> None:
@@ -106,7 +103,7 @@ class ExperimentLogger(ABC):
         These files are saved under the root name of the file / folder you select.
         """
         paths_to_log = []
-        self.logger.info("Log extra files")
+        logger.info("Log extra files")
         for extra_file in additional_files_to_store:
             try:
                 # If the file to log is in the current work directory, use that to find
@@ -123,7 +120,7 @@ class ExperimentLogger(ABC):
             self.log_local_file(source_path, target_path)
             paths_to_log.append(logged_path)
 
-        self.logger.info("Log `extra files`-file")
+        logger.info("Log `extra files`-file")
         extra_files_file = output_folder / Constants.EXTRA_FILES
         with open(extra_files_file, "w") as f:
             data = {"paths": paths_to_log}
@@ -156,7 +153,7 @@ class ExperimentLogger(ABC):
 
     def _create_output_folders(self, output_folder: Path) -> None:
         if output_folder.exists():
-            self.logger.warning("Output folder already exists. This may cause conflicts.")
+            logger.warning("Output folder already exists. This may cause conflicts.")
         output_folder.mkdir(exist_ok=True, parents=True)
         (output_folder / Constants.MODEL_FOLDER).mkdir(exist_ok=True)
 

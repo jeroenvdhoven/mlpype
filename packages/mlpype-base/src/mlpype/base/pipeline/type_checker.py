@@ -1,8 +1,8 @@
 """Provides tools to check the types of data in a pipeline."""
-import logging
-from abc import ABC, abstractclassmethod, abstractmethod
+from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
+from loguru import logger
 from pydantic import BaseModel, create_model
 
 from mlpype.base.data.data_source import Data
@@ -22,7 +22,8 @@ class DataModel(BaseModel, ABC):
             Any: The converted data.
         """
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def to_model(cls, data: Any) -> "DataModel":
         """Convert the Model to actual data (e.g. numpy or pandas).
 
@@ -199,7 +200,6 @@ class DataSetTypeChecker(Operator[Data]):
             type_checker_class = self._get_type_checker(dataset)
 
             if type_checker_class is None:
-                logger = logging.getLogger(__name__)
                 logger.warning(f"{ds_name} has no supported type checker!")
             else:
                 checker = type_checker_class(ds_name)

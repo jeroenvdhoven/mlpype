@@ -1,13 +1,11 @@
 """Provides an integration layer between MLpype-trained models and MLflow models."""
-from logging import getLogger
 from pathlib import Path
 
+from loguru import logger
 from mlflow.pyfunc import PythonModel, PythonModelContext
 
 from mlpype.base.data.dataset import DataSet
 from mlpype.base.deploy.inference import Inferencer
-
-logger = getLogger(__name__)
 
 
 class PypeMLFlowModel(PythonModel):

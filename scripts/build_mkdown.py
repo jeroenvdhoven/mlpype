@@ -5,20 +5,19 @@ We're aware of mkdocs_gen_files, but this doesn't quite cover our use case due t
 - python files that are not importable but should be shipped
 - Dynamically generated classes
 """
-import logging
 import shutil
+import sys
 from importlib import import_module
 from inspect import getmembers, getmodule, isclass, ismodule
-from logging import INFO, getLogger
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
 import yaml
+from loguru import logger
 
 root_path = Path(__file__).parent.parent.absolute()
 doc_root = Path(root_path) / "docs"
-logging.basicConfig(level=INFO)
-logger = getLogger(Path(__file__).name)
+logger.add(sys.stderr, level="INFO")
 
 
 def main() -> None:

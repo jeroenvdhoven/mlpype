@@ -1,16 +1,18 @@
 """Provides a FastAPI app for an Inferencer."""
 from dataclasses import dataclass
-from logging import Logger, getLogger
 from pathlib import Path
 from typing import Any, Dict, Optional, Type, Union
 
 from fastapi.applications import FastAPI
 from fastapi.background import BackgroundTasks
+from loguru import logger
 
 from mlpype.base.data import DataSink
 from mlpype.base.data.dataset import DataSet
 from mlpype.base.deploy.inference import Inferencer
 from mlpype.base.pipeline.type_checker import DataModel, DataSetModel
+
+# from loguru._logger import
 
 
 @dataclass
@@ -34,11 +36,10 @@ class mlpypeApp:
         """
         app = FastAPI()
         inferencer = self._load_model()
-        logger = getLogger(self.name)
 
         InputType: Type[DataSetModel] = inferencer.input_type_checker.get_pydantic_types()
         OutputType: Type[DataSetModel] = inferencer.output_type_checker.get_pydantic_types()
-        self._verify_tracking_servers(InputType, OutputType, logger)
+        self._verify_tracking_servers(InputType, OutputType)
 
         @app.get("/")
         async def home_page() -> str:
@@ -52,13 +53,13 @@ class mlpypeApp:
             prediction = inferencer.predict(converted)
             result = OutputType.to_model(prediction)
 
-            self._handle_tracking(converted, prediction, logger, background)
+            self._handle_tracking(converted, prediction, background)
             logger.info("Finishing prediction request")
             return result
 
         return app
 
-    def _handle_tracking(self, inputs: DataSet, outputs: DataSet, logger: Logger, background: BackgroundTasks) -> None:
+    def _handle_tracking(self, inputs: DataSet, outputs: DataSet, background: BackgroundTasks) -> None:
         if self.tracking_servers is not None:
             logger.info("Logging records request")
             for name, sink in self.tracking_servers.items():
@@ -83,7 +84,6 @@ class mlpypeApp:
         self,
         inputs: Type[DataSetModel],
         outputs: Type[DataSetModel],
-        logger: Logger,
     ) -> None:
         # Since it could be possible someone wants to log an intermediate dataset,
         # we can't put a hard restriction on logging only input or output data.

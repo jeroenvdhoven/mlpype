@@ -102,9 +102,8 @@ class Test_DataSetTypeChecker:
         dummy_data = {"z": 1}
 
         with patch.object(DummyTypeChecker, "fit") as mock_fit, patch(
-            "mlpype.base.pipeline.type_checker.logging"
-        ) as mock_logging:
-            mock_logger = mock_logging.getLogger.return_value
+            "mlpype.base.pipeline.type_checker.logger"
+        ) as mock_logger:
 
             type_checker.fit(dummy_data)
             mock_fit.assert_not_called()

@@ -1,12 +1,13 @@
 """Provides tools for temporarily switching Python over to a different directory."""
 import importlib
-import logging
 import os
 import sys
 from contextlib import contextmanager
 from pathlib import Path
 from types import ModuleType
 from typing import Generator, List, Optional, Set, Union
+
+from loguru import logger
 
 
 @contextmanager
@@ -126,7 +127,6 @@ def _create_temporary_workspace(
         Set[str]: The set of variable names that should be removed from __main__ again
             after the context manager quits.
     """
-    logger = logging.getLogger(__name__)
     main_to_remove = set()
 
     # change directory and path
