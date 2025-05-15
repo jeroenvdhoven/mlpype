@@ -5,8 +5,9 @@ This class provides a pipeline of operations that can be re-applied to new, simi
 This custom pipeline class has been made to account for dictionary inputs, giving you
 flexibility in how you build your pipeline and input data.
 """
-import logging
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
+
+from loguru import logger
 
 from mlpype.base.data import DataSet
 from mlpype.base.pipeline.pipe import Pipe
@@ -40,7 +41,6 @@ class Pipeline:
         """
         self.pipes = pipes
         self._assert_all_names_different()
-        self.logger = logging.getLogger(__name__)
 
     def _assert_all_names_different(self, names: Optional[set] = None) -> None:
         if names is None:
@@ -64,7 +64,7 @@ class Pipeline:
         """
         for pipe in self.pipes:
             if isinstance(pipe, Pipe):
-                self.logger.info(f"\tFitting step: `{pipe.name}`")
+                logger.info(f"\tFitting step: `{pipe.name}`")
             pipe.fit(data)
             data = pipe.transform(data, is_inference=False)
         return self
@@ -85,7 +85,7 @@ class Pipeline:
         """
         for pipe in self.pipes:
             if isinstance(pipe, Pipe):
-                self.logger.info(f"\tTransforming step: `{pipe.name}`")
+                logger.info(f"\tTransforming step: `{pipe.name}`")
             data = pipe.transform(data, is_inference=is_inference)
         return data
 
@@ -106,7 +106,7 @@ class Pipeline:
         """
         for pipe in reversed(self.pipes):
             if isinstance(pipe, Pipe):
-                self.logger.info(f"\tInverse transforming step: `{pipe.name}`")
+                logger.info(f"\tInverse transforming step: `{pipe.name}`")
             data = pipe.inverse_transform(data, is_inference=is_inference)
         return data
 

@@ -1,8 +1,9 @@
 """The core of the mlpype library: run a standardised ML experiment with the given parameters."""
 from argparse import ArgumentParser
-from logging import getLogger
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union
+
+from loguru import logger as loguru_logger
 
 from mlpype.base.data import DataCatalog, DataSet
 from mlpype.base.evaluate import BaseEvaluator
@@ -90,7 +91,6 @@ class Experiment:
                 All plots will be written to the outputs folder.
         """
         assert "train" in data_sources, "Must provide a 'train' entry in the data_sources dictionary."
-        self.logger = getLogger(__name__)
         if serialiser is None:
             serialiser = JoblibSerialiser()
 
@@ -101,7 +101,7 @@ class Experiment:
             additional_files_to_store = []
         if parameters is None:
             parameters = {}
-            self.logger.warning(
+            loguru_logger.warning(
                 """It is highly recommended to provide the parameters used to initialise your
 run here for logging purposes. Consider using the `from_command_line` or
 `from_dictionary` initialisation methods"""
@@ -147,40 +147,40 @@ run here for logging purposes. Consider using the `from_command_line` or
             Dict[str, Dict[str, Union[str, float, int, bool]]]: The performance metrics of this run.
         """
         with self.experiment_logger:
-            self.logger.info("Log parameters")
+            loguru_logger.info("Log parameters")
             self.experiment_logger.log_parameters(self.parameters)
 
-            self.logger.info("Load data")
+            loguru_logger.info("Load data")
             datasets = {
                 name: data_source_set.read() if isinstance(data_source_set, DataCatalog) else data_source_set
                 for name, data_source_set in self.data_sources.items()
             }
 
-            self.logger.info("Create input type checker")
+            loguru_logger.info("Create input type checker")
             self.input_type_checker.fit(datasets["train"])
             input_checked = {name: self.input_type_checker.transform(ds) for name, ds in datasets.items()}
 
-            self.logger.info("Fit pipeline")
+            loguru_logger.info("Fit pipeline")
             self.pipeline.fit(input_checked["train"])
 
-            self.logger.info("Transform data")
+            loguru_logger.info("Transform data")
             transformed = {
                 name: self.pipeline.transform(data, is_inference=False) for name, data in input_checked.items()
             }
 
-            self.logger.info("Fit model")
+            loguru_logger.info("Fit model")
             self.model.fit(transformed["train"])
 
-            self.logger.info("Evaluate model")
+            loguru_logger.info("Evaluate model")
             metrics = {name: self.evaluator.evaluate(self.model, data) for name, data in transformed.items()}
 
-            self.logger.info("Create output type checker")
+            loguru_logger.info("Create output type checker")
             predicted_train = self.model.transform(transformed["train"])
             self.output_type_checker.fit(predicted_train)
 
-            self.logger.info("Log results.")
+            loguru_logger.info("Log results.")
             self.experiment_logger.log_run(self, metrics, transformed)
-            self.logger.info("Done")
+            loguru_logger.info("Done")
         return metrics
 
     def copy(self, parameters: Dict[str, Any], seed: int = 1) -> "Experiment":

@@ -4,10 +4,10 @@ import tarfile
 import typing
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from logging import getLogger
 from pathlib import Path
 from typing import Any, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
 
+from loguru import logger
 from pyspark.sql import DataFrame as SparkDataFrame
 
 from mlpype.base.data import DataSet
@@ -17,7 +17,6 @@ from mlpype.base.serialiser import JoblibSerialiser
 from mlpype.spark.model.types import SerialisablePredictor, SerialisableSparkModel
 
 T = TypeVar("T", bound=SerialisablePredictor)
-logger = getLogger(__name__)
 
 
 class SparkModel(Model[SparkDataFrame], ABC, Generic[T]):

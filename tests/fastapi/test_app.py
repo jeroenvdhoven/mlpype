@@ -59,7 +59,7 @@ class Test_create_app:
     def test_loading(self, app: mlpypeApp):
         with patch.object(app, "_load_model") as mock_load, patch.object(
             app, "_verify_tracking_servers"
-        ) as mock_verify, patch("mlpype.fastapi.deploy.app.getLogger") as mock_get_logger:
+        ) as mock_verify:
             mock_inferencer = mock_load.return_value
             mock_inferencer.input_type_checker.get_pydantic_types.return_value = DummyDataSet
             mock_inferencer.output_type_checker.get_pydantic_types.return_value = DummyDataSet
@@ -71,23 +71,21 @@ class Test_create_app:
             mock_inferencer.input_type_checker.get_pydantic_types.assert_called_once_with()
             mock_inferencer.output_type_checker.get_pydantic_types.assert_called_once_with()
 
-            mock_get_logger.assert_called_once_with(app.name)
-
             # input and output
-            mock_verify.assert_called_once_with(DummyDataSet, DummyDataSet, mock_get_logger.return_value)
+            mock_verify.assert_called_once_with(DummyDataSet, DummyDataSet)
 
 
 class Test_verify_tracking_servers:
     def test_verify_tracking_servers_without_tracking(self, app: mlpypeApp):
         # This should just run, since nothing is checked.
-        app._verify_tracking_servers(MagicMock(), MagicMock(), MagicMock())
+        app._verify_tracking_servers(MagicMock(), MagicMock())
 
     def test_verify_tracking_servers_with_tracking(self, app_with_tracking: mlpypeApp):
         # This should just run, since nothing is checked.
-        logger = MagicMock()
-        app_with_tracking._verify_tracking_servers(DummyDataSet, DummyDataSet, logger)
+        with patch("mlpype.fastapi.deploy.app.logger") as mock_logger:
+            app_with_tracking._verify_tracking_servers(DummyDataSet, DummyDataSet)
 
-        logger.warning.assert_not_called()
+        mock_logger.warning.assert_not_called()
 
     def test_verify_tracking_servers_with_tracking_raise_warning(self, app_with_tracking: mlpypeApp):
         # This should just run, since nothing is checked.
@@ -95,10 +93,10 @@ class Test_verify_tracking_servers:
             x: DummyDataModel
             z: DummyDataModel
 
-        logger = MagicMock()
-        app_with_tracking._verify_tracking_servers(DummyDataSet, DummyDataSet, logger)
+        with patch("mlpype.fastapi.deploy.app.logger") as mock_logger:
+            app_with_tracking._verify_tracking_servers(DummyDataSet, DummyDataSet)
 
-        logger.warning.assert_called_once_with(
+        mock_logger.warning.assert_called_once_with(
             f"No dataset named `y` found in the fields of input or output DataSetModels"
         )
 
@@ -108,14 +106,14 @@ class Test_handle_tracking:
         data = get_dummy_data(10, 2, 1)
 
         # should just run.
-        app._handle_tracking(DataSet(x=data["x"]), DataSet(y=data["y"]), MagicMock(), MagicMock())
+        app._handle_tracking(DataSet(x=data["x"]), DataSet(y=data["y"]), MagicMock())
 
     def test_handle_tracking_with_tracking(self, app_with_tracking: mlpypeApp, tracking: Dict[str, MagicMock]):
         data = get_dummy_data(10, 2, 1).read()
 
         background_tasks = MagicMock()
         # should just run.
-        app_with_tracking._handle_tracking(DataSet(x=data["x"]), DataSet(y=data["y"]), MagicMock(), background_tasks)
+        app_with_tracking._handle_tracking(DataSet(x=data["x"]), DataSet(y=data["y"]), background_tasks)
 
         background_tasks.add_task.assert_has_calls(
             [
@@ -128,12 +126,12 @@ class Test_handle_tracking:
     def test_handle_tracking_handles_crashes(self, app_with_tracking: mlpypeApp, tracking: Dict[str, MagicMock]):
         data = get_dummy_data(10, 2, 1).read()
 
-        logger = MagicMock()
         background_tasks = MagicMock()
         # This will call add_task to throw an error, causing only 1 background task to be executed.
         background_tasks.add_task.side_effect = [ConnectionError("Dummy connection error!"), None]
 
-        app_with_tracking._handle_tracking(DataSet(x=data["x"]), DataSet(y=data["y"]), logger, background_tasks)
+        with patch("mlpype.fastapi.deploy.app.logger") as mock_logger:
+            app_with_tracking._handle_tracking(DataSet(x=data["x"]), DataSet(y=data["y"]), background_tasks)
 
         background_tasks.add_task.assert_has_calls(
             [
@@ -143,7 +141,7 @@ class Test_handle_tracking:
             any_order=True,
         )
 
-        logger.error.assert_called_once_with(f"Encountered error while sending data to x: Dummy connection error!")
+        mock_logger.error.assert_called_once_with(f"Encountered error while sending data to x: Dummy connection error!")
 
 
 def test_write_in_background():
@@ -185,9 +183,7 @@ class Test_app:
     def test_predict_with_tracking(self, app_with_tracking: mlpypeApp):
         x = [1.0, 2.0, 3.0, 4.0]
 
-        with patch.object(app_with_tracking, "_handle_tracking") as mock_handle, patch(
-            "mlpype.fastapi.deploy.app.getLogger"
-        ) as mock_get_logger:
+        with patch.object(app_with_tracking, "_handle_tracking") as mock_handle:
             app = app_with_tracking.create_app()
             test_client = TestClient(app)
 
@@ -198,7 +194,7 @@ class Test_app:
         prediction = content["y"]["data"]
 
         # Cannot check `background` argument
-        mock_handle.assert_called_once_with(DataSet(x=x), DataSet(y=prediction), mock_get_logger.return_value, AnyArg())
+        mock_handle.assert_called_once_with(DataSet(x=x), DataSet(y=prediction), AnyArg())
 
     def test_predict_with_tracking_integration(
         self, test_client_with_tracking: TestClient, tracking: Dict[str, DummyDataSink]

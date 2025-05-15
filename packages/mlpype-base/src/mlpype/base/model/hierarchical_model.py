@@ -2,16 +2,16 @@
 import types
 import typing
 from collections import defaultdict
-from logging import getLogger
 from pathlib import Path
 from typing import Any, Callable, Dict, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
+
+from loguru import logger
 
 from mlpype.base.model.model import Model
 from mlpype.base.serialiser.joblib_serialiser import JoblibSerialiser
 
 T = TypeVar("T", bound=Model)
 Data = TypeVar("Data")
-logger = getLogger(__name__)
 
 
 class HierarchicalModel(Model, Generic[T]):

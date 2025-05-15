@@ -13,7 +13,6 @@ This will make sure the artifacts will show up.
 """
 # %%
 
-import logging
 from pathlib import Path
 from typing import Iterable
 from unittest.mock import MagicMock
@@ -41,8 +40,6 @@ from mlpype.sklearn.data.data_frame_source import DataFrameSource
 from mlpype.sklearn.model import LinearRegressionModel, LogisticRegressionModel
 from mlpype.sklearn.pipeline.numpy_type_checker import NumpyTypeChecker
 from mlpype.sklearn.pipeline.pandas_type_checker import PandasTypeChecker
-
-logging.basicConfig(level=logging.INFO)
 
 experiment_name = "plot-example-experiment"
 logger = MlflowLogger(experiment_name, "http://127.0.0.1:5000")

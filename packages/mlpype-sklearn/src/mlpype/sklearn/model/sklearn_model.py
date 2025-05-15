@@ -2,11 +2,11 @@
 import types
 import typing
 from argparse import ArgumentParser
-from logging import getLogger
 from pathlib import Path
 from typing import Any, Dict, Generic, Iterable, List, Optional, Type, TypeVar, Union
 
 import numpy as np
+from loguru import logger
 
 from mlpype.base.experiment.argument_parsing import add_args_to_parser_for_class
 from mlpype.base.model import Model
@@ -15,7 +15,6 @@ from mlpype.sklearn.data.sklearn_data import SklearnData
 from mlpype.sklearn.model.sklearn_base_type import SklearnModelBaseType
 
 T = TypeVar("T", bound=SklearnModelBaseType)
-logger = getLogger(__name__)
 
 
 class SklearnModel(Model[SklearnData], Generic[T]):

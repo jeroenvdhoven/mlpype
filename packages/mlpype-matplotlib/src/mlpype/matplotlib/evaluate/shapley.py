@@ -1,11 +1,11 @@
 """Provides tools to simplify making Shapley plots in mlpype."""
-from logging import getLogger
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from loguru import logger
 from shap import Explainer, partial_dependence_plot, plots
 
 from mlpype.base.data.dataset import DataSet
@@ -51,7 +51,6 @@ class ShapleyPlot(BasePlotter):
         super().__init__()
         self.input_name = input_name
         self.output_name = output_name
-        self.logger = getLogger(__name__)
 
         if sample_function is None:
             sample_function = self._sample_df_or_np
@@ -69,7 +68,7 @@ class ShapleyPlot(BasePlotter):
         else:
             raise ValueError(f"Input data must be either a numpy array or a pandas dataframe. Got {type(data)}")
 
-        self.logger.warning(f"Not enough data to sample. Using full dataset. Got {data.shape[0]}")
+        logger.warning(f"Not enough data to sample. Using full dataset. Got {data.shape[0]}")
         return data
 
     def plot(self, plot_folder: Path, data: DataSet, experiment: Experiment) -> List[Path]:
@@ -117,7 +116,7 @@ class ShapleyPlot(BasePlotter):
         """
         input_data = data.get(self.input_name)
         if not isinstance(input_data, (np.ndarray, pd.DataFrame)):
-            self.logger.warning("Input data is not an array or dataframe. Shapley may not work.")
+            logger.warning("Input data is not an array or dataframe. Shapley may not work.")
 
         # Shapley values on sampled data
         sampled = self.sample_function(input_data, self.sample_size)
@@ -140,7 +139,7 @@ class ShapleyPlot(BasePlotter):
 
         result = []
         for col in column_ids:
-            self.logger.info(f"Plotting partial dependence for column: {col}")
+            logger.info(f"Plotting partial dependence for column: {col}")
             partial_plot_file = partial_deps_folder / f"{col}.png"
             partial_dependence_plot(col, model, sampled, show=False)
             plt.tight_layout()
@@ -151,7 +150,7 @@ class ShapleyPlot(BasePlotter):
 
     def _beeswarm_plot(self, root_folder: Path, shap_values: np.ndarray) -> Path:
         """Makes a beeswarm plot."""
-        self.logger.info("Plotting beeswarm plot")
+        logger.info("Plotting beeswarm plot")
         beeplot_file = root_folder / "beeswarm.png"
 
         plots.beeswarm(shap_values, show=False)

@@ -1,11 +1,11 @@
 """Provides a logger using mlflow for mlpype."""
-import logging
 from pathlib import Path
 from types import TracebackType
 from typing import Any, Dict, Optional, Type, Union
 
 from git import InvalidGitRepositoryError
 from git.repo import Repo
+from loguru import logger
 from mlflow import create_experiment  # type: ignore
 from mlflow import get_experiment_by_name  # type: ignore
 from mlflow import log_artifact  # type: ignore
@@ -45,11 +45,10 @@ class MlflowLogger(ExperimentLogger):
                 of your experiment as a model in mlflow. If set to None, your model will not be registered.
         """
         super().__init__()
-        self.logger = logging.getLogger(__name__)
         self.name = name
 
         if not uri.startswith("http://") and not uri.startswith("databricks"):
-            self.logger.warning(f"Most often `uri` has to start with `http://` or `databricks`. Got: {uri}")
+            logger.warning(f"Most often `uri` has to start with `http://` or `databricks`. Got: {uri}")
         self.uri = uri
         self.artifact_location = artifact_location
         self.run = None

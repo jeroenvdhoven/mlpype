@@ -235,7 +235,7 @@ class Test_init:
         output_folder = MagicMock()
         additional_files_to_store = MagicMock()
 
-        with patch("mlpype.base.experiment.experiment.getLogger") as mock_get_logger:
+        with patch("mlpype.base.experiment.experiment.loguru_logger") as mock_logger:
             Experiment(
                 data_sources=data_sources,
                 model=model,
@@ -249,10 +249,7 @@ class Test_init:
                 additional_files_to_store=additional_files_to_store,
             )
 
-            mock_get_logger.assert_called_once()
-            logger = mock_get_logger.return_value
-
-            logger.warning.assert_called_once_with(
+            mock_logger.warning.assert_called_once_with(
                 """It is highly recommended to provide the parameters used to initialise your
 run here for logging purposes. Consider using the `from_command_line` or
 `from_dictionary` initialisation methods"""
