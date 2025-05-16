@@ -9,7 +9,9 @@ class Test_JoblibSerialiser:
             serialiser = JoblibSerialiser()
             obj = [None]
             file = "some file"
-            serialiser.serialise(obj, file)
+            res = serialiser.serialise(obj, file)
+
+            assert res == file
 
             mock_dump.assert_called_once_with(obj, file)
 
