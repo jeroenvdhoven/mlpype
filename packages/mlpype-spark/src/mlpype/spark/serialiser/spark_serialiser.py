@@ -25,7 +25,7 @@ class SparkSerialiser(Serialiser):
     SPARK_TRANSFORMER_CLASS_FILE = "spark_transformer_class"
     STEPS_FILE = "steps.json"
 
-    def serialise(self, object: Any, file: Union[str, Path]) -> None:
+    def serialise(self, object: Any, file: Union[str, Path]) -> Union[str, Path]:
         """Serialse a given object.
 
         If the object is:
@@ -35,11 +35,16 @@ class SparkSerialiser(Serialiser):
         Args:
             object (Any): The object to serialise.
             file (Union[str, Path]): The path to serialise to.
+
+        Returns:
+            Union[str, Path]: The path to the serialised object.
         """
         if isinstance(object, Pipeline):
             self._serialise_pipeline(object, file)
         else:
-            return self._serialise_joblib(object, file)
+            self._serialise_joblib(object, file)
+
+        return file
 
     def deserialise(self, file: Union[str, Path]) -> Any:
         """Deserialise the object in the given file.

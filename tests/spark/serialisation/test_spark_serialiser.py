@@ -40,7 +40,9 @@ class Test_SparkSerialiser:
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
             file = tmp_dir / "tmp"
-            serialiser.serialise(pipeline, file)
+            res = serialiser.serialise(pipeline, file)
+
+            assert res == file
 
             loaded = serialiser.deserialise(file)
 
