@@ -23,11 +23,27 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       
-      - uses: vemonet/setup-spark@v1
+      - name: Cache Spark
+        id: cache-spark
+        uses: actions/cache@v4
         with:
-          spark-version: '3.4.0'
-          hadoop-version: '3'
-      
+          path: /opt/spark
+          key: spark-3.4.0-hadoop3
+
+      - name: Set up Spark 3.4.0
+        if: steps.cache-spark.outputs.cache-hit != 'true'
+        run: |
+          wget -q https://archive.apache.org/dist/spark/spark-3.4.0/spark-3.4.0-bin-hadoop3.tgz
+          tar xf spark-3.4.0-bin-hadoop3.tgz
+          sudo mv spark-3.4.0-bin-hadoop3 /opt/spark
+
+      - name: Add Spark to environment
+        run: |
+          echo "SPARK_HOME=/opt/spark" >> $GITHUB_ENV
+          echo "PYSPARK_PYTHON=$(which python)" >> $GITHUB_ENV
+          echo "PYSPARK_DRIVER_PYTHON=$(which python)" >> $GITHUB_ENV
+          echo "/opt/spark/bin" >> $GITHUB_PATH
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
