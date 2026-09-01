@@ -40,8 +40,6 @@ jobs:
       - name: Add Spark to environment
         run: |
           echo "SPARK_HOME=/opt/spark" >> $GITHUB_ENV
-          echo "PYSPARK_PYTHON=$(which python)" >> $GITHUB_ENV
-          echo "PYSPARK_DRIVER_PYTHON=$(which python)" >> $GITHUB_ENV
           echo "/opt/spark/bin" >> $GITHUB_PATH
 
       - name: Install uv
