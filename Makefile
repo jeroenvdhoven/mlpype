@@ -6,7 +6,7 @@ init: _init_env _init_deps _init_precommit
 
 # Initialize UV project and virtual environment
 _init_env:
-	uv venv --python=$(PYTHON_VERSION)
+	uv venv --python=$(PYTHON_VERSION) --clear
 
 # Editable install for easy development.
 _init_deps:
