@@ -2283,7 +2283,7 @@ strict = [
 requires-dist = [
     { name = "mlpype-base", editable = "packages/mlpype-base" },
     { name = "pyspark", specifier = ">=3.4.0" },
-    { name = "pyspark", marker = "extra == 'strict'", specifier = "==3.4.0" },
+    { name = "pyspark", marker = "extra == 'strict'", specifier = "==3.5.8" },
 ]
 provides-extras = ["strict"]
 
@@ -2977,12 +2977,12 @@ wheels = [
 
 [[package]]
 name = "pyspark"
-version = "3.4.0"
+version = "3.5.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "py4j" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e3/c9/3341c9ec67ee7ada69e0fa85236f29e2a59191a90b5d4a7dc723f17fdb0f/pyspark-3.4.0.tar.gz", hash = "sha256:167a23e11854adb37f8602de6fcc3a4f96fd5f1e323b9bb83325f38408c5aafd", size = 310816775, upload-time = "2023-04-13T18:47:01.524Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/80/5a/3806f44eb47387e8af803508cdd6bbc0df784febf4dc010700be04a1ff89/pyspark-3.5.8.tar.gz", hash = "sha256:54cca0767b21b40e3953ad1d30f8601c53abf9cbda763653289cdcfcac52313c", size = 317817299, upload-time = "2026-01-15T11:46:14.487Z" }
 
 [[package]]
 name = "pytest"
