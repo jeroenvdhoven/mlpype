@@ -16,7 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 strict = [
-    "pyspark==3.4.0",
+    "pyspark==3.5.8",
 ]
 
 [tool.uv.sources]
